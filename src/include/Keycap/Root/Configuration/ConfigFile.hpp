@@ -19,18 +19,15 @@
 #include <experimental/filesystem>
 #include <json.hpp>
 
-#include <string>
 #include <fstream>
-
-
-#include <iostream>
+#include <string>
 
 namespace Keycap::Root::Configuration
 {
     // Manages configuration data stored on file
     class ConfigFile
     {
-    public:
+      public:
         // Opens and parsed the file at the given filePath
         ConfigFile(std::experimental::filesystem::path const& filePath)
         {
@@ -38,9 +35,9 @@ namespace Keycap::Root::Configuration
             file >> json_;
         }
 
-        // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do so
-        template <typename ReturnType>
-        ReturnType Get(std::string const& category, std::string const& value) const
+        // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do
+        // so
+        template <typename ReturnType> ReturnType Get(std::string const& category, std::string const& value) const
         {
             auto itr = json_.find(category);
             if (itr != json_.end())
@@ -52,7 +49,7 @@ namespace Keycap::Root::Configuration
                 if (valueItr == itr->end())
                 {
                     auto msg = ("Category " + category + " does not contain item " + value).c_str();
-                    throw std::exception{ msg };
+                    throw std::exception{msg};
                 }
 
                 return valueItr->get<ReturnType>();
@@ -64,10 +61,11 @@ namespace Keycap::Root::Configuration
                     return itr->get<ReturnType>();
             }
 
-            throw std::exception{ ("Could not find standalone key " + category + " " + value).c_str() };
+            throw std::exception{("Could not find standalone key " + category + " " + value).c_str()};
         }
 
-        // Attempts to retreive the value of the given category with the given name. Returns the given default if it fails to do so
+        // Attempts to retreive the value of the given category with the given name. Returns the given default if it
+        // fails to do so
         template <typename ReturnType>
         ReturnType GetOrDefault(std::string const& category, std::string const& value, ReturnType default) const
         {
@@ -93,7 +91,7 @@ namespace Keycap::Root::Configuration
             return default;
         }
 
-    private:
+      private:
         nlohmann::json json_;
     };
 }
