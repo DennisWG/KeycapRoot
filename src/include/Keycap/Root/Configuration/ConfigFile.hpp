@@ -37,7 +37,8 @@ namespace Keycap::Root::Configuration
 
         // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do
         // so
-        template <typename ReturnType> ReturnType Get(std::string const& category, std::string const& value) const
+        template <typename ReturnType>
+        ReturnType Get(std::string const& category, std::string const& value) const
         {
             auto itr = json_.find(category);
             if (itr != json_.end())
