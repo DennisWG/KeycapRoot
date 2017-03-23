@@ -32,6 +32,17 @@ list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
 set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
 ################################
+# Boost
+################################
+
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.63.0 REQUIRED)
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIR})
+endif()
+
+################################
 
 include_directories ("${PROJECT_SOURCE_DIR}/contrib/spdlog/include")
 include_directories ("${PROJECT_SOURCE_DIR}/contrib/json/src")

@@ -33,3 +33,4 @@ source_group("Version" FILES ${VERSION_SRC})
 source_group("Utility" FILES ${UTILITY_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
+target_link_libraries(${LIBRARY_NAME} ${Boost_LIBRARIES})
