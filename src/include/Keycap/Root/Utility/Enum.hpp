@@ -24,7 +24,6 @@
 #include <string>
 #include <unordered_map>
 
-
 namespace Keycap::Root::Utility
 {
     namespace impl
@@ -34,10 +33,7 @@ namespace Keycap::Root::Utility
 
         std::string removeWhitespaces(std::string str)
         {
-            str.erase(std::remove_if(str.begin(), str.end(), [](char c)
-            {
-                return c == ' ' || c == '\t';
-            }), str.end());
+            str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return c == ' ' || c == '\t'; }), str.end());
 
             return str;
         }
@@ -94,7 +90,8 @@ namespace Keycap::Root::Utility
         }
 
         template <typename Callback>
-        std::pair<int32_t, int32_t> doForEachEntry(std::string& values, nameValueMap_t& map, bool fix, Callback const& callback)
+        std::pair<int32_t, int32_t> doForEachEntry(std::string& values, nameValueMap_t& map, bool fix,
+                                                   Callback const& callback)
         {
             int32_t currentValue = 0;
             int32_t minValue = std::numeric_limits<int32_t>::max();
@@ -128,10 +125,7 @@ namespace Keycap::Root::Utility
         {
             nameValueMap_t map;
 
-            doForEachEntry(values, map, false, [&](std::string const& entry, int32_t value)
-            {
-                map[entry] = value;
-            });
+            doForEachEntry(values, map, false, [&](std::string const& entry, int32_t value) { map[entry] = value; });
 
             return map;
         }
@@ -140,9 +134,8 @@ namespace Keycap::Root::Utility
         {
             valueNameMap_t map;
 
-            auto minmax = doForEachEntry(values, lookup, false, [&](std::string const& entry, int32_t value)
-            {
-                if(map.find(value) == map.end())
+            auto minmax = doForEachEntry(values, lookup, false, [&](std::string const& entry, int32_t value) {
+                if (map.find(value) == map.end())
                     map[value] = entry;
             });
 
@@ -187,13 +180,12 @@ namespace Keycap::Root::Utility
             return map;
         }
 
-        template<typename ElementType>
+        template <typename ElementType>
         std::vector<ElementType> makeVector(std::string values, nameValueMap_t& lookup, valueNameMap_t& valueLookup)
         {
             std::vector<ElementType> vector;
 
-            doForEachEntry(values, lookup, false, [&](std::string const& entry, int32_t value)
-            {
+            doForEachEntry(values, lookup, false, [&](std::string const& entry, int32_t value) {
                 auto element = static_cast<ElementType>(value);
 
                 if (std::find(vector.begin(), vector.end(), element) == vector.end())
