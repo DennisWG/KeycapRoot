@@ -19,14 +19,9 @@ set(UTILITY_SRC
     Utility/Utility.cpp
 )
 
-set(TEST_SRC
-    Test.cpp
-)
-
 set(LIBRARY_SRC
     ${UTILITY_SRC}
     ${CONFIG_SRC}
-    ${TEST_SRC}
 )
 
 source_group("Version" FILES ${VERSION_SRC})
