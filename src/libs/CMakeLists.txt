@@ -19,12 +19,22 @@ set(UTILITY_SRC
     Utility/Utility.cpp
 )
 
+file(GLOB net_sources
+    "Network/*.cpp"
+)
+
+set(NETWORK_SRC
+    ${net_sources}
+)
+
 set(LIBRARY_SRC
     ${UTILITY_SRC}
+    ${NETWORK_SRC}
     ${CONFIG_SRC}
 )
 
 source_group("Version" FILES ${VERSION_SRC})
+source_group("Network" FILES ${NETWORK_SRC})
 source_group("Utility" FILES ${UTILITY_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})

@@ -6,6 +6,7 @@ include_directories ("${PROJECT_SOURCE_DIR}/contrib/catch/include")
 
 file(GLOB tests
     "Configuration/*.cpp"
+    "Network/*.cpp"
     "Utility/*.cpp"
     "*.cpp"
 )
