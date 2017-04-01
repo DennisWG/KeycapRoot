@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "LinkStatus.hpp"
+
 #include <boost/uuid/uuid.hpp>
 
 #include <memory>
@@ -34,8 +36,14 @@ namespace Keycap::Root::Network
 
         bool operator==(MessageHandler const& rhs);
 
-        // Will get called whenever we've received data
-        virtual bool OnMessage(std::vector<uint8_t> const& data) = 0;
+        // Will get called whenever we've received data. 
+        // Return type is currently not used.
+        virtual bool OnData(std::vector<uint8_t> const& data) = 0;
+
+        // Will get called whenever a connection has been established or after it got disconnected.
+        // Will be called before the server socket starts listening for data.
+        // Return type is currently not used.
+        virtual bool OnLink(LinkStatus status) = 0;
 
       protected:
         boost::uuids::uuid uuid_;

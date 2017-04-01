@@ -36,9 +36,15 @@ namespace Keycap::Root::Network
                         handlers_.end());
     }
 
+    void DataRouter::RouteUpdatedLinkStatus(LinkStatus status)
+    {
+        for (auto handler : handlers_)
+            handler->OnLink(status);
+    }
+
     void DataRouter::RouteInbound(std::vector<uint8_t> const& data)
     {
         for (auto handler : handlers_)
-            handler->OnMessage(data);
+            handler->OnData(data);
     }
 }

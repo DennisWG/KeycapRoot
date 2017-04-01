@@ -30,31 +30,56 @@ class TestHandler final : public net::MessageHandler
         router_.ConfigureInbound(this);
     }
 
-    bool OnMessage(std::vector<uint8_t> const& data) override
+    bool OnData(std::vector<uint8_t> const& data) override
     {
         OnMessageCalled = true;
         return true;
     }
 
+    bool OnLink(net::LinkStatus status) override
+    {
+        OnLinkCalled = true;
+        return true;
+    }
+
     bool OnMessageCalled = false;
+    bool OnLinkCalled = false;
 };
 
 TEST_CASE("DataRouter")
 {
     net::DataRouter router;
     TestHandler handler{router};
+    TestHandler handler2{router};
     std::vector<uint8_t> data;
 
     SECTION("DataRouter::RouteInbound() must route messages to properly configured MessageHandlers")
     {
         router.RouteInbound(data);
         REQUIRE(handler.OnMessageCalled);
+        REQUIRE(handler2.OnMessageCalled);
     }
 
-    SECTION("DataRouter::RemoveHandler() must remove the given handler")
+    SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route data to it")
     {
         router.RemoveHandler(&handler);
         router.RouteInbound(data);
         REQUIRE_FALSE(handler.OnMessageCalled);
+        REQUIRE(handler2.OnMessageCalled);
+    }
+
+    SECTION("DataRouter::RouteUpdatedLinkStatus() must route status to all registered MessageHandlers")
+    {
+        router.RouteUpdatedLinkStatus(net::LinkStatus::Up);
+        REQUIRE(handler.OnLinkCalled);
+        REQUIRE(handler2.OnLinkCalled);
+    }
+
+    SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route link updates to it")
+    {
+        router.RemoveHandler(&handler);
+        router.RouteUpdatedLinkStatus(net::LinkStatus::Up);
+        REQUIRE_FALSE(handler.OnLinkCalled);
+        REQUIRE(handler2.OnLinkCalled);
     }
 }

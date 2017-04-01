@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "LinkStatus.hpp"
+
 #include <functional>
 #include <map>
 #include <vector>
@@ -32,6 +34,9 @@ namespace Keycap::Root::Network
 
         // Removes the given MessageeHandler
         void RemoveHandler(MessageHandler* handler);
+
+        // Routes the updated LinkStatus to all registered MessageHandlers
+        void RouteUpdatedLinkStatus(LinkStatus status);
 
         // Routes the given data to all registered MessageHandlers
         void RouteInbound(std::vector<uint8_t> const& data);

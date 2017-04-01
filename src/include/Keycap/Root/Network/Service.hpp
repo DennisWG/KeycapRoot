@@ -87,6 +87,8 @@ namespace Keycap::Root::Network
             if (error)
                 return;
 
+            router_.RouteUpdatedLinkStatus(LinkStatus::Up);
+
             handler->Start();
 
             auto newHandler = std::make_shared<ConnectionHandler>(ioService_);
