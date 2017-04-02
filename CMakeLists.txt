@@ -46,6 +46,7 @@ endif()
 
 include_directories ("${PROJECT_SOURCE_DIR}/contrib/spdlog/include")
 include_directories ("${PROJECT_SOURCE_DIR}/contrib/json/src")
+include_directories ("${PROJECT_SOURCE_DIR}/contrib/gsl/include")
 include_directories ("${PROJECT_SOURCE_DIR}/src/include")
 
 # external submodules
