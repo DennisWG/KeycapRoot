@@ -12,7 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.7.0)
 project(KeycapRoot)
 enable_testing()
 
@@ -36,25 +36,24 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ################################
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.63.0 REQUIRED)
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIR})
-endif()
+find_package(Boost 1.63 COMPONENTS system date_time regex REQUIRED)
+add_library(boost INTERFACE IMPORTED)
+set_property(TARGET boost
+    PROPERTY
+        INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+)
 
 ################################
-
-include_directories ("${PROJECT_SOURCE_DIR}/contrib/spdlog/include")
-include_directories ("${PROJECT_SOURCE_DIR}/contrib/json/src")
-include_directories ("${PROJECT_SOURCE_DIR}/contrib/gsl/include")
-include_directories ("${PROJECT_SOURCE_DIR}/src/include")
-
 # external submodules
+################################
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/rapidcheck")
 
-
+################################
 # Compile flags
+################################
+
+# TODO: Remove once Visual Studio updates to CMake 3.8 or higher
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   set(MY_CXX_FLAGS_LIST
 	/std:c++latest

@@ -14,28 +14,20 @@
 
 set(LIBRARY_NAME keycaproot)
 
-set(UTILITY_SRC
+add_library(${LIBRARY_NAME}
     ${version_file}
     Utility/Utility.cpp
+    Network/DataRouter.cpp
+    Network/GenericConnectionHandler.cpp
+    Network/MessageHandler.cpp
 )
 
-file(GLOB net_sources
-    "Network/*.cpp"
+target_include_directories(${LIBRARY_NAME}
+    PUBLIC
+        ${PROJECT_SOURCE_DIR}/contrib/spdlog/include
+        ${PROJECT_SOURCE_DIR}/contrib/gsl/include
+        ${PROJECT_SOURCE_DIR}/src/include
+        ${PROJECT_SOURCE_DIR}/contrib/json/src
 )
 
-set(NETWORK_SRC
-    ${net_sources}
-)
-
-set(LIBRARY_SRC
-    ${UTILITY_SRC}
-    ${NETWORK_SRC}
-    ${CONFIG_SRC}
-)
-
-source_group("Version" FILES ${VERSION_SRC})
-source_group("Network" FILES ${NETWORK_SRC})
-source_group("Utility" FILES ${UTILITY_SRC})
-
-add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} boost)

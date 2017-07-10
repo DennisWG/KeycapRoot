@@ -1,18 +1,23 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.7.0)
 
-include_directories ("${PROJECT_SOURCE_DIR}/contrib/rapidcheck/include")
-include_directories ("${PROJECT_SOURCE_DIR}/contrib/rapidcheck/extras/catch/include")
-include_directories ("${PROJECT_SOURCE_DIR}/contrib/catch/include")
-
-file(GLOB tests
-    "Configuration/*.cpp"
-    "Network/*.cpp"
-    "Utility/*.cpp"
-    "*.cpp"
+add_executable (test_${PROJECT_NAME}
+    Configuration/ConfigFile.cpp
+    Network/DataRouter.cpp
+    Network/MemoryStream.cpp
+    Network/Service.cpp
+    Utility/Enum.cpp
+    Utility/Utility.cpp
+    main.cpp
 )
 
-add_executable (test_${PROJECT_NAME} ${tests})
 target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck)
+
+target_include_directories(test_${PROJECT_NAME}
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/contrib/rapidcheck/include
+        ${PROJECT_SOURCE_DIR}/contrib/rapidcheck/extras/catch/include
+        ${PROJECT_SOURCE_DIR}/contrib/catch/single_include
+)
 
 
 add_test(
