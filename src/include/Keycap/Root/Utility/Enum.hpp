@@ -31,14 +31,14 @@ namespace Keycap::Root::Utility
         using nameValueMap_t = std::unordered_map<std::string, int32_t>;
         using valueNameMap_t = std::unordered_map<int32_t, std::string>;
 
-        std::string removeWhitespaces(std::string str)
+        inline std::string removeWhitespaces(std::string str)
         {
             str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return c == ' ' || c == '\t'; }), str.end());
 
             return str;
         }
 
-        bool convert(std::string const& str, int32_t& outInt)
+        inline bool convert(std::string const& str, int32_t& outInt)
         {
             std::stringstream ss;
             ss << str;
@@ -49,7 +49,7 @@ namespace Keycap::Root::Utility
             return false;
         }
 
-        std::string extractEntry(std::string& values)
+        inline std::string extractEntry(std::string& values)
         {
             std::string result;
             auto itr = values.find(',');
@@ -70,7 +70,7 @@ namespace Keycap::Root::Utility
             return result;
         }
 
-        std::optional<std::string> extractValue(std::string& values)
+        inline std::optional<std::string> extractValue(std::string& values)
         {
             std::optional<std::string> ret;
 
@@ -84,13 +84,13 @@ namespace Keycap::Root::Utility
             return ret;
         }
 
-        bool isPowerOfTwoOrZero(int32_t number)
+        inline bool isPowerOfTwoOrZero(int32_t number)
         {
             return (number & (number - 1)) == 0;
         }
 
         template <typename Callback>
-        std::pair<int32_t, int32_t> doForEachEntry(std::string& values, nameValueMap_t& map, bool fix,
+        inline std::pair<int32_t, int32_t> doForEachEntry(std::string& values, nameValueMap_t& map, bool fix,
                                                    Callback const& callback)
         {
             int32_t currentValue = 0;
@@ -121,7 +121,7 @@ namespace Keycap::Root::Utility
             return std::make_pair(minValue, currentValue);
         }
 
-        nameValueMap_t makeNameValueMap(std::string values)
+        inline nameValueMap_t makeNameValueMap(std::string values)
         {
             nameValueMap_t map;
 
@@ -130,7 +130,7 @@ namespace Keycap::Root::Utility
             return map;
         }
 
-        valueNameMap_t makeValueNameMap(std::string values, nameValueMap_t& lookup, bool fillMissing = false)
+        inline valueNameMap_t makeValueNameMap(std::string values, nameValueMap_t& lookup, bool fillMissing = false)
         {
             valueNameMap_t map;
 
