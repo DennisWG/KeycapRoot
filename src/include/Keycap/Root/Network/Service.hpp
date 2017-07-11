@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "../Utility/Enum.hpp"
 #include "DataRouter.hpp"
 
 #include <boost/asio.hpp>
@@ -26,6 +27,16 @@
 
 namespace Keycap::Root::Network
 {
+    // clang-format off
+    // The mode under which the Service will operate
+    keycap_enum(ServiceMode,
+        // The Service will act as a Client; connecting to listening servers
+        Client,
+        // The Service will act as a Server; listening for incoming clients
+        Server,
+    );
+    // clang-format on
+
     // Handles network communication with other services
     template <typename ConnectionHandler>
     class Service
@@ -33,9 +44,10 @@ namespace Keycap::Root::Network
         using SharedHandler = std::shared_ptr<ConnectionHandler>;
 
       public:
-        Service(int threadCount = 1)
+        Service(ServiceMode mode, int threadCount = 1)
           : threadCount_{threadCount}
           , acceptor_{ioService_}
+          , mode_{mode}
         {
         }
 
@@ -52,7 +64,7 @@ namespace Keycap::Root::Network
         // Starts listening for network communications on the given host and port
         void Start(std::string const& host, uint16_t port)
         {
-            auto handler = std::make_shared<ConnectionHandler>(ioService_);
+            auto handler = std::make_shared<ConnectionHandler>(ioService_, router_);
 
             boost::asio::ip::tcp::resolver resolver{ioService_};
             auto ep = resolver.resolve({host, ""})->endpoint();
@@ -76,7 +88,7 @@ namespace Keycap::Root::Network
         }
 
         // Returns the DataRouter used by this service to route data
-        DataRouter& GetRouter() const
+        DataRouter& GetRouter()
         {
             return router_;
         }
@@ -91,7 +103,7 @@ namespace Keycap::Root::Network
 
             handler->Start();
 
-            auto newHandler = std::make_shared<ConnectionHandler>(ioService_);
+            auto newHandler = std::make_shared<ConnectionHandler>(ioService_, router_);
             acceptor_.async_accept(newHandler->Socket(),
                                    [=](auto errorCode) { HandleNewConnection(newHandler, errorCode); });
         }
@@ -101,5 +113,6 @@ namespace Keycap::Root::Network
         boost::asio::io_service ioService_;
         boost::asio::ip::tcp::acceptor acceptor_;
         DataRouter router_;
+        ServiceMode mode_;
     };
 }

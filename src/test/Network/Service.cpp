@@ -1,6 +1,9 @@
+#include <Keycap/Root/Network/DataRouter.hpp>
 #include <Keycap/Root/Network/Service.hpp>
-#include <chrono>
+
 #include <rapidcheck/catch.h>
+
+#include <chrono>
 
 namespace net = Keycap::Root::Network;
 
@@ -10,7 +13,7 @@ class TestHandler
     boost::asio::ip::tcp::socket socket_;
 
   public:
-    TestHandler(boost::asio::io_service& service)
+    TestHandler(boost::asio::io_service& service, net::DataRouter const& router)
       : service_{service}
       , socket_{service}
     {
@@ -67,14 +70,14 @@ class TestSocket
     std::string Received;
 };
 
-TEST_CASE("Creating and running services", "[Service]")
+TEST_CASE("Creating and running services in server mode", "[Service]")
 {
     std::string const host = "localhost";
     uint16_t const port = 4094;
 
     SECTION("Accepting a new connection must call Start in the ConnectionHandler")
     {
-        net::Service<TestHandler> service;
+        net::Service<TestHandler> service{net::ServiceMode::Server};
         service.Start(host, port);
 
         boost::asio::io_service ioService;
@@ -88,7 +91,7 @@ TEST_CASE("Creating and running services", "[Service]")
     {
         std::string const host = "127.0.0.1";
 
-        net::Service<TestHandler> service;
+        net::Service<TestHandler> service{net::ServiceMode::Server};
         service.Start(host, port);
 
         boost::asio::io_service ioService;
