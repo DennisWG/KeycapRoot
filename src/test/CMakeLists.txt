@@ -10,7 +10,7 @@ add_executable (test_${PROJECT_NAME}
     main.cpp
 )
 
-target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck)
+target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck ${Boost_LIBRARIES})
 
 target_include_directories(test_${PROJECT_NAME}
     PRIVATE
