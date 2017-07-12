@@ -1,4 +1,5 @@
 #include <Keycap/Root/Network/DataRouter.hpp>
+#include <Keycap/Root/Network/MessageHandler.hpp>
 #include <Keycap/Root/Network/Service.hpp>
 
 #include <rapidcheck/catch.h>
@@ -7,22 +8,35 @@
 
 namespace net = Keycap::Root::Network;
 
-class TestHandler
+class BaseHandler
 {
+  protected:
     boost::asio::io_service& service_;
     boost::asio::ip::tcp::socket socket_;
+    net::DataRouter const& router_;
 
-  public:
-    TestHandler(boost::asio::io_service& service, net::DataRouter const& router)
-      : service_{service}
-      , socket_{service}
+    boost::system::error_code Send(std::string const& msg)
     {
+        boost::system::error_code ec;
+        socket_.write_some(boost::asio::buffer(msg), ec);
+        return ec;
     }
 
-    void Start()
+    boost::system::error_code Receive()
     {
-        std::string msg{"Connected"};
-        socket_.write_some(boost::asio::buffer(msg));
+        std::array<char, 128> buffer{0};
+        boost::system::error_code ec;
+        auto bytesRead = socket_.read_some(boost::asio::buffer(buffer), ec);
+        router_.RouteInbound({std::begin(buffer), std::begin(buffer) + bytesRead});
+        return ec;
+    }
+
+  public:
+    BaseHandler(boost::asio::io_service& service, net::DataRouter const& router)
+      : service_{service}
+      , socket_{service}
+      , router_{router}
+    {
     }
 
     boost::asio::ip::tcp::socket& Socket()
@@ -31,73 +45,79 @@ class TestHandler
     }
 };
 
-class TestSocket
+struct ClientHandler : public BaseHandler
 {
-    boost::asio::ip::tcp::socket socket_;
-    boost::asio::io_service& ioService_;
-
-    size_t const static bufferSize = 128;
-
-  public:
-    TestSocket(boost::asio::io_service& ioService)
-      : socket_{ioService}
-      , ioService_{ioService}
+    using Base = BaseHandler;
+    ClientHandler(boost::asio::io_service& service, net::DataRouter const& router)
+      : Base(service, router)
     {
-        Received.resize(bufferSize);
     }
 
-    boost::system::error_code ConnectTo(std::string const& host, uint16_t port)
+    void Start()
     {
-        boost::asio::ip::tcp::resolver resolver{ioService_};
-        auto ep = resolver.resolve({host, ""})->endpoint();
-
-        boost::asio::ip::tcp::endpoint endpoint{ep.address(), port};
-
-        boost::system::error_code error;
-        socket_.connect({ep.address(), port}, error);
-
-        if (error)
-            return error;
-
-        std::array<char, bufferSize> buffer{0};
-        auto bytesRead = socket_.read_some(boost::asio::buffer(buffer), error);
-
-        Received = std::string{std::begin(buffer), std::begin(buffer) + bytesRead};
-
-        return error;
+        Send("Ping");
+        Receive();
     }
-
-    std::string Received;
 };
 
-TEST_CASE("Creating and running services in server mode", "[Service]")
+struct ServerHandler : public BaseHandler
+{
+    using Base = BaseHandler;
+    ServerHandler(boost::asio::io_service& service, net::DataRouter const& router)
+      : Base(service, router)
+    {
+    }
+
+    void Start()
+    {
+        Receive();
+        Send("Pong");
+    }
+};
+
+struct TestMessageHandler : public net::MessageHandler
+{
+    TestMessageHandler(net::DataRouter& router)
+      : MessageHandler(router)
+    {
+    }
+
+    bool OnData(std::vector<uint8_t> const& data) override
+    {
+        data_ = std::string{std::begin(data), std::end(data)};
+        return true;
+    }
+
+    bool OnLink(net::LinkStatus status) override
+    {
+        status_ = status;
+        return true;
+    }
+
+    net::LinkStatus status_ = net::LinkStatus::Down;
+    std::string data_;
+};
+
+TEST_CASE("Creating and running services", "[Service]")
 {
     std::string const host = "localhost";
     uint16_t const port = 4094;
 
-    SECTION("Accepting a new connection must call Start in the ConnectionHandler")
+    SECTION("")
     {
-        net::Service<TestHandler> service{net::ServiceMode::Server};
-        service.Start(host, port);
+        net::Service<ServerHandler> server{net::ServiceMode::Server};
+        TestMessageHandler serverMessageHandler{server.GetRouter()};
+        server.GetRouter().ConfigureInbound(&serverMessageHandler);
+        server.Start(host, port);
 
-        boost::asio::io_service ioService;
-        TestSocket clientSocket{ioService};
+        net::Service<ClientHandler> client{net::ServiceMode::Client};
+        TestMessageHandler clientMessageHandler{client.GetRouter()};
+        client.GetRouter().ConfigureInbound(&clientMessageHandler);
+        client.Start(host, port);
 
-        REQUIRE_FALSE(clientSocket.ConnectTo(host, port));
-        REQUIRE(clientSocket.Received == "Connected");
-    }
+        std::this_thread::sleep_for(std::chrono::seconds{2});
 
-    SECTION("Services also accept IPs as a parameter in ::Start()")
-    {
-        std::string const host = "127.0.0.1";
-
-        net::Service<TestHandler> service{net::ServiceMode::Server};
-        service.Start(host, port);
-
-        boost::asio::io_service ioService;
-        TestSocket clientSocket{ioService};
-
-        REQUIRE_FALSE(clientSocket.ConnectTo(host, port));
-        REQUIRE(clientSocket.Received == "Connected");
+        REQUIRE(serverMessageHandler.data_ == "Ping");
+        REQUIRE(clientMessageHandler.data_ == "Pong");
     }
 }

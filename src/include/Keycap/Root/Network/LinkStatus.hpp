@@ -20,7 +20,7 @@ namespace Keycap::Root::Network
 {
     enum class LinkStatus
     {
-        Up,
         Down,
+        Up,
     };
 }

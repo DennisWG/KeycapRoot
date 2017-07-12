@@ -26,25 +26,25 @@ namespace Keycap::Root::Network
 {
     void DataRouter::ConfigureInbound(MessageHandler* handler)
     {
-        handlers_.push_back(handler);
+        inboundHandlers_.push_back(handler);
     }
 
     void DataRouter::RemoveHandler(MessageHandler* handler)
     {
-        handlers_.erase(std::remove_if(handlers_.begin(), handlers_.end(),
+        inboundHandlers_.erase(std::remove_if(inboundHandlers_.begin(), inboundHandlers_.end(),
                                        [&](MessageHandler* messageHandler) { return *messageHandler == *handler; }),
-                        handlers_.end());
+            inboundHandlers_.end());
     }
 
-    void DataRouter::RouteUpdatedLinkStatus(LinkStatus status)
+    void DataRouter::RouteUpdatedLinkStatus(LinkStatus status) const
     {
-        for (auto handler : handlers_)
+        for (auto handler : inboundHandlers_)
             handler->OnLink(status);
     }
 
-    void DataRouter::RouteInbound(std::vector<uint8_t> const& data)
+    void DataRouter::RouteInbound(std::vector<uint8_t> const& data) const
     {
-        for (auto handler : handlers_)
+        for (auto handler : inboundHandlers_)
             handler->OnData(data);
     }
 }

@@ -18,13 +18,17 @@
 
 #include "LinkStatus.hpp"
 
+#include <boost/uuid/uuid.hpp>
+
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace Keycap::Root::Network
 {
     class MessageHandler;
+    class GenericConnectionHandler;
 
     class DataRouter
     {
@@ -32,16 +36,23 @@ namespace Keycap::Root::Network
         // Adds a new MessageHandler for incoming data
         void ConfigureInbound(MessageHandler* handler);
 
+        // Adds a new ConnectionHandler for outgoing data
+        void ConfigureOutbound(std::weak_ptr<GenericConnectionHandler> handler);
+
         // Removes the given MessageeHandler
         void RemoveHandler(MessageHandler* handler);
 
         // Routes the updated LinkStatus to all registered MessageHandlers
-        void RouteUpdatedLinkStatus(LinkStatus status);
+        void RouteUpdatedLinkStatus(LinkStatus status) const;
 
         // Routes the given data to all registered MessageHandlers
-        void RouteInbound(std::vector<uint8_t> const& data);
+        void RouteInbound(std::vector<uint8_t> const& data) const;
+
+        // Routes the given data to the given receiver
+        void RouteOutbound(std::vector<uint8_t> const& data) const;
 
       private:
-        std::vector<MessageHandler*> handlers_;
+          std::vector<MessageHandler*> inboundHandlers_;
+          std::map<boost::uuids::uuid, std::weak_ptr<GenericConnectionHandler>> outboundHandlers_;
     };
 }

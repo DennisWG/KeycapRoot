@@ -78,7 +78,7 @@ TEST_CASE("DataRouter")
     SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route link updates to it")
     {
         router.RemoveHandler(&handler);
-        router.RouteUpdatedLinkStatus(net::LinkStatus::Up);
+        router.RouteUpdatedLinkStatus(net::LinkStatus::Down);
         REQUIRE_FALSE(handler.OnLinkCalled);
         REQUIRE(handler2.OnLinkCalled);
     }

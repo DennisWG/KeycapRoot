@@ -54,15 +54,37 @@ namespace Keycap::Root::Network
         ~Service()
         {
             Stop();
-            for (int i = 0; i < threadCount_; ++i)
+
+            for (auto& thread : threadPool_)
             {
-                if (threadPool_[i].joinable())
-                    threadPool_[i].join();
+                if (thread.joinable())
+                    thread.join();
             }
         }
 
-        // Starts listening for network communications on the given host and port
+        // Starts listening for network communications on or connects to the given host and port
         void Start(std::string const& host, uint16_t port)
+        {
+            if (mode_ == ServiceMode::Server)
+                BeginListen(host, port);
+            else if (mode_ == ServiceMode::Client)
+                ConnectTo(host, port);
+        }
+
+        // Stops listening for new connections. Any asynchronous accept operations will be cancelled immediately
+        void Stop()
+        {
+            acceptor_.close();
+        }
+
+        // Returns the DataRouter used by this service to route data
+        DataRouter& GetRouter()
+        {
+            return router_;
+        }
+
+      private:
+        void BeginListen(std::string const& host, uint16_t port)
         {
             auto handler = std::make_shared<ConnectionHandler>(ioService_, router_);
 
@@ -81,19 +103,20 @@ namespace Keycap::Root::Network
                 threadPool_.emplace_back([=] { ioService_.run(); });
         }
 
-        // Stops listening for new connections. Any asynchronous accept operations will be cancelled immediately
-        void Stop()
+        void ConnectTo(std::string const& host, uint16_t port)
         {
-            acceptor_.close();
+            boost::asio::ip::tcp::resolver resolver{ioService_};
+            auto ep = resolver.resolve({host, ""})->endpoint();
+            ep.port(port);
+
+            auto handler = std::make_shared<ConnectionHandler>(ioService_, router_);
+            boost::system::error_code error;
+            handler->Socket().async_connect(ep, [=](auto errorCode) { HandleNewConnection(handler, errorCode); });
+
+            for (int i = 0; i < threadCount_; ++i)
+                threadPool_.emplace_back([=] { ioService_.run(); });
         }
 
-        // Returns the DataRouter used by this service to route data
-        DataRouter& GetRouter()
-        {
-            return router_;
-        }
-
-      private:
         void HandleNewConnection(SharedHandler handler, boost::system::error_code const& error)
         {
             if (error)
@@ -103,9 +126,12 @@ namespace Keycap::Root::Network
 
             handler->Start();
 
-            auto newHandler = std::make_shared<ConnectionHandler>(ioService_, router_);
-            acceptor_.async_accept(newHandler->Socket(),
-                                   [=](auto errorCode) { HandleNewConnection(newHandler, errorCode); });
+            if (mode_ == ServiceMode::Server)
+            {
+                auto newHandler = std::make_shared<ConnectionHandler>(ioService_, router_);
+                acceptor_.async_accept(newHandler->Socket(),
+                                       [=](auto errorCode) { HandleNewConnection(newHandler, errorCode); });
+            }
         }
 
         int threadCount_ = 1;
