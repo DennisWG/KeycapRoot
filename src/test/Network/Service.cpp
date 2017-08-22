@@ -8,27 +8,36 @@
 
 namespace net = Keycap::Root::Network;
 
-class BaseHandler
+class BaseHandler : public std::enable_shared_from_this<BaseHandler>
 {
   protected:
     boost::asio::io_service& service_;
     boost::asio::ip::tcp::socket socket_;
     net::DataRouter const& router_;
 
-    boost::system::error_code Send(std::string const& msg)
+    std::string payload_;
+    std::array<char, 128> buffer_{0};
+
+    void Send(std::string const& msg)
     {
-        boost::system::error_code ec;
-        socket_.write_some(boost::asio::buffer(msg), ec);
-        return ec;
+        payload_ = msg;
+
+        boost::asio::async_write(
+            socket_, boost::asio::buffer(payload_),
+            [me = shared_from_this()](const boost::system::error_code& error, std::size_t bytes_transferred){});
     }
 
-    boost::system::error_code Receive()
+    void Receive()
     {
-        std::array<char, 128> buffer{0};
-        boost::system::error_code ec;
-        auto bytesRead = socket_.read_some(boost::asio::buffer(buffer), ec);
-        router_.RouteInbound({std::begin(buffer), std::begin(buffer) + bytesRead});
-        return ec;
+        socket_.async_read_some(
+            boost::asio::buffer(buffer_), [me = shared_from_this()](const boost::system::error_code& error,
+                                                                    std::size_t bytesRead) {
+                if (error)
+                    return;
+
+                me->router_.RouteInbound({std::begin(me->buffer_), std::begin(me->buffer_) + bytesRead});
+                me->Receive();
+            });
     }
 
   public:
