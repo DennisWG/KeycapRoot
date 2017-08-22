@@ -53,6 +53,6 @@ namespace Keycap::Root::Network
 
       private:
           std::vector<MessageHandler*> inboundHandlers_;
-          std::map<boost::uuids::uuid, std::weak_ptr<GenericConnectionHandler>> outboundHandlers_;
+          std::vector<std::weak_ptr<GenericConnectionHandler>> outboundHandlers_;
     };
 }

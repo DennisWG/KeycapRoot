@@ -15,6 +15,7 @@
 */
 
 #include <Keycap/Root/Network/DataRouter.hpp>
+#include <Keycap/Root/Network/GenericConnectionHandler.hpp>
 #include <Keycap/Root/Network/MessageHandler.hpp>
 
 #include <algorithm>
@@ -27,6 +28,11 @@ namespace Keycap::Root::Network
     void DataRouter::ConfigureInbound(MessageHandler* handler)
     {
         inboundHandlers_.push_back(handler);
+    }
+
+    void DataRouter::ConfigureOutbound(std::weak_ptr<GenericConnectionHandler> handler)
+    {
+        outboundHandlers_.push_back(handler);
     }
 
     void DataRouter::RemoveHandler(MessageHandler* handler)
@@ -46,5 +52,16 @@ namespace Keycap::Root::Network
     {
         for (auto handler : inboundHandlers_)
             handler->OnData(data);
+    }
+
+    void DataRouter::RouteOutbound(std::vector<uint8_t> const& data) const
+    {
+        for (auto&& handlerPtr : outboundHandlers_)
+        {
+            if (auto handler = handlerPtr.lock())
+            {
+                handler->Send(data);
+            }
+        }
     }
 }
