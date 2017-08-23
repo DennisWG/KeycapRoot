@@ -21,7 +21,7 @@ namespace GenericConnectionHandlerTest
         {
         }
 
-        void Start()
+        void Listen()
         {
             Send("Ping");
             Receive();

@@ -35,7 +35,7 @@ namespace Keycap::Root::Network
         return socket_;
     }
 
-    void GenericConnectionHandler::Start()
+    void GenericConnectionHandler::Listen()
     {
         router_.ConfigureOutbound(shared_from_this());
         ReadPacket();

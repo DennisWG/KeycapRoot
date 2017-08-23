@@ -125,7 +125,7 @@ namespace Keycap::Root::Network
 
             router_.RouteUpdatedLinkStatus(LinkStatus::Up);
 
-            handler->Start();
+            handler->Listen();
 
             if (mode_ == ServiceMode::Server)
             {

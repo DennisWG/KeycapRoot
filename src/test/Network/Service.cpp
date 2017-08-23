@@ -18,7 +18,7 @@ struct ClientHandler : public BaseConnectionHandler
     {
     }
 
-    void Start()
+    void Listen()
     {
         Send("Ping");
         Receive();
@@ -33,7 +33,7 @@ struct ServerHandler : public BaseConnectionHandler
     {
     }
 
-    void Start()
+    void Listen()
     {
         Receive();
         Send("Pong");

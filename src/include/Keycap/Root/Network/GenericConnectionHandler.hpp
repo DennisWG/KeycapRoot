@@ -32,7 +32,7 @@ namespace Keycap::Root::Network
 
         boost::asio::ip::tcp::socket& Socket();
 
-        void Start();
+        void Listen();
 
         void Send(std::vector<std::uint8_t> const& data);
 
