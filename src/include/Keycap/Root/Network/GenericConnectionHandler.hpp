@@ -25,18 +25,22 @@ namespace Keycap::Root::Network
 {
     class DataRouter;
 
+    // Handles a generic connection
     class GenericConnectionHandler : public std::enable_shared_from_this<GenericConnectionHandler>
     {
-    public:
+      public:
         GenericConnectionHandler(boost::asio::io_service& service, DataRouter& router);
 
+        // Returns the socket used by the connection handler
         boost::asio::ip::tcp::socket& Socket();
 
+        // The connection handler will start to asynchronously listen for incoming data
         void Listen();
 
+        // Sends the given data asynchronously
         void Send(std::vector<std::uint8_t> const& data);
 
-    private:
+      private:
         void ReadPacket();
         void ReadPacketDone(boost::system::error_code const& error, size_t numBytesRead);
 

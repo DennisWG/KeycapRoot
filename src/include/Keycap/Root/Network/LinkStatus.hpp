@@ -18,9 +18,12 @@
 
 namespace Keycap::Root::Network
 {
+    // Defines the status of a link between two services
     enum class LinkStatus
     {
+        // There is currently no link established
         Down,
+        // A link has been established
         Up,
     };
 }

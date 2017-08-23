@@ -52,7 +52,7 @@ namespace Keycap::Root::Network
         void RouteOutbound(std::vector<uint8_t> const& data) const;
 
       private:
-          std::vector<MessageHandler*> inboundHandlers_;
-          std::vector<std::weak_ptr<GenericConnectionHandler>> outboundHandlers_;
+        std::vector<MessageHandler*> inboundHandlers_;
+        std::vector<std::weak_ptr<GenericConnectionHandler>> outboundHandlers_;
     };
 }

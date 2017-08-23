@@ -36,7 +36,7 @@ namespace Keycap::Root::Network
 
         bool operator==(MessageHandler const& rhs);
 
-        // Will get called whenever we've received data. 
+        // Will get called whenever we've received data.
         // Return type is currently not used.
         virtual bool OnData(std::vector<uint8_t> const& data) = 0;
 

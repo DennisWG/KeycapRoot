@@ -75,7 +75,7 @@ namespace Keycap::Root::Network
         void Stop()
         {
             acceptor_.close();
-			ioService_.stop();
+            ioService_.stop();
         }
 
         // Returns the DataRouter used by this service to route data
