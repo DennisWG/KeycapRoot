@@ -210,6 +210,7 @@ public: \
     explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
     Type& operator=(Enum value) { value_ = value; return *this; } \
     bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
+    bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
     Enum Get() const { return value_; } \
     void Set(Enum value) { value_ = value; } \
     std::string ToString() const { return Type##_value_name_map[static_cast<int32_t>(value_)]; } \
@@ -229,6 +230,7 @@ public: \
     explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
     Type& operator=(Enum value) { value_ = value; return *this; } \
     bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
+    bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
     void SetFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
     void SetAllFlags() { value_ = static_cast<Enum>((static_cast<int32_t>(Max) - 1) * 2 - 1); } \
     void ClearFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
