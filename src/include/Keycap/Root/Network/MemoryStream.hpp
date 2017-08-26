@@ -35,6 +35,15 @@ namespace Keycap::Root::Network
             buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
 
+        template <typename T, size_t NumElements>
+        void Put(std::array<T, NumElements> value)
+        {
+            gsl::span<uint8_t const> data{reinterpret_cast<uint8_t const*>(value.data()),
+                                          reinterpret_cast<uint8_t const*>(value.data() + NumElements)};
+
+            buffer_.insert(buffer_.end(), data.begin(), data.end());
+        }
+
         // Puts a single byte into the stream
         void Put(uint8_t value)
         {
@@ -74,6 +83,17 @@ namespace Keycap::Root::Network
             readPosition_ += sizeof(T);
 
             return value;
+        }
+
+        // Gets an array from the stream
+        template <typename T, size_t NumElements>
+        std::array<T, NumElements> Get()
+        {
+            std::array<T, NumElements> array;
+            for (int i = 0; i < NumElements; ++i)
+                array[i] = Get<T>();
+
+            return array;
         }
 
         // Returns a std::string with the given size from the stream

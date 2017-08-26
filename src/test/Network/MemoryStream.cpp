@@ -59,7 +59,7 @@ TEST_CASE("MemoryStream")
         REQUIRE(stream.Get<double>() == second);
     }
 
-    SECTION("Putting arrays on the stream")
+    SECTION("Putting vectors on the stream")
     {
         size_t const expectedSize = 8;
         uint32_t const first = 0xB00B5;
@@ -118,6 +118,26 @@ TEST_CASE("MemoryStream")
         stream.Put(junk);
 
         REQUIRE(stream.GetString(str.size()) == str);
+        REQUIRE(stream.Get<uint32_t>() == junk);
+    }
+
+    SECTION("Putting arrays on and retreiving them again from the stream")
+    {
+        using ElementType = int;
+        size_t const NumElements = 4;
+        using ArrayType = std::array<ElementType, NumElements>;
+
+        ArrayType arr{ 1,2,3,4 };
+        uint32_t const junk = 0xDEADBEEF;
+
+        stream.Put(arr);
+        stream.Put(junk);
+
+        auto out = stream.Get<ElementType, NumElements>();
+
+        for (int i = 0; i < NumElements; ++i)
+            REQUIRE(arr[i] == out[i]);
+
         REQUIRE(stream.Get<uint32_t>() == junk);
     }
 }
