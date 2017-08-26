@@ -29,7 +29,7 @@ namespace Keycap::Root::Network
 {
     // clang-format off
     // The mode under which the Service will operate
-    keycap_enum(ServiceMode,
+    keycap_enum(ServiceMode, int,
         // The Service will act as a Client; connecting to listening servers
         Client,
         // The Service will act as a Server; listening for incoming clients

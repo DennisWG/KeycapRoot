@@ -18,7 +18,7 @@
 
 #include <rapidcheck/catch.h>
 
-keycap_enum(SomeEnum,
+keycap_enum(SomeEnum, int,
     Entry1,
     Entry2 = Entry1,
     Entry3,
@@ -63,7 +63,7 @@ TEST_CASE("Iterating enums", "[keycap_enum]")
     }
 }
 
-keycap_enum_flags(SomeFlags,
+keycap_enum_flags(SomeFlags, int,
     None = 0,
     Red = 1,
     Green = 2,

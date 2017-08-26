@@ -199,12 +199,12 @@ namespace Keycap::Root::Utility
 }
 
 // clang-format off
-#define keycap_enum(Type, ...) \
+#define keycap_enum(Type, alignment, ...) \
 static std::unordered_map<std::string, int32_t> Type##_name_value_map = Keycap::Root::Utility::impl::makeNameValueMap(#__VA_ARGS__); \
 static std::unordered_map<int32_t, std::string> Type##_value_name_map = Keycap::Root::Utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
 class Type final { \
 public: \
-    enum Enum { __VA_ARGS__ Max }; \
+    enum Enum : alignment { __VA_ARGS__ Max }; \
     Type() = default; \
     Type(Enum value) : value_{value} {} \
     explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
@@ -218,12 +218,12 @@ private: \
     Enum value_; \
 }
 
-#define keycap_enum_flags(Type, ...) \
+#define keycap_enum_flags(Type, alignment, ...) \
 static std::unordered_map<std::string, int32_t> Type##_name_value_map = Keycap::Root::Utility::impl::makeNameValueMap(#__VA_ARGS__); \
 static std::unordered_map<int32_t, std::string> Type##_value_name_map = Keycap::Root::Utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, true); \
 class Type final { \
 public: \
-    enum Enum { __VA_ARGS__ Max }; \
+    enum Enum : alignment { __VA_ARGS__ Max }; \
     Type() = default; \
     Type(Enum value) : value_{value} {} \
     explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
