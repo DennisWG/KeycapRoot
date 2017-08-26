@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.7.0)
 add_executable (test_${PROJECT_NAME}
     Configuration/ConfigFile.cpp
     Network/DataRouter.cpp
-    Network/GenericConnectionHandler.cpp
     Network/MemoryStream.cpp
     Network/Service.cpp
     Utility/Enum.cpp

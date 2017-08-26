@@ -17,7 +17,7 @@
 #pragma once
 
 #include "../Utility/Enum.hpp"
-#include "DataRouter.hpp"
+#include "ServiceBase.hpp"
 
 #include <boost/asio.hpp>
 
@@ -38,10 +38,10 @@ namespace Keycap::Root::Network
     // clang-format on
 
     // Handles network communication with other services
-    template <typename ConnectionHandler>
-    class Service
+    template <typename Connection>
+    class Service : public ServiceBase
     {
-        using SharedHandler = std::shared_ptr<ConnectionHandler>;
+        using SharedHandler = std::shared_ptr<Connection>;
 
       public:
         Service(ServiceMode mode, int threadCount = 1)
@@ -78,16 +78,16 @@ namespace Keycap::Root::Network
             ioService_.stop();
         }
 
-        // Returns the DataRouter used by this service to route data
-        DataRouter& GetRouter()
+        boost::asio::io_service& IoService() override
         {
-            return router_;
+            return ioService_;
         }
 
       private:
         void BeginListen(std::string const& host, uint16_t port)
         {
-            auto handler = std::make_shared<ConnectionHandler>(ioService_, router_);
+            auto handler = std::make_shared<Connection>(*this);
+            handler->GetRouter().ConfigureOutbound(handler);
 
             boost::asio::ip::tcp::resolver resolver{ioService_};
             auto ep = resolver.resolve({host, ""})->endpoint();
@@ -110,7 +110,9 @@ namespace Keycap::Root::Network
             auto ep = resolver.resolve({host, ""})->endpoint();
             ep.port(port);
 
-            auto handler = std::make_shared<ConnectionHandler>(ioService_, router_);
+            auto handler = std::make_shared<Connection>(*this);
+            handler->GetRouter().ConfigureOutbound(handler);
+
             boost::system::error_code error;
             handler->Socket().async_connect(ep, [=](auto errorCode) { HandleNewConnection(handler, errorCode); });
 
@@ -123,15 +125,14 @@ namespace Keycap::Root::Network
             if (error)
                 return;
 
-            router_.RouteUpdatedLinkStatus(LinkStatus::Up);
-
+            handler->GetRouter().RouteUpdatedLinkStatus(*this, LinkStatus::Up);
             handler->Listen();
 
             if (mode_ == ServiceMode::Server)
             {
-                auto newHandler = std::make_shared<ConnectionHandler>(ioService_, router_);
-                acceptor_.async_accept(newHandler->Socket(),
-                                       [=](auto errorCode) { HandleNewConnection(newHandler, errorCode); });
+                auto newHandler = std::make_shared<Connection>(*this);
+                acceptor_.async_accept(
+                    newHandler->Socket(), [=](auto errorCode) { HandleNewConnection(newHandler, errorCode); });
             }
         }
 
@@ -139,7 +140,6 @@ namespace Keycap::Root::Network
         std::vector<std::thread> threadPool_;
         boost::asio::io_service ioService_;
         boost::asio::ip::tcp::acceptor acceptor_;
-        DataRouter router_;
         ServiceMode mode_;
     };
 }

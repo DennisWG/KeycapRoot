@@ -25,30 +25,31 @@
 
 namespace Keycap::Root::Network
 {
+    template <typename MessageHandler>
     class DataRouter;
+
+    class ServiceBase;
 
     // This base class is used for handling incoming network transmissions
     class MessageHandler
     {
       public:
-        MessageHandler(DataRouter& router);
+        MessageHandler();
+        MessageHandler(MessageHandler const& rhs);
         virtual ~MessageHandler();
 
         bool operator==(MessageHandler const& rhs);
 
         // Will get called whenever we've received data.
         // Return type is currently not used.
-        virtual bool OnData(std::vector<uint8_t> const& data) = 0;
+        virtual bool OnData(ServiceBase& service, std::vector<uint8_t> const& data) = 0;
 
         // Will get called whenever a connection has been established or after it got disconnected.
         // Will be called before the server socket starts listening for data.
         // Return type is currently not used.
-        virtual bool OnLink(LinkStatus status) = 0;
+        virtual bool OnLink(ServiceBase& service, LinkStatus status) = 0;
 
       protected:
         boost::uuids::uuid uuid_;
-
-        // Local reference to unregister this handler upon destruction
-        DataRouter& router_;
     };
 }

@@ -90,8 +90,8 @@ namespace Keycap::Root::Utility
         }
 
         template <typename Callback>
-        inline std::pair<int32_t, int32_t> doForEachEntry(std::string& values, nameValueMap_t& map, bool fix,
-                                                   Callback const& callback)
+        inline std::pair<int32_t, int32_t>
+        doForEachEntry(std::string& values, nameValueMap_t& map, bool fix, Callback const& callback)
         {
             int32_t currentValue = 0;
             int32_t minValue = std::numeric_limits<int32_t>::max();

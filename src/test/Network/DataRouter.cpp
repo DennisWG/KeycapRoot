@@ -16,27 +16,52 @@
 
 #include <Keycap/Root/Network/DataRouter.hpp>
 #include <Keycap/Root/Network/MessageHandler.hpp>
+#include <Keycap/Root/Network/Service.hpp>
+
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include <rapidcheck/catch.h>
 
 namespace net = Keycap::Root::Network;
 
-class TestHandler final : public net::MessageHandler
+class TestHandler;
+
+struct DummyService : public net::ServiceBase
+{
+    DummyService()
+    {
+    }
+
+    boost::asio::io_service& IoService() override
+    {
+        return ioService_;
+    }
+
+    boost::asio::io_service ioService_;
+};
+
+template <typename Service, typename MessageHandler>
+struct DummyConnection
+{
+};
+
+class TestHandler : public net::MessageHandler
 {
   public:
-    TestHandler(net::DataRouter& router)
-      : MessageHandler{router}
+    TestHandler(net::DataRouter<TestHandler>& router)
+      : router_{router}
     {
         router_.ConfigureInbound(this);
     }
 
-    bool OnData(std::vector<uint8_t> const& data) override
+    bool OnData(net::ServiceBase& service, std::vector<uint8_t> const& data) override
     {
         OnMessageCalled = true;
         return true;
     }
 
-    bool OnLink(net::LinkStatus status) override
+    bool OnLink(net::ServiceBase& service, net::LinkStatus status) override
     {
         OnLinkCalled = true;
         return true;
@@ -44,18 +69,22 @@ class TestHandler final : public net::MessageHandler
 
     bool OnMessageCalled = false;
     bool OnLinkCalled = false;
+
+  private:
+    net::DataRouter<TestHandler>& router_;
 };
 
 TEST_CASE("DataRouter")
 {
-    net::DataRouter router;
+    DummyService service;
+    net::DataRouter<TestHandler> router;
     TestHandler handler{router};
     TestHandler handler2{router};
     std::vector<uint8_t> data;
 
     SECTION("DataRouter::RouteInbound() must route messages to properly configured MessageHandlers")
     {
-        router.RouteInbound(data);
+        router.RouteInbound(service, data);
         REQUIRE(handler.OnMessageCalled);
         REQUIRE(handler2.OnMessageCalled);
     }
@@ -63,14 +92,14 @@ TEST_CASE("DataRouter")
     SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route data to it")
     {
         router.RemoveHandler(&handler);
-        router.RouteInbound(data);
+        router.RouteInbound(service, data);
         REQUIRE_FALSE(handler.OnMessageCalled);
         REQUIRE(handler2.OnMessageCalled);
     }
 
     SECTION("DataRouter::RouteUpdatedLinkStatus() must route status to all registered MessageHandlers")
     {
-        router.RouteUpdatedLinkStatus(net::LinkStatus::Up);
+        router.RouteUpdatedLinkStatus(service, net::LinkStatus::Up);
         REQUIRE(handler.OnLinkCalled);
         REQUIRE(handler2.OnLinkCalled);
     }
@@ -78,7 +107,7 @@ TEST_CASE("DataRouter")
     SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route link updates to it")
     {
         router.RemoveHandler(&handler);
-        router.RouteUpdatedLinkStatus(net::LinkStatus::Down);
+        router.RouteUpdatedLinkStatus(service, net::LinkStatus::Down);
         REQUIRE_FALSE(handler.OnLinkCalled);
         REQUIRE(handler2.OnLinkCalled);
     }

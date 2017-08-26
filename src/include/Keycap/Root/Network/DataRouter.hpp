@@ -17,6 +17,7 @@
 #pragma once
 
 #include "LinkStatus.hpp"
+//#include "MessageHandler.hpp"
 
 #include <boost/uuid/uuid.hpp>
 
@@ -27,32 +28,67 @@
 
 namespace Keycap::Root::Network
 {
-    class MessageHandler;
-    class GenericConnectionHandler;
+    class ServiceBase;
+    class ConnectionBase;
 
+    template <typename MessageHandler>
     class DataRouter
     {
       public:
+        DataRouter()
+        {
+        }
+
         // Adds a new MessageHandler for incoming data
-        void ConfigureInbound(MessageHandler* handler);
+        void ConfigureInbound(MessageHandler* handler)
+        {
+            inboundHandlers_.push_back(handler);
+        }
 
         // Adds a new ConnectionHandler for outgoing data
-        void ConfigureOutbound(std::weak_ptr<GenericConnectionHandler> handler);
+        void ConfigureOutbound(std::weak_ptr<ConnectionBase> handler)
+        {
+            outboundHandlers_.push_back(handler);
+        }
 
         // Removes the given MessageeHandler
-        void RemoveHandler(MessageHandler* handler);
+        void RemoveHandler(MessageHandler* handler)
+        {
+            inboundHandlers_.erase(
+                std::remove_if(
+                    inboundHandlers_.begin(), inboundHandlers_.end(),
+                    [&](MessageHandler* messageHandler) { return *messageHandler == *handler; }),
+                inboundHandlers_.end());
+        }
 
         // Routes the updated LinkStatus to all registered MessageHandlers
-        void RouteUpdatedLinkStatus(LinkStatus status) const;
+        void RouteUpdatedLinkStatus(ServiceBase& service, LinkStatus status) const
+        {
+            for (auto handler : inboundHandlers_)
+                handler->OnLink(service, status);
+        }
 
-        // Routes the given data to all registered MessageHandlers
-        void RouteInbound(std::vector<uint8_t> const& data) const;
+        // Routes the given data from the given Service to all registered MessageHandlers
+        void RouteInbound(ServiceBase& service, std::vector<uint8_t> const& data) const
+        {
+            for (auto handler : inboundHandlers_)
+                handler->OnData(service, data);
+        }
 
         // Routes the given data to the given receiver
-        void RouteOutbound(std::vector<uint8_t> const& data) const;
+        void RouteOutbound(std::vector<uint8_t> const& data) const
+        {
+            for (auto&& handlerPtr : outboundHandlers_)
+            {
+                if (auto handler = handlerPtr.lock())
+                {
+                    handler->Send(data);
+                }
+            }
+        }
 
       private:
         std::vector<MessageHandler*> inboundHandlers_;
-        std::vector<std::weak_ptr<GenericConnectionHandler>> outboundHandlers_;
+        std::vector<std::weak_ptr<ConnectionBase>> outboundHandlers_;
     };
 }

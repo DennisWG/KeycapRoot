@@ -21,15 +21,18 @@
 
 namespace Keycap::Root::Network
 {
-    MessageHandler::MessageHandler(DataRouter& router)
+    MessageHandler::MessageHandler()
       : uuid_{boost::uuids::random_generator{}()}
-      , router_{router}
     {
+    }
+
+    MessageHandler::MessageHandler(MessageHandler const&)
+    {
+        uuid_ = boost::uuids::random_generator{}();
     }
 
     MessageHandler::~MessageHandler()
     {
-        router_.RemoveHandler(this);
     }
 
     bool MessageHandler::operator==(MessageHandler const& rhs)

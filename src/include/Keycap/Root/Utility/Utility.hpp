@@ -31,4 +31,10 @@ namespace Keycap::Root::Utility
 
     // Returns the logger of the given name if it exists or returns a newly created one with a null_sink
     extern std::shared_ptr<spdlog::logger> GetSafeLogger(std::string const& name);
+
+    template <typename T>
+    auto shared_from_that(T* p)
+    {
+        return std::shared_ptr<T>(p->shared_from_this(), p);
+    }
 }

@@ -1,8 +1,12 @@
-#include "BaseConnectionHandler.hpp"
+//#include "BaseConnectionHandler.hpp"
 
+#include <Keycap/Root/Network/Connection.hpp>
 #include <Keycap/Root/Network/DataRouter.hpp>
 #include <Keycap/Root/Network/MessageHandler.hpp>
 #include <Keycap/Root/Network/Service.hpp>
+
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include <rapidcheck/catch.h>
 
@@ -10,79 +14,122 @@
 
 namespace net = Keycap::Root::Network;
 
-struct ClientHandler : public BaseConnectionHandler
+namespace ServiceTest
 {
-    using Base = BaseConnectionHandler;
-    ClientHandler(boost::asio::io_service& service, net::DataRouter const& router)
-      : Base(service, router)
+    struct ClientConnection;
+
+    struct ClientService : public net::Service<ClientConnection>
     {
-    }
+        ClientService()
+          : Service{net::ServiceMode::Client}
+        {
+        }
 
-    void Listen()
+        net::LinkStatus status = net::LinkStatus::Down;
+        std::string data;
+    };
+
+    struct ClientConnection : public net::Connection<ClientConnection>, public net::MessageHandler
     {
-        Send("Ping");
-        Receive();
-    }
-};
+        ClientConnection(net::ServiceBase& service)
+          : Connection{service}
+          , myService{static_cast<ClientService&>(service)}
+        {
+            router_.ConfigureInbound(this);
+        }
 
-struct ServerHandler : public BaseConnectionHandler
-{
-    using Base = BaseConnectionHandler;
-    ServerHandler(boost::asio::io_service& service, net::DataRouter const& router)
-      : Base(service, router)
+        void Listen()
+        {
+            std::string msg{"Ping"};
+
+            Send({msg.begin(), msg.end()});
+            Connection::Listen();
+        }
+
+        bool OnData(net::ServiceBase& service, std::vector<uint8_t> const& data) override
+        {
+            auto received = std::string{std::begin(data), std::end(data)};
+            myService.data = received;
+
+            return true;
+        }
+
+        bool OnLink(net::ServiceBase& service, net::LinkStatus status) override
+        {
+            myService.status = status;
+            return true;
+        }
+
+      private:
+        ClientService& myService;
+    };
+
+    struct DummyConnection;
+
+    struct ServerService : public net::Service<DummyConnection>
     {
-    }
+        ServerService()
+          : Service{net::ServiceMode::Server}
+        {
+        }
 
-    void Listen()
+        net::LinkStatus status = net::LinkStatus::Down;
+        std::string data;
+    };
+
+    struct DummyConnection : public net::Connection<DummyConnection>, public net::MessageHandler
     {
-        Receive();
-        Send("Pong");
-    }
-};
+        DummyConnection(net::ServiceBase& service)
+          : Connection{service}
+          , myService{static_cast<ServerService&>(service)}
+        {
+            router_.ConfigureInbound(this);
+        }
 
-struct TestMessageHandler : public net::MessageHandler
-{
-    TestMessageHandler(net::DataRouter& router)
-      : MessageHandler(router)
+        bool OnData(net::ServiceBase& service, std::vector<uint8_t> const& data) override
+        {
+            auto received = std::string{std::begin(data), std::end(data)};
+            myService.data = received;
+
+            if (received == "Ping")
+            {
+                std::string msg{"Pong"};
+                Send({msg.begin(), msg.end()});
+            }
+
+            return true;
+        }
+
+        bool OnLink(net::ServiceBase& service, net::LinkStatus status) override
+        {
+            myService.status = status;
+            return true;
+        }
+
+      private:
+        ServerService& myService;
+    };
+
+    TEST_CASE("Creating and running services", "[Service]")
     {
-    }
+        std::string const host = "localhost";
+        uint16_t const port = 4094;
 
-    bool OnData(std::vector<uint8_t> const& data) override
-    {
-        data_ = std::string{std::begin(data), std::end(data)};
-        return true;
-    }
+        SECTION("Using the services")
+        {
+            ServerService server;
+            server.Start(host, port);
 
-    bool OnLink(net::LinkStatus status) override
-    {
-        status_ = status;
-        return true;
-    }
+            ClientService client;
+            client.Start(host, port);
 
-    net::LinkStatus status_ = net::LinkStatus::Down;
-    std::string data_;
-};
+            std::this_thread::sleep_for(std::chrono::seconds{2});
 
-TEST_CASE("Creating and running services", "[Service]")
-{
-    std::string const host = "localhost";
-    uint16_t const port = 4094;
+            REQUIRE(server.data == "Ping");
+            REQUIRE(server.status == net::LinkStatus::Up);
 
-    SECTION("Using the services")
-    {
-        net::Service<ServerHandler> server{net::ServiceMode::Server};
-        TestMessageHandler serverMessageHandler{server.GetRouter()};
-        server.GetRouter().ConfigureInbound(&serverMessageHandler);
-        server.Start(host, port);
-
-        net::Service<ClientHandler> client{net::ServiceMode::Client};
-        TestMessageHandler clientMessageHandler{client.GetRouter()};
-        client.GetRouter().ConfigureInbound(&clientMessageHandler);
-        client.Start(host, port);
-
-        std::this_thread::sleep_for(std::chrono::seconds{2});
-
-        REQUIRE(serverMessageHandler.data_ == "Ping");
-        REQUIRE(clientMessageHandler.data_ == "Pong");
+            REQUIRE(client.data == "Pong");
+            REQUIRE(client.status == net::LinkStatus::Up);
+        }
     }
 }

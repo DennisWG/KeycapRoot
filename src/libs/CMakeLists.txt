@@ -17,8 +17,6 @@ set(LIBRARY_NAME keycaproot)
 add_library(${LIBRARY_NAME}
     ${version_file}
     Utility/Utility.cpp
-    Network/DataRouter.cpp
-    Network/GenericConnectionHandler.cpp
     Network/MessageHandler.cpp
 )
 
