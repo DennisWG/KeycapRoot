@@ -108,4 +108,16 @@ TEST_CASE("MemoryStream")
         REQUIRE(stream.Get<uint32_t>() == first);
         REQUIRE(stream.Get<uint8_t>() == second);
     }
+
+    SECTION("MemoryStream::GetString() must return a valid std::string")
+    {
+        std::string const str = "Foobar";
+        uint32_t const junk = 0xDEADBEEF;
+
+        stream.Put(str);
+        stream.Put(junk);
+
+        REQUIRE(stream.GetString(str.size()) == str);
+        REQUIRE(stream.Get<uint32_t>() == junk);
+    }
 }

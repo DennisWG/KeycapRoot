@@ -55,6 +55,14 @@ namespace Keycap::Root::Network
             buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
 
+        // Puts a std::string into the stream
+        void Put(std::string const& string)
+        {
+            gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(string.data()),
+                                       reinterpret_cast<uint8_t const*>(string.data() + string.size())};
+            buffer_.insert(buffer_.end(), d.begin(), d.end());
+        }
+
         // Gets a T from the stream
         template <typename T>
         T Get()
@@ -64,6 +72,18 @@ namespace Keycap::Root::Network
 
             T value = *reinterpret_cast<T const*>(buffer_.data() + readPosition_);
             readPosition_ += sizeof(T);
+
+            return value;
+        }
+
+        // Returns a std::string with the given size from the stream
+        std::string GetString(size_t size)
+        {
+            if (size + readPosition_ > buffer_.size())
+                throw std::exception("Attempted to read past buffer end!");
+
+            std::string value{buffer_.begin() + readPosition_, buffer_.begin() + readPosition_ + size};
+            readPosition_ += size;
 
             return value;
         }
@@ -79,7 +99,7 @@ namespace Keycap::Root::Network
         }
 
         // Returns the number of available bytes in the stream
-        size_t Size() const
+        auto Size() const
         {
             return buffer_.size() - readPosition_;
         }
@@ -92,6 +112,12 @@ namespace Keycap::Root::Network
 
             buffer_.erase(buffer_.begin(), buffer_.begin() + readPosition_);
             readPosition_ = 0;
+        }
+
+        // Returns the data stored in the stream's buffer
+        auto Data()
+        {
+            return buffer_.data();
         }
 
       private:
