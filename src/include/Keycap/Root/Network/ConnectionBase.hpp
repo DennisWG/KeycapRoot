@@ -34,6 +34,8 @@ namespace Keycap::Root::Network
         {
         }
 
+        virtual ~ConnectionBase() {}
+
         virtual void Send(std::vector<std::uint8_t> const& data) = 0;
 
       protected:

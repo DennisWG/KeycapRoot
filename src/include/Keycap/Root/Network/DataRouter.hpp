@@ -69,10 +69,16 @@ namespace Keycap::Root::Network
         }
 
         // Routes the given data from the given Service to all registered MessageHandlers
-        void RouteInbound(ServiceBase& service, std::vector<uint8_t> const& data) const
+        // Will call every registered MessageHandler, even if one of them fails
+        // Returns whether or not all MessageHandlers succeeded.
+        bool RouteInbound(ServiceBase& service, std::vector<uint8_t> const& data) const
         {
+            bool succeeded = true;
+
             for (auto handler : inboundHandlers_)
-                handler->OnData(service, data);
+                succeeded = succeeded && handler->OnData(service, data);
+
+            return succeeded;
         }
 
         // Routes the given data to the given receiver

@@ -92,9 +92,10 @@ namespace Keycap::Root::Network
 
             inPacket_.sgetn(reinterpret_cast<char*>(buffer.data()), numBytesRead);
 
-            router_.RouteInbound(service_, buffer);
-
-            ReadPacket();
+            if(router_.RouteInbound(service_, buffer))
+                ReadPacket();
+            else
+                router_.RouteUpdatedLinkStatus(service_, LinkStatus::Down);
         }
 
         void SendData() override
