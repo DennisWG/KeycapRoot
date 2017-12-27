@@ -40,7 +40,7 @@ find_package(Boost 1.63 COMPONENTS system date_time regex REQUIRED)
 add_library(boost INTERFACE IMPORTED)
 set_property(TARGET boost
     PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
+        INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${Botan_INCLUDE_DIR}
 )
 
 ################################
