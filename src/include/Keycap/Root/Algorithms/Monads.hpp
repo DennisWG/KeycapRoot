@@ -19,19 +19,19 @@
 namespace Keycap::Root
 {
     template <typename T>
-    auto array_index(T const& element, T const& begin)
+    inline auto array_index(T const& element, T const& begin)
     {
         return &element - &begin;
     }
 
     template <typename T>
-    auto is_odd(T const& value)
+    inline auto is_odd(T const& value)
     {
         return (value % 2) == 1;
     }
 
     template <typename T>
-    auto is_even(T const& value)
+    inline auto is_even(T const& value)
     {
         return !is_odd(value);
     }
