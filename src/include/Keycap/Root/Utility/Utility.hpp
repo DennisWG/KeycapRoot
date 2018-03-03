@@ -108,5 +108,7 @@ namespace Keycap::Root::Utility
             printChars(i);
             destination << '\n';
         }
+
+        destination << std::dec;
     }
 }
