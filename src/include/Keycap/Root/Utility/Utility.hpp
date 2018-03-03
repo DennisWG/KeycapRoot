@@ -19,6 +19,9 @@
 #include <memory>
 #include <string>
 
+#include <cctype>
+#include <iomanip>
+
 namespace spdlog
 {
     class logger;
@@ -36,5 +39,74 @@ namespace Keycap::Root::Utility
     auto shared_from_that(T* p)
     {
         return std::shared_ptr<T>(p->shared_from_this(), p);
+    }
+
+    // Dumps the given range of iterators into the given destination with the given indentation
+    // Result:
+    // offset                           hex                      ascii
+    // 00000000 48 65 6c 6c 6f 2c 20 57  6f 72 6c 64 21          Hello, World!
+    template <typename Iterator>
+    void DumpAsHex(Iterator begin, Iterator end, std::ostream& destination, int indent = 0)
+    {
+        unsigned char buffer[16]{};
+        int address = 0;
+
+        destination << std::hex << std::setfill('0');
+
+        auto printAddress = [&address, &destination, indent]() {
+            for (int j = 0; j < indent; ++j)
+                destination << ' ';
+            destination << std::setw(8) << address;
+        };
+
+        auto printHex = [&buffer, &destination](int n) {
+            for (int i = 0; i < n; ++i)
+            {
+                if (i % 8 == 0)
+                    destination << ' ';
+                destination << std::setw(2) << static_cast<unsigned int>(buffer[i]) << ' ';
+            }
+            for (int i = 0; i < (16 - n); ++i)
+            {
+                if ((16 - n - i) == 8)
+                    destination << ' ';
+                destination << "   ";
+            }
+        };
+
+        auto printChars = [&buffer, &destination](int n) {
+            for (int i = 0; i < n; ++i)
+            {
+                if (isprint(buffer[i]))
+                    destination << buffer[i];
+                else
+                    destination << '.';
+            }
+        };
+
+        int i = 0;
+        for (; begin != end; ++begin, ++i)
+        {
+            if (i >= 16)
+            {
+                printAddress();
+                printHex(16);
+                printChars(16);
+
+                address += 16;
+                i = 0;
+                destination << '\n';
+            }
+
+            buffer[i] = *begin;
+        }
+
+        if (i != 0)
+        {
+            printAddress();
+            printHex(i);
+            printChars(i);
+            destination << '\n';
+        }
     }
 }
