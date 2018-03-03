@@ -31,7 +31,7 @@ namespace Keycap::Root::Network::Srp6
         // Returns the public ephemeral value (B)
         Botan::BigInt const& PublicEphemeralValue() const;
 
-        // Returns the session key (H(S))
+        // Returns the session key (K = H(S))
         std::vector<uint8_t> SessionKey(Botan::BigInt const& A);
 
       private:
