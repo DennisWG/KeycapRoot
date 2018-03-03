@@ -67,7 +67,7 @@ auto ShaInterleaved(std::vector<uint8_t>& S)
 
     // seperate even elements from odd ones
     auto bound = std::stable_partition(begin, std::end(S), [&begin](auto&& v) {
-        return is_even(array_index(v, begin));
+        return is_even(array_index(v, *begin));
     });
 
     // clang-format on
