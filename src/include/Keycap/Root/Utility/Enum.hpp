@@ -217,6 +217,11 @@ public: \
     static std::vector<Type> const& ToVector() { static auto vector = Keycap::Root::Utility::impl::makeVector<Type>(#__VA_ARGS__, Type##_name_value_map, Type##_value_name_map); return vector; } \
 private: \
     Enum value_; \
+}; \
+inline std::ostream& operator << (std::ostream& os, Type const& obj) \
+{ \
+    os << obj.ToString(); \
+    return os; \
 }
 
 #define keycap_enum_flags(Type, alignment, ...) \
@@ -243,5 +248,9 @@ public: \
     static std::vector<Type> const& ToVector() { static auto vector = Keycap::Root::Utility::impl::makeVector<Type>(#__VA_ARGS__, Type##_name_value_map, Type##_value_name_map); return vector; } \
 private: \
     Enum value_; \
+}; \
+inline std::ostream& operator << (std::ostream& os, Type const& obj) \
+{ \
+    os << obj.ToString(); \
 }
 // clang-format on
