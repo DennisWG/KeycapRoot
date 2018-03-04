@@ -31,6 +31,10 @@ namespace Keycap::Root::Network
         template <typename T>
         void Put(T const& value)
         {
+            if constexpr(has_encode_method<T>::value)
+            {
+                return T::Encode(*this);
+            }
             gsl::span<uint8_t const> data{reinterpret_cast<uint8_t const*>(&value), sizeof(T)};
             buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
@@ -76,13 +80,20 @@ namespace Keycap::Root::Network
         template <typename T>
         T Get()
         {
-            if (sizeof(T) + readPosition_ > buffer_.size())
-                throw std::exception("Attempted to read past buffer end!");
+            if constexpr(has_decode_method<T>::value)
+            {
+                return T::Decode(*this);
+            }
+            else
+            {
+                if (sizeof(T) + readPosition_ > buffer_.size())
+                    throw std::exception("Attempted to read past buffer end!");
 
-            T value = *reinterpret_cast<T const*>(buffer_.data() + readPosition_);
-            readPosition_ += sizeof(T);
+                T value = *reinterpret_cast<T const*>(buffer_.data() + readPosition_);
+                readPosition_ += sizeof(T);
 
-            return value;
+                return value;
+            }
         }
 
         // Gets an array from the stream
@@ -143,5 +154,37 @@ namespace Keycap::Root::Network
       private:
         size_t readPosition_ = 0;
         std::vector<uint8_t> buffer_;
+
+        template<typename T>
+        struct has_encode_method
+        {
+        private:
+            typedef std::true_type yes;
+            typedef std::false_type no;
+
+            template<typename U> static auto test(int) -> decltype(std::declval<U>().Encode() == 1, yes());
+
+            template<typename> static no test(...);
+
+        public:
+
+            static constexpr bool value = std::is_same<decltype(test<T>(0)), yes>::value;
+        };
+
+        template<typename T>
+        struct has_decode_method
+        {
+        private:
+            typedef std::true_type yes;
+            typedef std::false_type no;
+
+            template<typename U> static auto test(int) -> decltype(std::declval<U>().Decode() == 1, yes());
+
+            template<typename> static no test(...);
+
+        public:
+
+            static constexpr bool value = std::is_same_v<decltype(test<T>(0)), yes>;
+        };
     };
 }
