@@ -31,7 +31,7 @@ namespace Keycap::Root::Network
         template <typename T>
         void Put(T const& value)
         {
-            if constexpr(has_encode_method<T>::value)
+            if constexpr (has_encode_method<T>::value)
             {
                 return T::Encode(*this);
             }
@@ -80,7 +80,7 @@ namespace Keycap::Root::Network
         template <typename T>
         T Get()
         {
-            if constexpr(has_decode_method<T>::value)
+            if constexpr (has_decode_method<T>::value)
             {
                 return T::Decode(*this);
             }
@@ -101,8 +101,14 @@ namespace Keycap::Root::Network
         std::array<T, NumElements> Get()
         {
             std::array<T, NumElements> array;
+
             for (int i = 0; i < NumElements; ++i)
-                array[i] = Get<T>();
+            {
+                if constexpr (std::is_same_v<T, std::string>)
+                    array[i] = GetString();
+                else
+                    array[i] = Get<T>();
+            }
 
             return array;
         }
@@ -113,10 +119,9 @@ namespace Keycap::Root::Network
             if (size + readPosition_ > buffer_.size())
                 throw std::exception("Attempted to read past buffer end!");
 
-            std::string value{buffer_.begin() + readPosition_, buffer_.begin() + readPosition_ + size};
+            std::string string = {buffer_.begin() + readPosition_, buffer_.begin() + readPosition_ + size};
             readPosition_ += size;
-
-            return value;
+            return string;
         }
 
         // Peeks for the given T at the given position in the stream
@@ -155,36 +160,37 @@ namespace Keycap::Root::Network
         size_t readPosition_ = 0;
         std::vector<uint8_t> buffer_;
 
-        template<typename T>
+        template <typename T>
         struct has_encode_method
         {
-        private:
+          private:
             typedef std::true_type yes;
             typedef std::false_type no;
 
-            template<typename U> static auto test(int) -> decltype(std::declval<U>().Encode() == 1, yes());
+            template <typename U>
+            static auto test(int) -> decltype(std::declval<U>().Encode() == 1, yes());
 
-            template<typename> static no test(...);
+            template <typename>
+            static no test(...);
 
-        public:
-
+          public:
             static constexpr bool value = std::is_same<decltype(test<T>(0)), yes>::value;
         };
 
-        template<typename T>
+        template <typename T>
         struct has_decode_method
         {
-        private:
+          private:
             typedef std::true_type yes;
             typedef std::false_type no;
 
-            template<typename U> static auto test(int) -> decltype(std::declval<U>().Decode() == 1, yes());
+            template <typename U>
+            static auto test(int) -> decltype(std::declval<U>().Decode() == 1, yes());
 
-            template<typename> static no test(...);
+            template <typename>
+            static no test(...);
 
-        public:
-
+          public:
             static constexpr bool value = std::is_same_v<decltype(test<T>(0)), yes>;
         };
     };
-}
