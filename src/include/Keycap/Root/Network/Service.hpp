@@ -101,7 +101,17 @@ namespace Keycap::Root::Network
             acceptor_.async_accept(handler->Socket(), [=](auto errorCode) { HandleNewConnection(handler, errorCode); });
 
             for (int i = 0; i < threadCount_; ++i)
-                threadPool_.emplace_back([=] { ioService_.run(); });
+                threadPool_.emplace_back([=]
+            {
+                try
+                {
+                    ioService_.run();
+                }
+                catch (std::exception const& ex)
+                {
+                    ioService_.run();
+                }
+            });
         }
 
         void ConnectTo(std::string const& host, uint16_t port)
