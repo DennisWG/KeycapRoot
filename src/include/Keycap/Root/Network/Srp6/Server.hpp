@@ -34,6 +34,15 @@ namespace Keycap::Root::Network::Srp6
         // Returns the session key (K = H(S))
         std::vector<uint8_t> SessionKey(Botan::BigInt const& A);
 
+        // Returns the Compliance mode
+        Compliance ComplianceMode() const;
+
+        // Returns the prime
+        Botan::BigInt const& Prime() const;
+
+        // Returns the generator
+        Botan::BigInt const& Generator() const;
+
       private:
         Server(Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& v, Botan::BigInt const& b, Compliance compliance);
 

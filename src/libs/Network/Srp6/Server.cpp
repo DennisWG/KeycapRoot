@@ -136,4 +136,19 @@ namespace Keycap::Root::Network::Srp6
 
         return ShaInterleaved(Botan::BigInt::encode(S));
     }
+
+    Compliance Server::ComplianceMode() const
+    {
+        return compliance_;
+    }
+
+    Botan::BigInt const& Server::Prime() const
+    {
+        return N_;
+    }
+
+    Botan::BigInt const& Server::Generator() const
+    {
+        return g_;
+    }
 }
