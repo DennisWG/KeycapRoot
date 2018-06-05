@@ -229,7 +229,7 @@ inline std::ostream& operator << (std::ostream& os, Type const& obj) \
 }
 
 #define keycap_enum_flags(Type, alignment, ...) \
-namespace Keycap::Root::Utility::impl \
+namespace impl \
 { \
     static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::Keycap::Root::Utility::impl::makeNameValueMap(#__VA_ARGS__); \
     static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::Keycap::Root::Utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
@@ -244,14 +244,14 @@ public: \
     bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
     bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
     void SetFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
-    void SetAllFlags() { value_ = static_cast<Enum>((static_cast<int32_t>(Max) - 1) * 2 - 1); } \
+    void SetAllFlags() { value_ = static_cast<Enum>(-1); } \
     void ClearFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
     void ClearAllFlags() { value_ = static_cast<Enum>(0); } \
     void ToggleFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) ^ which); } \
     bool TestFlag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
     Enum Get() const { return value_; } \
     void Set(Enum value) { value_ = value; } \
-    std::string ToString() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
+    std::string ToString() const { return ::impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
     static std::vector<Type> const& ToVector() { static auto vector = ::Keycap::Root::Utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
 private: \
     Enum value_; \

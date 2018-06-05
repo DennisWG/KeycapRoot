@@ -194,3 +194,4 @@ namespace Keycap::Root::Network
             static constexpr bool value = std::is_same_v<decltype(test<T>(0)), yes>;
         };
     };
+}
