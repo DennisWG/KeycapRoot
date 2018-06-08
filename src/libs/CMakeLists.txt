@@ -20,6 +20,7 @@ add_library(${LIBRARY_NAME}
     Network/MessageHandler.cpp
     Network/Srp6/Server.cpp
     Network/Srp6/GroupParameters.cpp
+    Network/Srp6/Utility.cpp
 )
 
 target_include_directories(${LIBRARY_NAME}

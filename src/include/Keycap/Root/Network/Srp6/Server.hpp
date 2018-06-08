@@ -19,20 +19,27 @@
 #include "Compliance.hpp"
 #include "GroupParameters.hpp"
 
+#include <botan/auto_rng.h>
 #include <botan/bigint.h>
 
 namespace Keycap::Root::Network::Srp6
 {
+    constexpr int SECRET_BTIS = 32;
     class Server final
     {
       public:
-        Server(GroupParameter groupParameter, Botan::BigInt const& v, Compliance compliance, std::size_t secretBits = 32);
+        Server(
+            GroupParameter groupParameter, Botan::BigInt const& v, Compliance compliance,
+            Botan::BigInt const& b = Botan::BigInt::decode(Botan::AutoSeeded_RNG().random_vec(SECRET_BTIS)));
 
         // Returns the public ephemeral value (B)
         Botan::BigInt const& PublicEphemeralValue() const;
 
         // Returns the session key (K = H(S))
         std::vector<uint8_t> SessionKey(Botan::BigInt const& A);
+
+        // Generates the server proof (M2_S)
+        Botan::BigInt Proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const;
 
         // Returns the Compliance mode
         Compliance ComplianceMode() const;
@@ -44,7 +51,9 @@ namespace Keycap::Root::Network::Srp6
         Botan::BigInt const& Generator() const;
 
       private:
-        Server(Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& v, Botan::BigInt const& b, Compliance compliance);
+        Server(
+            Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& v, Botan::BigInt const& b,
+            Compliance compliance);
 
         // Prime
         const Botan::BigInt N_;
@@ -65,4 +74,4 @@ namespace Keycap::Root::Network::Srp6
         // Compliance mode
         Compliance compliance_;
     };
-}
+} // namespace Keycap::Root::Network::Srp6

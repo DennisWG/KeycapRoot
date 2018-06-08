@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7.0)
 
 add_executable (test_${PROJECT_NAME}
     Configuration/ConfigFile.cpp
+    Network/Srp6/Srp6.cpp
     Network/DataRouter.cpp
     Network/MemoryStream.cpp
     Network/Service.cpp
@@ -10,7 +11,7 @@ add_executable (test_${PROJECT_NAME}
     main.cpp
 )
 
-target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck ${Boost_LIBRARIES})
+target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck ${Boost_LIBRARIES} ${Botan_LIBRARIES})
 
 target_include_directories(test_${PROJECT_NAME}
     PRIVATE
