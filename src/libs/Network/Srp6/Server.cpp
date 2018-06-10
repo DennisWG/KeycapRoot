@@ -160,4 +160,4 @@ namespace Keycap::Root::Network::Srp6
     {
         return g_;
     }
-} // namespace Keycap::Root::Network::Srp6
+}

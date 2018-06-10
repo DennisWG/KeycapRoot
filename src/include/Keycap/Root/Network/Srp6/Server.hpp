@@ -74,4 +74,4 @@ namespace Keycap::Root::Network::Srp6
         // Compliance mode
         Compliance compliance_;
     };
-} // namespace Keycap::Root::Network::Srp6
+}
