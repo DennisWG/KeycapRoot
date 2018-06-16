@@ -24,8 +24,8 @@ namespace Keycap::Root::Network::Srp6
 
     struct GroupParameter
     {
-        std::string value;
-        uint64_t generator;
+        std::string N;
+        uint64_t g;
     };
 
     enum class GroupParameters

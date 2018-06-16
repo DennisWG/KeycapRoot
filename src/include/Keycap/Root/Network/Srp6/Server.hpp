@@ -50,6 +50,9 @@ namespace Keycap::Root::Network::Srp6
         // Returns the generator
         Botan::BigInt const& Generator() const;
 
+        // Returns the verifier (v)
+        Botan::BigInt const& Verifier() const;
+
       private:
         Server(
             Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& v, Botan::BigInt const& b,

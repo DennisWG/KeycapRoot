@@ -37,45 +37,42 @@ auto Scramble(Botan::BigInt const& A, Botan::BigInt const& B, size_t length, srp
     }
     else if (compliance == srp6::Compliance::Wow)
     {
-        auto encodeFlipUpdate = [length, &sha1](Botan::BigInt const& value) {
-            auto result = Botan::BigInt::encode_1363(value, length);
-            std::reverse(std::begin(result), std::end(result));
-            sha1.update(result);
-        };
+        sha1.update(srp6::encode_1363_flip(A, length));
+        sha1.update(srp6::encode_1363_flip(B, length));
 
-        encodeFlipUpdate(A);
-        encodeFlipUpdate(B);
-
-        return Botan::BigInt::decode(sha1.final());
+        return srp6::decode_flip(sha1.final());
     }
 
     throw std::exception("Unknown compliance mode!");
 }
 
+/* Refer to https://www.ietf.org/rfc/rfc2945.txt section "3.1.  Interleaved SHA" */
 auto ShaInterleaved(std::vector<uint8_t>& S)
 {
     using namespace Keycap::Root;
 
-    // Refer to https://www.ietf.org/rfc/rfc2945.txt section "3.1.  Interleaved SHA"
-
-    // skip leading zeroes and one more byte if the remaining sequence has an odd number of elements remaining
+    // To compute this function, remove all leading zero bytes from the input.
     auto begin = std::find_if(S.begin(), S.end(), [](auto&& v) { return v != 0; });
+
+    // If the length of the resulting string is odd, also remove the first byte.
     if (is_odd(std::distance(begin, std::end(S))))
         ++begin;
 
     // clang-format off
 
-    // seperate even elements from odd ones
+    // Extract the even-numbered bytes into a string E and the odd-numbered bytes into a string F
     auto bound = std::stable_partition(begin, std::end(S), [&begin](auto&& v) {
         return is_even(array_index(v, *begin));
     });
 
     // clang-format on
 
+    // Hash each one with regular SHA1
     Botan::SHA_1 sha;
     auto G{sha.process(&*begin, std::distance(begin, bound))};
     auto H{sha.process(&*bound, std::distance(bound, std::end(S)))};
 
+    // Interleave the two hashes back together to form the output
     std::vector<uint8_t> result;
     for (int i = 0; i < G.size(); ++i)
     {
@@ -89,7 +86,7 @@ auto ShaInterleaved(std::vector<uint8_t>& S)
 namespace Keycap::Root::Network::Srp6
 {
     Server::Server(GroupParameter groupParameter, Botan::BigInt const& v, Compliance compliance, Botan::BigInt const& b)
-      : Server(Botan::BigInt{groupParameter.value}, Botan::BigInt{groupParameter.generator}, v, b, compliance)
+      : Server(Botan::BigInt{groupParameter.N}, Botan::BigInt{groupParameter.g}, v, b, compliance)
     {
     }
 
@@ -98,14 +95,14 @@ namespace Keycap::Root::Network::Srp6
         Compliance compliance)
       : N_{N}
       , g_{g}
-      , v_{Botan::power_mod(g_, v_, N_)}
+      , v_{v}
       , b_{b}
       , compliance_{compliance}
     {
         // k = 3 for legacy SRP-6, k = H(N, g) in SRP-6a
         // Refer to http://srp.stanford.edu/design.html
         auto const k = 3;
-        B_ = k * v + g % b;
+        B_ = (k * v_ + Botan::power_mod(g_, b_, N_)) % N_;
     }
 
     Botan::BigInt const& Server::PublicEphemeralValue() const
@@ -115,8 +112,8 @@ namespace Keycap::Root::Network::Srp6
 
     std::vector<uint8_t> Server::SessionKey(Botan::BigInt const& A)
     {
-        if ((A % N_) == 0 || A < 0)
-            throw std::exception("Ephemeral value of A must not be 0 (mod N) and not be < 0!");
+        if ((A % N_) == 0 || A <= 0)
+            throw std::exception("Ephemeral value of A must not be 0 (mod N) and not be <= 0!");
 
         A_ = A;
 
@@ -126,24 +123,21 @@ namespace Keycap::Root::Network::Srp6
         Botan::BigInt S = Botan::power_mod(A * Botan::power_mod(v_, u, N_), b_, N_);
 
         if (compliance_ == Compliance::Wow)
-        {
-            auto tmp = Botan::BigInt::encode(S);
-            std::reverse(std::begin(tmp), std::end(tmp));
-            return ShaInterleaved(tmp);
-        }
+            return ShaInterleaved(encode_flip(S));
 
-        return ShaInterleaved(Botan::BigInt::encode(S));
+        return Botan::BigInt::encode(S);
     }
 
     Botan::BigInt Server::Proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const
     {
+        // M = H(A, M, K)
         Botan::SHA_1 sha1;
-
-        sha1.update(Encode(A_, compliance_));
-        sha1.update(Encode(clientProof, compliance_));
+        
+        sha1.update(encode_flip(A_));
+        sha1.update(encode_flip(clientProof));
         sha1.update(sessionKey);
 
-        return Decode(sha1.final(), compliance_);
+        return decode_flip(sha1.final());
     }
 
     Compliance Server::ComplianceMode() const
@@ -159,5 +153,10 @@ namespace Keycap::Root::Network::Srp6
     Botan::BigInt const& Server::Generator() const
     {
         return g_;
+    }
+
+    Botan::BigInt const& Server::Verifier() const
+    {
+        return v_;
     }
 }

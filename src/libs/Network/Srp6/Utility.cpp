@@ -20,31 +20,24 @@
 
 namespace Keycap::Root::Network::Srp6
 {
-    std::vector<uint8_t> Encode(Botan::BigInt const& bn, Compliance compliance)
+    std::vector<Botan::byte> encode_flip(const Botan::BigInt& val)
     {
-        if (compliance == Compliance::RFC5054)
-            return Botan::BigInt::encode(bn);
-        else if (compliance == Compliance::Wow)
-        {
-            std::vector<uint8_t> buffer{Botan::BigInt::encode(bn)};
-            std::reverse(std::begin(buffer), std::end(buffer));
-            return buffer;
-        }
-
-        throw std::exception("Unknown compliance mode!");
+        std::vector<Botan::byte> res(Botan::BigInt::encode(val));
+        std::reverse(res.begin(), res.end());
+        return res;
     }
 
-    Botan::BigInt Decode(Botan::secure_vector<uint8_t> vec, Compliance compliance)
+    Botan::secure_vector<Botan::byte> encode_1363_flip(const Botan::BigInt& val, std::size_t bytes)
     {
-        if (compliance == Compliance::RFC5054)
-            return Botan::BigInt::decode(vec);
-        else if (compliance == Compliance::Wow)
-        {
-            std::reverse(std::begin(vec), std::end(vec));
-            return Botan::BigInt::decode(vec);
-        }
+        Botan::secure_vector<Botan::byte> res(Botan::BigInt::encode_1363(val, bytes));
+        std::reverse(res.begin(), res.end());
+        return res;
+    }
 
-        throw std::exception("Unknown compliance mode!");
+    Botan::BigInt decode_flip(Botan::secure_vector<Botan::byte> val)
+    {
+        std::reverse(val.begin(), val.end());
+        return Botan::BigInt::decode(val);
     }
 
     std::array<uint8_t, 32> ToArray(Botan::BigInt const& value, Compliance compliance)
@@ -68,14 +61,14 @@ namespace Keycap::Root::Network::Srp6
     }
 
     Botan::BigInt GenerateClientProof(
-        Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& s, std::string const& I,
-        Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& S,
+        Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& salt, std::string const& I,
+        Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& sessionKey,
         Keycap::Root::Network::Srp6::Compliance compliance)
     {
         Botan::SHA_1 sha1;
 
-        auto nHash{sha1.process(Encode(N, compliance))};
-        auto gHash{sha1.process(Encode(g, compliance))};
+        auto nHash{sha1.process(encode_flip(N))};
+        auto gHash{sha1.process(encode_flip(g))};
         auto iHash{sha1.process(I)};
 
         for (size_t i = 0; i < nHash.size(); ++i)
@@ -83,10 +76,10 @@ namespace Keycap::Root::Network::Srp6
 
         sha1.update(nHash);
         sha1.update(iHash);
-        sha1.update(Encode(s, compliance));
-        sha1.update(Encode(A, compliance));
-        sha1.update(Encode(B, compliance));
-        sha1.update(S);
-        return Decode(sha1.final(), compliance);
+        sha1.update(encode_flip(salt));
+        sha1.update(encode_flip(A));
+        sha1.update(encode_flip(B));
+        sha1.update(sessionKey);
+        return decode_flip(sha1.final());
     }
-} // namespace Keycap::Root::Network::Srp6
+}

@@ -26,14 +26,11 @@
 
 namespace Keycap::Root::Network::Srp6
 {
-    // Encodes the given BigInt with the given compliance mode and returns it as a vector of bytes
-    std::vector<uint8_t> Encode(Botan::BigInt const& value, Compliance compliance);
+    std::vector<Botan::byte> encode_flip(const Botan::BigInt& val);
 
-    // Decodes the given vector of bytes using the given compliance mode into a BigInt
-    Botan::BigInt Decode(Botan::secure_vector<uint8_t> vec, Compliance compliance);
+    Botan::secure_vector<Botan::byte> encode_1363_flip(const Botan::BigInt& val, std::size_t bytes);
 
-    // Encodes the given BigInt to a byte array according to IEEE 1363 in the given compliance mode
-    std::array<uint8_t, 32> ToArray(Botan::BigInt const& value, Compliance compliance);
+    Botan::BigInt decode_flip(Botan::secure_vector<Botan::byte> val);
 
     Botan::BigInt GenerateClientProof(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& s, std::string const& I,
