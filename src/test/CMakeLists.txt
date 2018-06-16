@@ -20,7 +20,6 @@ target_include_directories(test_${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/contrib/catch/single_include
 )
 
-
 add_test(
     NAME test_${PROJECT_NAME}
     COMMAND test_${PROJECT_NAME}

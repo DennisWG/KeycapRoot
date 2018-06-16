@@ -12,18 +12,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-set(LIBRARY_NAME keycaproot)
-
-add_library(${LIBRARY_NAME}
+add_library(keycaproot
     ${version_file}
     Utility/Utility.cpp
+    "Utility/String.cpp"
     Network/MessageHandler.cpp
     Network/Srp6/Server.cpp
     Network/Srp6/GroupParameters.cpp
     Network/Srp6/Utility.cpp
 )
 
-target_include_directories(${LIBRARY_NAME}
+target_include_directories(keycaproot
     PUBLIC
         ${PROJECT_SOURCE_DIR}/contrib/spdlog/include
         ${PROJECT_SOURCE_DIR}/contrib/gsl/include
@@ -31,4 +30,4 @@ target_include_directories(${LIBRARY_NAME}
         ${PROJECT_SOURCE_DIR}/contrib/json/src
 )
 
-target_link_libraries(${LIBRARY_NAME} boost)
+target_link_libraries(keycaproot boost)

@@ -14,8 +14,11 @@
     limitations under the License.
 */
 
+#include <Keycap/Root/Network/Srp6/GroupParameters.hpp>
 #include <Keycap/Root/Network/Srp6/Utility.hpp>
+#include <Keycap/Root/Utility/String.hpp>
 
+#include <botan/numthry.h>
 #include <botan/sha160.h>
 
 namespace Keycap::Root::Network::Srp6
@@ -40,6 +43,47 @@ namespace Keycap::Root::Network::Srp6
         return Botan::BigInt::decode(val);
     }
 
+    auto GenerateX(
+        std::string const& username, std::string const& password, Botan::BigInt const& salt, Compliance compliance)
+    {
+        Botan::SHA_1 sha;
+        sha.update(username);
+        sha.update(":");
+        sha.update(password);
+        auto hash = sha.final();
+
+        if (compliance == Compliance::RFC5054)
+            sha.update(Botan::BigInt::encode(salt));
+        else if (compliance == Compliance::Wow)
+            sha.update(encode_flip(salt));
+
+        sha.update(hash);
+
+        if (compliance == Compliance::RFC5054)
+            return Botan::BigInt::decode(sha.final());
+        else if (compliance == Compliance::Wow)
+            return decode_flip(sha.final());
+
+        throw std::exception("Unknown compliance mode!");
+    }
+
+    Botan::BigInt GenerateVerifier(
+        std::string username, std::string password, GroupParameter groupParameter, Botan::BigInt const& salt,
+        Compliance compliance)
+    {
+        username = Utility::ToUpper(username);
+        password = Utility::ToUpper(password);
+
+        auto x = GenerateX(username, password, salt, compliance);
+
+        Botan::BigInt N{groupParameter.N};
+        Botan::BigInt g{groupParameter.g};
+        Botan::BigInt v = Botan::power_mod(g, x, N);
+
+        return v;
+    }
+
+    template<>
     std::array<uint8_t, 32> ToArray(Botan::BigInt const& value, Compliance compliance)
     {
         if (compliance == Compliance::RFC5054)
@@ -53,6 +97,27 @@ namespace Keycap::Root::Network::Srp6
         {
             std::array<uint8_t, 32> array;
             auto tmp = Botan::BigInt::encode_1363(value, 32);
+            std::reverse_copy(std::begin(tmp), std::end(tmp), std::begin(array));
+            return array;
+        }
+
+        throw std::exception("Unknown compliance mode!");
+    }
+
+    template <>
+    std::array<uint8_t, 20> ToArray(Botan::BigInt const& value, Compliance compliance)
+    {
+        if (compliance == Compliance::RFC5054)
+        {
+            std::array<uint8_t, 20> array;
+            auto tmp = Botan::BigInt::encode_1363(value, 20);
+            std::copy(std::begin(tmp), std::end(tmp), std::begin(array));
+            return array;
+        }
+        else if (compliance == Compliance::Wow)
+        {
+            std::array<uint8_t, 20> array;
+            auto tmp = Botan::BigInt::encode_1363(value, 20);
             std::reverse_copy(std::begin(tmp), std::end(tmp), std::begin(array));
             return array;
         }

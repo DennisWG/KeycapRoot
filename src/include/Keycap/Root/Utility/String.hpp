@@ -21,14 +21,12 @@
 
 namespace Keycap::Root::Utility
 {
-    auto Explode(std::string const& str, char delim = ' ')
-    {
-        std::vector<std::string> result;
-        std::istringstream ss(str);
+    // Explodes the string into a list of substrings divided by the given delimiter
+    std::vector<std::string> Explode(std::string const& str, char delim = ' ');
 
-        for (std::string token; std::getline(ss, token, delim);)
-            result.push_back(std::move(token));
+    // ASCII toupper
+    std::string ToUpper(std::string s);
 
-        return result;
-    }
+    // ASCII tolower
+    std::string ToLower(std::string s);
 }

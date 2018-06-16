@@ -32,6 +32,14 @@ namespace Keycap::Root::Network::Srp6
 
     Botan::BigInt decode_flip(Botan::secure_vector<Botan::byte> val);
 
+    Botan::BigInt GenerateVerifier(
+        std::string username, std::string password, GroupParameter groupParameter,
+        Botan::BigInt const& salt, Compliance compliance);
+
+
+    template <int N>
+    std::array<uint8_t, N> ToArray(Botan::BigInt const& value, Compliance compliance);
+
     Botan::BigInt GenerateClientProof(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& s, std::string const& I,
         Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& S,
