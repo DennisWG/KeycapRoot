@@ -24,6 +24,7 @@
 
 namespace Keycap::Root::Network
 {
+    // A FIFO stream container
     class MemoryStream
     {
       public:
@@ -74,6 +75,12 @@ namespace Keycap::Root::Network
             gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(string.data()),
                                        reinterpret_cast<uint8_t const*>(string.data() + string.size())};
             buffer_.insert(buffer_.end(), d.begin(), d.end());
+        }
+
+        // Appends a MemoryStream into the stream
+        void Put(MemoryStream const& stream)
+        {
+            buffer_.insert(buffer_.end(), stream.buffer_.begin(), stream.buffer_.end());
         }
 
         // Gets a T from the stream
