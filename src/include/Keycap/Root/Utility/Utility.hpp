@@ -41,6 +41,17 @@ namespace Keycap::Root::Utility
         return std::shared_ptr<T>(p->shared_from_this(), p);
     }
 
+    template <typename Iterator>
+    std::string ToHexString(Iterator begin, Iterator end)
+    {
+        std::stringstream ss;
+        ss << std::hex << std::uppercase << std::setfill('0');
+        for (; begin != end; ++begin)
+            ss << std::setw(2) << static_cast<unsigned int>(*begin);
+
+        return ss.str();
+    }
+
     // Dumps the given range of iterators into the given destination with the given indentation
     // Result:
     // offset                           hex                      ascii
