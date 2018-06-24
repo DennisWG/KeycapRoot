@@ -40,6 +40,13 @@ namespace Keycap::Root::Network
             buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
 
+        template <typename T>
+        void Put(std::vector<T> const& vec)
+        {
+            for (auto&& element : vec)
+                Put(element);
+        }
+
         template <typename T, size_t NumElements>
         void Put(std::array<T, NumElements> value)
         {
@@ -81,6 +88,16 @@ namespace Keycap::Root::Network
         void Put(MemoryStream const& stream)
         {
             buffer_.insert(buffer_.end(), stream.buffer_.begin(), stream.buffer_.end());
+        }
+
+        // Overrides the given value at the given position
+        template <typename T>
+        void Override(T const& value, size_t position)
+        {
+            if ((position + sizeof(T)) > buffer_.size())
+                throw std::exception("Tried to override past the stream's end!");
+
+            *reinterpret_cast<T*>(buffer_.data() + position) = value;
         }
 
         // Gets a T from the stream
