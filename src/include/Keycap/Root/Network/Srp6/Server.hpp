@@ -33,7 +33,7 @@ namespace Keycap::Root::Network::Srp6
             Botan::BigInt const& b = Botan::BigInt::decode(Botan::AutoSeeded_RNG().random_vec(SECRET_BTIS)));
 
         // Returns the public ephemeral value (B)
-        Botan::BigInt const& PublicEphemeralValue() const;
+        Botan::BigInt const& PublicEphemeralValue() const noexcept;
 
         // Returns the session key (K = H(S))
         std::vector<uint8_t> SessionKey(Botan::BigInt const& A);
@@ -42,16 +42,16 @@ namespace Keycap::Root::Network::Srp6
         Botan::BigInt Proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const;
 
         // Returns the Compliance mode
-        Compliance ComplianceMode() const;
+        Compliance ComplianceMode() const noexcept;
 
         // Returns the prime
-        Botan::BigInt const& Prime() const;
+        Botan::BigInt const& Prime() const noexcept;
 
         // Returns the generator
-        Botan::BigInt const& Generator() const;
+        Botan::BigInt const& Generator() const noexcept;
 
         // Returns the verifier (v)
-        Botan::BigInt const& Verifier() const;
+        Botan::BigInt const& Verifier() const noexcept;
 
       private:
         Server(

@@ -105,7 +105,7 @@ namespace Keycap::Root::Network::Srp6
         B_ = (k * v_ + Botan::power_mod(g_, b_, N_)) % N_;
     }
 
-    Botan::BigInt const& Server::PublicEphemeralValue() const
+    Botan::BigInt const& Server::PublicEphemeralValue() const noexcept
     {
         return B_;
     }
@@ -140,22 +140,22 @@ namespace Keycap::Root::Network::Srp6
         return decode_flip(sha1.final());
     }
 
-    Compliance Server::ComplianceMode() const
+    Compliance Server::ComplianceMode() const noexcept
     {
         return compliance_;
     }
 
-    Botan::BigInt const& Server::Prime() const
+    Botan::BigInt const& Server::Prime() const noexcept
     {
         return N_;
     }
 
-    Botan::BigInt const& Server::Generator() const
+    Botan::BigInt const& Server::Generator() const noexcept
     {
         return g_;
     }
 
-    Botan::BigInt const& Server::Verifier() const
+    Botan::BigInt const& Server::Verifier() const noexcept
     {
         return v_;
     }

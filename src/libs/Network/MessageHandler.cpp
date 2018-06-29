@@ -21,12 +21,12 @@
 
 namespace Keycap::Root::Network
 {
-    MessageHandler::MessageHandler()
+    MessageHandler::MessageHandler() noexcept
       : uuid_{boost::uuids::random_generator{}()}
     {
     }
 
-    MessageHandler::MessageHandler(MessageHandler const&)
+    MessageHandler::MessageHandler(MessageHandler const&) noexcept
     {
         uuid_ = boost::uuids::random_generator{}();
     }
@@ -35,7 +35,7 @@ namespace Keycap::Root::Network
     {
     }
 
-    bool MessageHandler::operator==(MessageHandler const& rhs)
+    bool MessageHandler::operator==(MessageHandler const& rhs) noexcept
     {
         return uuid_ == rhs.uuid_;
     }

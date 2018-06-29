@@ -34,11 +34,11 @@ namespace Keycap::Root::Network
     class MessageHandler
     {
       public:
-        MessageHandler();
-        MessageHandler(MessageHandler const& rhs);
+        MessageHandler() noexcept;
+        MessageHandler(MessageHandler const& rhs) noexcept;
         virtual ~MessageHandler();
 
-        bool operator==(MessageHandler const& rhs);
+        bool operator==(MessageHandler const& rhs) noexcept;
 
         // Will get called whenever we've received data.
         // Return type is currently not used.

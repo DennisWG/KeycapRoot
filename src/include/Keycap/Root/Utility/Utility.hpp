@@ -30,7 +30,7 @@ namespace spdlog
 namespace Keycap::Root::Utility
 {
     // Sets the console's title to the given title
-    extern void SetConsoleTitle(std::string const& title);
+    extern void SetConsoleTitle(std::string const& title) noexcept;
 
     // Returns the logger of the given name if it exists or returns a newly created one with a null_sink
     extern std::shared_ptr<spdlog::logger> GetSafeLogger(std::string const& name);

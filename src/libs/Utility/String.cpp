@@ -35,13 +35,15 @@ namespace Keycap::Root::Utility
 
     std::string ToUpper(std::string s)
     {
-        std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::toupper(c); });
+        [[maybe_unused]] auto end
+            = std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::toupper(c); });
         return s;
     }
 
     std::string ToLower(std::string s)
     {
-        std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::tolower(c); });
+        [[maybe_unused]] auto end
+            = std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::tolower(c); });
         return s;
     }
 }

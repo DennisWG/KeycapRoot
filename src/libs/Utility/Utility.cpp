@@ -30,7 +30,7 @@ limitations under the License.
 
 namespace Keycap::Root::Utility
 {
-    void SetConsoleTitle(std::string const& title)
+    void SetConsoleTitle(std::string const& title) noexcept
     {
 #ifdef _WIN32
         SetConsoleTitleA(title.c_str());
