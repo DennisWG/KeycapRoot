@@ -31,7 +31,8 @@ namespace Keycap::Root::Utility::impl
 
     inline std::string removeWhitespaces(std::string str)
     {
-        str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return c == ' ' || c == '\t'; }), str.end());
+        [[maybe_unused]] auto end = str.erase(
+            std::remove_if(str.begin(), str.end(), [](char c) { return c == ' ' || c == '\t'; }), str.end());
 
         return str;
     }

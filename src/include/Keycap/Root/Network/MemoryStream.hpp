@@ -73,7 +73,7 @@ namespace Keycap::Root::Network
         // Puts a span of bytes into the stream
         void Put(gsl::span<uint8_t> data)
         {
-            buffer_.insert(buffer_.end(), data.begin(), data.end());
+            [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
 
         // Puts a std::string into the stream
@@ -81,13 +81,13 @@ namespace Keycap::Root::Network
         {
             gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(string.data()),
                                        reinterpret_cast<uint8_t const*>(string.data() + string.size())};
-            buffer_.insert(buffer_.end(), d.begin(), d.end());
+            [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), d.begin(), d.end());
         }
 
         // Appends a MemoryStream into the stream
         void Put(MemoryStream const& stream)
         {
-            buffer_.insert(buffer_.end(), stream.buffer_.begin(), stream.buffer_.end());
+            [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), stream.buffer_.begin(), stream.buffer_.end());
         }
 
         // Overrides the given value at the given position
@@ -170,7 +170,7 @@ namespace Keycap::Root::Network
             if (readPosition_ == 0)
                 return;
 
-            buffer_.erase(buffer_.begin(), buffer_.begin() + readPosition_);
+            [[maybe_unused]] auto end = buffer_.erase(buffer_.begin(), buffer_.begin() + readPosition_);
             readPosition_ = 0;
         }
 
