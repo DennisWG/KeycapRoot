@@ -49,7 +49,7 @@ struct DummyConnection
 class TestHandler : public net::MessageHandler
 {
   public:
-    TestHandler(net::DataRouter<TestHandler>& router)
+    explicit TestHandler(net::DataRouter<TestHandler>& router)
       : router_{router}
     {
         router_.ConfigureInbound(this);
