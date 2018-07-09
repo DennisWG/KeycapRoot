@@ -16,47 +16,47 @@
 
 #pragma once
 
-#include "Compliance.hpp"
-#include "GroupParameters.hpp"
+#include "compliance.hpp"
+#include "group_parameters.hpp"
 
 #include <botan/auto_rng.h>
 #include <botan/bigint.h>
 
-namespace Keycap::Root::Network::Srp6
+namespace keycap::root::network::srp6
 {
     constexpr int SECRET_BTIS = 32;
-    class Server final
+    class server final
     {
       public:
-        Server(
-            GroupParameter groupParameter, Botan::BigInt const& v, Compliance compliance,
+        server(
+            group_parameter groupParameter, Botan::BigInt const& v, compliance compliance,
             Botan::BigInt const& b = Botan::BigInt::decode(Botan::AutoSeeded_RNG().random_vec(SECRET_BTIS)));
 
         // Returns the public ephemeral value (B)
-        Botan::BigInt const& PublicEphemeralValue() const noexcept;
+        Botan::BigInt const& public_ephemeral_value() const noexcept;
 
         // Returns the session key (K = H(S))
-        std::vector<uint8_t> SessionKey(Botan::BigInt const& A);
+        std::vector<uint8_t> session_key(Botan::BigInt const& A);
 
         // Generates the server proof (M2_S)
-        Botan::BigInt Proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const;
+        Botan::BigInt proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const;
 
         // Returns the Compliance mode
-        Compliance ComplianceMode() const noexcept;
+        compliance compliance_mode() const noexcept;
 
         // Returns the prime
-        Botan::BigInt const& Prime() const noexcept;
+        Botan::BigInt const& prime() const noexcept;
 
         // Returns the generator
-        Botan::BigInt const& Generator() const noexcept;
+        Botan::BigInt const& generator() const noexcept;
 
         // Returns the verifier (v)
-        Botan::BigInt const& Verifier() const noexcept;
+        Botan::BigInt const& verifier() const noexcept;
 
       private:
-        Server(
+        server(
             Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& v, Botan::BigInt const& b,
-            Compliance compliance);
+            compliance compliance);
 
         // Prime
         const Botan::BigInt N_;
@@ -75,6 +75,6 @@ namespace Keycap::Root::Network::Srp6
         Botan::BigInt A_;
 
         // Compliance mode
-        Compliance compliance_;
+        compliance compliance_;
     };
 }

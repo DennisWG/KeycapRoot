@@ -22,15 +22,15 @@
 #include <type_traits>
 #include <vector>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
     // A FIFO stream container
-    class MemoryStream
+    class memory_stream
     {
       public:
         // Puts a T into the stream
         template <typename T>
-        void Put(T const& value)
+        void put(T const& value)
         {
             if constexpr (has_encode_method<T>::value)
             {
@@ -41,14 +41,14 @@ namespace Keycap::Root::Network
         }
 
         template <typename T>
-        void Put(std::vector<T> const& vec)
+        void put(std::vector<T> const& vec)
         {
             for (auto&& element : vec)
-                Put(element);
+                put(element);
         }
 
         template <typename T, size_t NumElements>
-        void Put(std::array<T, NumElements> value)
+        void put(std::array<T, NumElements> value)
         {
             gsl::span<uint8_t const> data{reinterpret_cast<uint8_t const*>(value.data()),
                                           reinterpret_cast<uint8_t const*>(value.data() + NumElements)};
@@ -57,27 +57,27 @@ namespace Keycap::Root::Network
         }
 
         // Puts a single byte into the stream
-        void Put(uint8_t value)
+        void put(uint8_t value)
         {
             buffer_.push_back(value);
         }
 
         // Puts an arbitrary span into the stream
         template <typename T>
-        void Put(gsl::span<T> data)
+        void put(gsl::span<T> data)
         {
             gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(data.data()), data.length_bytes()};
             buffer_.insert(buffer_.end(), d.begin(), d.end());
         }
 
         // Puts a span of bytes into the stream
-        void Put(gsl::span<uint8_t> data)
+        void put(gsl::span<uint8_t> data)
         {
             [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
 
         // Puts a std::string into the stream
-        void Put(std::string const& string)
+        void put(std::string const& string)
         {
             gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(string.data()),
                                        reinterpret_cast<uint8_t const*>(string.data() + string.size())};
@@ -85,14 +85,14 @@ namespace Keycap::Root::Network
         }
 
         // Appends a MemoryStream into the stream
-        void Put(MemoryStream const& stream)
+        void put(memory_stream const& stream)
         {
             [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), stream.buffer_.begin(), stream.buffer_.end());
         }
 
         // Overrides the given value at the given position
         template <typename T>
-        void Override(T const& value, size_t position)
+        void override(T const& value, size_t position)
         {
             if ((position + sizeof(T)) > buffer_.size())
                 throw std::exception("Tried to override past the stream's end!");
@@ -102,7 +102,7 @@ namespace Keycap::Root::Network
 
         // Gets a T from the stream
         template <typename T>
-        T Get()
+        T get()
         {
             if constexpr (has_decode_method<T>::value)
             {
@@ -110,11 +110,11 @@ namespace Keycap::Root::Network
             }
             else
             {
-                if (sizeof(T) + readPosition_ > buffer_.size())
+                if (sizeof(T) + read_position_ > buffer_.size())
                     throw std::exception("Attempted to read past buffer end!");
 
-                T value = *reinterpret_cast<T const*>(buffer_.data() + readPosition_);
-                readPosition_ += sizeof(T);
+                T value = *reinterpret_cast<T const*>(buffer_.data() + read_position_);
+                read_position_ += sizeof(T);
 
                 return value;
             }
@@ -122,66 +122,66 @@ namespace Keycap::Root::Network
 
         // Gets an array from the stream
         template <typename T, size_t NumElements>
-        std::array<T, NumElements> Get()
+        std::array<T, NumElements> get()
         {
             std::array<T, NumElements> array;
 
             for (int i = 0; i < NumElements; ++i)
             {
                 if constexpr (std::is_same_v<T, std::string>)
-                    array[i] = GetString();
+                    array[i] = get_string();
                 else
-                    array[i] = Get<T>();
+                    array[i] = get<T>();
             }
 
             return array;
         }
 
         // Returns a std::string with the given size from the stream
-        std::string GetString(size_t size)
+        std::string get_string(size_t size)
         {
-            if (size + readPosition_ > buffer_.size())
+            if (size + read_position_ > buffer_.size())
                 throw std::exception("Attempted to read past buffer end!");
 
-            std::string string = {buffer_.begin() + readPosition_, buffer_.begin() + readPosition_ + size};
-            readPosition_ += size;
+            std::string string = {buffer_.begin() + read_position_, buffer_.begin() + read_position_ + size};
+            read_position_ += size;
             return string;
         }
 
         // Peeks for the given T at the given position in the stream
         template <typename T>
-        T Peek(size_t where = 0) const
+        T peek(size_t where = 0) const
         {
-            if (sizeof(T) + where + readPosition_ > buffer_.size())
+            if (sizeof(T) + where + read_position_ > buffer_.size())
                 throw std::exception("Attempted to read past buffer end!");
 
-            return *reinterpret_cast<T const*>(buffer_.data() + where + readPosition_);
+            return *reinterpret_cast<T const*>(buffer_.data() + where + read_position_);
         }
 
         // Returns the number of available bytes in the stream
-        auto Size() const
+        auto size() const
         {
-            return buffer_.size() - readPosition_;
+            return buffer_.size() - read_position_;
         }
 
         // Removes all elements from the buffer up to the stream's current read position
-        void Shrink()
+        void shrink()
         {
-            if (readPosition_ == 0)
+            if (read_position_ == 0)
                 return;
 
-            [[maybe_unused]] auto end = buffer_.erase(buffer_.begin(), buffer_.begin() + readPosition_);
-            readPosition_ = 0;
+            [[maybe_unused]] auto end = buffer_.erase(buffer_.begin(), buffer_.begin() + read_position_);
+            read_position_ = 0;
         }
 
         // Returns the data stored in the stream's buffer
-        auto Data()
+        auto data()
         {
             return buffer_.data();
         }
 
       private:
-        size_t readPosition_ = 0;
+        size_t read_position_ = 0;
         std::vector<uint8_t> buffer_;
 
         template <typename T>

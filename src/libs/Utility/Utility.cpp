@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <Keycap/Root/Utility/Utility.hpp>
+#include <keycap/root/utility/utility.hpp>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/spdlog.h>
 
@@ -25,12 +25,11 @@ limitations under the License.
 
 #include <Windows.h>
 
-#undef SetConsoleTitle
 #endif
 
-namespace Keycap::Root::Utility
+namespace keycap::root::utility
 {
-    void SetConsoleTitle(std::string const& title) noexcept
+    void set_console_title(std::string const& title) noexcept
     {
 #ifdef _WIN32
         SetConsoleTitleA(title.c_str());
@@ -39,7 +38,7 @@ namespace Keycap::Root::Utility
 #endif
     }
 
-    std::shared_ptr<spdlog::logger> GetSafeLogger(std::string const& name)
+    std::shared_ptr<spdlog::logger> get_safe_logger(std::string const& name)
     {
         auto logger = spdlog::get(name);
         if (!logger)

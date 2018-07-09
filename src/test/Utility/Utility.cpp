@@ -14,16 +14,16 @@
    limitations under the License.
 */
 
-#include <Keycap/Root/Utility/Utility.hpp>
+#include <keycap/root/utility/utility.hpp>
 #include <rapidcheck/catch.h>
 #include <spdlog/spdlog.h>
 
 TEST_CASE("Utility")
 {
-    namespace util = Keycap::Root::Utility;
+    namespace util = keycap::root::utility;
 
-    rc::prop("GetSafeLogger should never return nullptr", [](std::string const& name) {
-        auto logger = util::GetSafeLogger(name);
+    rc::prop("get_safe_logger should never return nullptr", [](std::string const& name) {
+        auto logger = util::get_safe_logger(name);
         REQUIRE(logger != nullptr);
     });
 }

@@ -16,38 +16,38 @@
 
 #pragma once
 
-#include "LinkStatus.hpp"
+#include "link_status.hpp"
 
 #include <boost/uuid/uuid.hpp>
 
 #include <memory>
 #include <vector>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
     template <typename MessageHandler>
-    class DataRouter;
+    class data_router;
 
-    class ServiceBase;
+    class service_base;
 
     // This base class is used for handling incoming network transmissions
-    class MessageHandler
+    class message_handler
     {
       public:
-        MessageHandler() noexcept;
-        MessageHandler(MessageHandler const& rhs) noexcept;
-        virtual ~MessageHandler();
+        message_handler() noexcept;
+        message_handler(message_handler const& rhs) noexcept;
+        virtual ~message_handler();
 
-        bool operator==(MessageHandler const& rhs) noexcept;
+        bool operator==(message_handler const& rhs) noexcept;
 
         // Will get called whenever we've received data.
         // Return type is currently not used.
-        virtual bool OnData(ServiceBase& service, std::vector<uint8_t> const& data) = 0;
+        virtual bool on_data(service_base& service, std::vector<uint8_t> const& data) = 0;
 
         // Will get called whenever a connection has been established or after it got disconnected.
         // Will be called before the server socket starts listening for data.
         // Return type is currently not used.
-        virtual bool OnLink(ServiceBase& service, LinkStatus status) = 0;
+        virtual bool on_link(service_base& service, link_status status) = 0;
 
       protected:
         boost::uuids::uuid uuid_;

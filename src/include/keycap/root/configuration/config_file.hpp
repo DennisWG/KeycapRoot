@@ -22,14 +22,14 @@
 #include <fstream>
 #include <string>
 
-namespace Keycap::Root::Configuration
+namespace keycap::root::configuration
 {
     // Manages configuration data stored on file
-    class ConfigFile
+    class config_file
     {
       public:
         // Opens and parsed the file at the given filePath
-        ConfigFile(std::experimental::filesystem::path const& filePath)
+        config_file(std::experimental::filesystem::path const& filePath)
         {
             std::ifstream file(filePath.string());
             file >> json_;
@@ -38,7 +38,7 @@ namespace Keycap::Root::Configuration
         // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do
         // so
         template <typename ReturnType>
-        ReturnType Get(std::string const& category, std::string const& value) const
+        ReturnType get(std::string const& category, std::string const& value) const
         {
             auto itr = json_.find(category);
             if (itr != json_.end())
@@ -46,14 +46,14 @@ namespace Keycap::Root::Configuration
                 if (!itr->is_object())
                     throw std::exception{(category + " does not contain any items!").c_str()};
 
-                auto valueItr = itr->find(value);
-                if (valueItr == itr->end())
+                auto value_itr = itr->find(value);
+                if (value_itr == itr->end())
                 {
                     auto msg = ("Category " + category + " does not contain item " + value).c_str();
                     throw std::exception{msg};
                 }
 
-                return valueItr->get<ReturnType>();
+                return value_itr->get<ReturnType>();
             }
             else
             {
@@ -68,7 +68,7 @@ namespace Keycap::Root::Configuration
         // Attempts to retreive the value of the given category with the given name. Returns the given default if it
         // fails to do so
         template <typename ReturnType>
-        ReturnType GetOrDefault(std::string const& category, std::string const& value, ReturnType default) const
+        ReturnType get_or_default(std::string const& category, std::string const& value, ReturnType default) const
         {
             auto itr = json_.find(category);
             if (itr != json_.end())
@@ -76,11 +76,11 @@ namespace Keycap::Root::Configuration
                 if (!itr->is_object())
                     return default;
 
-                auto valueItr = itr->find(value);
-                if (valueItr == itr->end())
+                auto value_itr = itr->find(value);
+                if (value_itr == itr->end())
                     return default;
 
-                return valueItr->get<ReturnType>();
+                return value_itr->get<ReturnType>();
             }
             else
             {

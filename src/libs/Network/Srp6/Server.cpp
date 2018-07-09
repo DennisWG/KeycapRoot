@@ -14,28 +14,28 @@
     limitations under the License.
 */
 
-#include <Keycap/Root/Algorithms/Monads.hpp>
-#include <Keycap/Root/Network/Srp6/Server.hpp>
-#include <Keycap/Root/Network/Srp6/Utility.hpp>
+#include <keycap/root/algorithms/monads.hpp>
+#include <keycap/root/network/srp6/server.hpp>
+#include <keycap/root/network/srp6/utility.hpp>
 
 #include <botan/numthry.h>
 #include <botan/sha160.h>
 
-namespace srp6 = Keycap::Root::Network::Srp6;
+namespace srp6 = keycap::root::network::srp6;
 
 // Scrambles A and B with the given length depending on the given Compliance mode.
-auto Scramble(Botan::BigInt const& A, Botan::BigInt const& B, size_t length, srp6::Compliance compliance)
+auto Scramble(Botan::BigInt const& A, Botan::BigInt const& B, size_t length, srp6::compliance compliance)
 {
     Botan::SHA_1 sha1;
 
-    if (compliance == srp6::Compliance::RFC5054)
+    if (compliance == srp6::compliance::RFC5054)
     {
         sha1.update(Botan::BigInt::encode_1363(A, length));
         sha1.update(Botan::BigInt::encode_1363(B, length));
 
         return Botan::BigInt::decode(sha1.final());
     }
-    else if (compliance == srp6::Compliance::Wow)
+    else if (compliance == srp6::compliance::Wow)
     {
         sha1.update(srp6::encode_1363_flip(A, length));
         sha1.update(srp6::encode_1363_flip(B, length));
@@ -49,7 +49,7 @@ auto Scramble(Botan::BigInt const& A, Botan::BigInt const& B, size_t length, srp
 /* Refer to https://www.ietf.org/rfc/rfc2945.txt section "3.1.  Interleaved SHA" */
 auto ShaInterleaved(std::vector<uint8_t>& S)
 {
-    using namespace Keycap::Root;
+    using namespace keycap::root;
 
     // To compute this function, remove all leading zero bytes from the input.
     auto begin = std::find_if(S.begin(), S.end(), [](auto&& v) { return v != 0; });
@@ -83,16 +83,17 @@ auto ShaInterleaved(std::vector<uint8_t>& S)
     return result;
 }
 
-namespace Keycap::Root::Network::Srp6
+namespace keycap::root::network::srp6
 {
-    Server::Server(GroupParameter groupParameter, Botan::BigInt const& v, Compliance compliance, Botan::BigInt const& b)
-      : Server(Botan::BigInt{groupParameter.N}, Botan::BigInt{groupParameter.g}, v, b, compliance)
+    server::server(
+        group_parameter groupParameter, Botan::BigInt const& v, compliance compliance, Botan::BigInt const& b)
+      : server(Botan::BigInt{groupParameter.N}, Botan::BigInt{groupParameter.g}, v, b, compliance)
     {
     }
 
-    Server::Server(
+    server::server(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& v, Botan::BigInt const& b,
-        Compliance compliance)
+        compliance compliance)
       : N_{N}
       , g_{g}
       , v_{v}
@@ -105,12 +106,12 @@ namespace Keycap::Root::Network::Srp6
         B_ = (k * v_ + Botan::power_mod(g_, b_, N_)) % N_;
     }
 
-    Botan::BigInt const& Server::PublicEphemeralValue() const noexcept
+    Botan::BigInt const& server::public_ephemeral_value() const noexcept
     {
         return B_;
     }
 
-    std::vector<uint8_t> Server::SessionKey(Botan::BigInt const& A)
+    std::vector<uint8_t> server::session_key(Botan::BigInt const& A)
     {
         if ((A % N_) == 0 || A <= 0)
             throw std::exception("Ephemeral value of A must not be 0 (mod N) and not be <= 0!");
@@ -122,17 +123,17 @@ namespace Keycap::Root::Network::Srp6
         //  S = (Av^u) ^ b
         Botan::BigInt S = Botan::power_mod(A * Botan::power_mod(v_, u, N_), b_, N_);
 
-        if (compliance_ == Compliance::Wow)
+        if (compliance_ == compliance::Wow)
             return ShaInterleaved(encode_flip(S));
 
         return Botan::BigInt::encode(S);
     }
 
-    Botan::BigInt Server::Proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const
+    Botan::BigInt server::proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const
     {
         // M = H(A, M, K)
         Botan::SHA_1 sha1;
-        
+
         sha1.update(encode_flip(A_));
         sha1.update(encode_flip(clientProof));
         sha1.update(sessionKey);
@@ -140,22 +141,22 @@ namespace Keycap::Root::Network::Srp6
         return decode_flip(sha1.final());
     }
 
-    Compliance Server::ComplianceMode() const noexcept
+    compliance server::compliance_mode() const noexcept
     {
         return compliance_;
     }
 
-    Botan::BigInt const& Server::Prime() const noexcept
+    Botan::BigInt const& server::prime() const noexcept
     {
         return N_;
     }
 
-    Botan::BigInt const& Server::Generator() const noexcept
+    Botan::BigInt const& server::generator() const noexcept
     {
         return g_;
     }
 
-    Botan::BigInt const& Server::Verifier() const noexcept
+    Botan::BigInt const& server::verifier() const noexcept
     {
         return v_;
     }

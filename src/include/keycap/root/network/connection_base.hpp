@@ -22,30 +22,32 @@ limitations under the License.
 #include <memory>
 #include <vector>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
-    class ConnectionBase : public std::enable_shared_from_this<ConnectionBase>
+    class connection_base : public std::enable_shared_from_this<connection_base>
     {
       public:
-        ConnectionBase(boost::asio::io_service& ioService)
-          : ioService_{ioService}
+        connection_base(boost::asio::io_service& ioService)
+          : io_service_{ioService}
           , socket_{ioService}
-          , writeStrand_{ioService}
+          , write_strand_{ioService}
         {
         }
 
-        virtual ~ConnectionBase() {}
+        virtual ~connection_base()
+        {
+        }
 
-        virtual void Send(std::vector<std::uint8_t> const& data) = 0;
+        virtual void send(std::vector<std::uint8_t> const& data) = 0;
 
       protected:
-        virtual void SendData() = 0;
-        virtual void SendDataDone(boost::system::error_code const& error) = 0;
+        virtual void send_data() = 0;
+        virtual void send_data_done(boost::system::error_code const& error) = 0;
 
-        boost::asio::io_service& ioService_;
+        boost::asio::io_service& io_service_;
         boost::asio::ip::tcp::socket socket_;
-        boost::asio::io_service::strand writeStrand_;
-        boost::asio::streambuf inPacket_;
-        std::deque<std::vector<std::uint8_t>> sendPacketQueue_;
+        boost::asio::io_service::strand write_strand_;
+        boost::asio::streambuf in_packet_;
+        std::deque<std::vector<std::uint8_t>> send_packet_queue_;
     };
 }

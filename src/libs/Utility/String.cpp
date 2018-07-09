@@ -14,15 +14,15 @@
     limitations under the License.
 */
 
-#include <Keycap/Root/Utility/String.hpp>
+#include <keycap/root/utility/string.hpp>
 
 #include <algorithm>
 #include <cctype>
 #include <sstream>
 
-namespace Keycap::Root::Utility
+namespace keycap::root::utility
 {
-    std::vector<std::string> Explode(std::string const& str, char delim)
+    std::vector<std::string> explode(std::string const& str, char delim)
     {
         std::vector<std::string> result;
         std::istringstream ss(str);
@@ -33,14 +33,14 @@ namespace Keycap::Root::Utility
         return result;
     }
 
-    std::string ToUpper(std::string s)
+    std::string to_upper(std::string s)
     {
         [[maybe_unused]] auto end
             = std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::toupper(c); });
         return s;
     }
 
-    std::string ToLower(std::string s)
+    std::string to_lower(std::string s)
     {
         [[maybe_unused]] auto end
             = std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::tolower(c); });

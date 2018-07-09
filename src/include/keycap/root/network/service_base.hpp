@@ -18,11 +18,11 @@ limitations under the License.
 
 #include <boost/asio.hpp>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
-    class ServiceBase
+    class service_base
     {
       public:
-        virtual boost::asio::io_service& IoService() = 0;
+        virtual boost::asio::io_service& io_service() = 0;
     };
 }

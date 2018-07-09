@@ -18,7 +18,7 @@
 
 #include <string>
 
-namespace Keycap::Root::Version
+namespace keycap::root::version
 {
     extern std::string const GIT_HASH;
     extern std::string const GIT_BRANCH;

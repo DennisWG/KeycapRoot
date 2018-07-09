@@ -14,28 +14,28 @@
     limitations under the License.
 */
 
-#include <Keycap/Root/Network/DataRouter.hpp>
-#include <Keycap/Root/Network/MessageHandler.hpp>
+#include <keycap/root/network/data_router.hpp>
+#include <keycap/root/network/message_handler.hpp>
 
 #include <boost/uuid/random_generator.hpp>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
-    MessageHandler::MessageHandler() noexcept
+    message_handler::message_handler() noexcept
       : uuid_{boost::uuids::random_generator{}()}
     {
     }
 
-    MessageHandler::MessageHandler(MessageHandler const&) noexcept
+    message_handler::message_handler(message_handler const&) noexcept
     {
         uuid_ = boost::uuids::random_generator{}();
     }
 
-    MessageHandler::~MessageHandler()
+    message_handler::~message_handler()
     {
     }
 
-    bool MessageHandler::operator==(MessageHandler const& rhs) noexcept
+    bool message_handler::operator==(message_handler const& rhs) noexcept
     {
         return uuid_ == rhs.uuid_;
     }

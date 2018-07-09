@@ -16,29 +16,14 @@
 
 #pragma once
 
-#include <string>
-
-namespace Keycap::Root::Network::Srp6
+namespace keycap::root::network
 {
-    // Group Parameters taken from https://tools.ietf.org/html/rfc5054#page-16
-
-    struct GroupParameter
+    // Defines the status of a link between two services
+    enum class link_status
     {
-        std::string N;
-        uint64_t g;
+        // There is currently no link established
+        Down,
+        // A link has been established
+        Up,
     };
-
-    enum class GroupParameters
-    {
-        _256,
-        _1024,
-        _1536,
-        _2048,
-        _3072,
-        _4096,
-        _6144,
-        _8192,
-    };
-
-    GroupParameter GetParameters(GroupParameters parameters);
 }

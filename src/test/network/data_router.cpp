@@ -14,26 +14,26 @@
     limitations under the License.
 */
 
-#include <Keycap/Root/Network/DataRouter.hpp>
-#include <Keycap/Root/Network/MessageHandler.hpp>
-#include <Keycap/Root/Network/Service.hpp>
+#include <keycap/root/network/data_router.hpp>
+#include <keycap/root/network/message_handler.hpp>
+#include <keycap/root/network/service.hpp>
 
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
 #include <rapidcheck/catch.h>
 
-namespace net = Keycap::Root::Network;
+namespace net = keycap::root::network;
 
 class TestHandler;
 
-struct DummyService : public net::ServiceBase
+struct DummyService : public net::service_base
 {
     DummyService()
     {
     }
 
-    boost::asio::io_service& IoService() override
+    boost::asio::io_service& io_service() override
     {
         return ioService_;
     }
@@ -46,22 +46,22 @@ struct DummyConnection
 {
 };
 
-class TestHandler : public net::MessageHandler
+class TestHandler : public net::message_handler
 {
   public:
-    explicit TestHandler(net::DataRouter<TestHandler>& router)
+    explicit TestHandler(net::data_router<TestHandler>& router)
       : router_{router}
     {
-        router_.ConfigureInbound(this);
+        router_.configure_inbound(this);
     }
 
-    bool OnData(net::ServiceBase& service, std::vector<uint8_t> const& data) override
+    bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
     {
         OnMessageCalled = true;
         return true;
     }
 
-    bool OnLink(net::ServiceBase& service, net::LinkStatus status) override
+    bool on_link(net::service_base& service, net::link_status status) override
     {
         OnLinkCalled = true;
         return true;
@@ -71,43 +71,43 @@ class TestHandler : public net::MessageHandler
     bool OnLinkCalled = false;
 
   private:
-    net::DataRouter<TestHandler>& router_;
+    net::data_router<TestHandler>& router_;
 };
 
-TEST_CASE("DataRouter")
+TEST_CASE("data_router")
 {
     DummyService service;
-    net::DataRouter<TestHandler> router;
+    net::data_router<TestHandler> router;
     TestHandler handler{router};
     TestHandler handler2{router};
     std::vector<uint8_t> data;
 
-    SECTION("DataRouter::RouteInbound() must route messages to properly configured MessageHandlers")
+    SECTION("data_router::route_inbound() must route messages to properly configured MessageHandlers")
     {
-        router.RouteInbound(service, data);
+        router.route_inbound(service, data);
         REQUIRE(handler.OnMessageCalled);
         REQUIRE(handler2.OnMessageCalled);
     }
 
-    SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route data to it")
+    SECTION("data_router::remove_handler() must remove the given handler and no longer route data to it")
     {
-        router.RemoveHandler(&handler);
-        router.RouteInbound(service, data);
+        router.remove_handler(&handler);
+        router.route_inbound(service, data);
         REQUIRE_FALSE(handler.OnMessageCalled);
         REQUIRE(handler2.OnMessageCalled);
     }
 
-    SECTION("DataRouter::RouteUpdatedLinkStatus() must route status to all registered MessageHandlers")
+    SECTION("data_router::route_updated_link_status() must route status to all registered MessageHandlers")
     {
-        router.RouteUpdatedLinkStatus(service, net::LinkStatus::Up);
+        router.route_updated_link_status(service, net::link_status::Up);
         REQUIRE(handler.OnLinkCalled);
         REQUIRE(handler2.OnLinkCalled);
     }
 
-    SECTION("DataRouter::RemoveHandler() must remove the given handler and no longer route link updates to it")
+    SECTION("data_router::remove_handler() must remove the given handler and no longer route link updates to it")
     {
-        router.RemoveHandler(&handler);
-        router.RouteUpdatedLinkStatus(service, net::LinkStatus::Down);
+        router.remove_handler(&handler);
+        router.route_updated_link_status(service, net::link_status::Down);
         REQUIRE_FALSE(handler.OnLinkCalled);
         REQUIRE(handler2.OnLinkCalled);
     }

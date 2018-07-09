@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include <Keycap/Root/Utility/Version.hpp>
+#include <keycap/root/utility/version.hpp>
 
-namespace Keycap::Root::Version
+namespace keycap::root::version
 {
     const std::string GIT_HASH = "@GIT_SHA1@";
     const std::string GIT_BRANCH = "@GIT_BRANCH@";

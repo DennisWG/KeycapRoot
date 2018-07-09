@@ -16,107 +16,106 @@ limitations under the License.
 
 #pragma once
 
-#include "../Utility/Utility.hpp"
-#include "ConnectionBase.hpp"
-#include "DataRouter.hpp"
-#include "ServiceBase.hpp"
+#include "../utility/utility.hpp"
+#include "connection_base.hpp"
+#include "data_router.hpp"
+#include "service_base.hpp"
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
-    class ServiceBase;
+    class service_base;
 
     template <typename MessageHandler>
-    class Connection : public ConnectionBase
+    class connection : public connection_base
     {
       public:
-        Connection(ServiceBase& service)
-          : ConnectionBase{service.IoService()}
+        connection(service_base& service)
+          : connection_base{service.io_service()}
           , service_{service}
         {
         }
 
         // Returns the socket used by the connection handler
-        boost::asio::ip::tcp::socket& Socket()
+        boost::asio::ip::tcp::socket& socket()
         {
             return socket_;
         }
 
         // The connection handler will start to asynchronously listen for incoming data
-        void Listen()
+        void listen()
         {
-            ReadPacket();
+            read_packet();
         }
 
         // Sends the given data asynchronously
-        void Send(std::vector<std::uint8_t> const& data)
+        void send(std::vector<std::uint8_t> const& data) override
         {
-            ioService_.post(writeStrand_.wrap([ self = Utility::shared_from_that(this), data ]() {
-                bool isWriteInProgress = !self->sendPacketQueue_.empty();
-                self->sendPacketQueue_.push_back(std::move(data));
+            io_service_.post(write_strand_.wrap([ self = utility::shared_from_that(this), data ]() {
+                bool isWriteInProgress = !self->send_packet_queue_.empty();
+                self->send_packet_queue_.push_back(std::move(data));
 
                 if (!isWriteInProgress)
-                    self->SendData();
+                    self->send_data();
             }));
         }
 
-        DataRouter<MessageHandler>& GetRouter()
+        data_router<MessageHandler>& get_router()
         {
             return router_;
         }
 
-        // Gets called whenever data has been received
-        // virtual bool ReadDone(std::vector<std::uint8_t> const& data) = 0;
-
       private:
-        void ReadPacket()
+        void read_packet()
         {
-            auto buffer = inPacket_.prepare(512);
+            auto buffer = in_packet_.prepare(512);
             socket_.async_read_some(
                 buffer, [self
-                         = Utility::shared_from_that(this)](boost::system::error_code const& error, size_t bytesRead) {
-                    self->inPacket_.commit(bytesRead);
-                    self->ReadPacketDone(error, bytesRead);
+                         = utility::shared_from_that(this)](boost::system::error_code const& error, size_t bytesRead) {
+                    self->in_packet_.commit(bytesRead);
+                    self->read_packet_done(error, bytesRead);
                 });
         }
 
-        void ReadPacketDone(boost::system::error_code const& error, size_t numBytesRead)
+        void read_packet_done(boost::system::error_code const& error, size_t numBytesRead)
         {
             if (error)
             {
-                router_.RouteUpdatedLinkStatus(service_, LinkStatus::Down);
+                router_.route_updated_link_status(service_, link_status::Down);
                 return;
             }
 
             std::vector<uint8_t> buffer;
             buffer.resize(numBytesRead);
 
-            inPacket_.sgetn(reinterpret_cast<char*>(buffer.data()), numBytesRead);
+            in_packet_.sgetn(reinterpret_cast<char*>(buffer.data()), numBytesRead);
 
-            if(router_.RouteInbound(service_, buffer))
-                ReadPacket();
+            if (router_.route_inbound(service_, buffer))
+                read_packet();
             else
-                router_.RouteUpdatedLinkStatus(service_, LinkStatus::Down);
+                router_.route_updated_link_status(service_, link_status::Down);
         }
 
-        void SendData() override
+        void send_data() override
         {
-            boost::asio::async_write(socket_, boost::asio::buffer(sendPacketQueue_.front()), [
-                self = Utility::shared_from_that(this), fn = &Connection::SendDataDone
-            ](boost::system::error_code const& error, size_t) { self->SendDataDone(error); });
+            boost::asio::async_write(
+                socket_, boost::asio::buffer(send_packet_queue_.front()),
+                [self = utility::shared_from_that(this)](boost::system::error_code const& error, size_t) {
+                    self->send_data_done(error);
+                });
         }
 
-        void SendDataDone(boost::system::error_code const& error) override
+        void send_data_done(boost::system::error_code const& error) override
         {
             if (error)
                 return;
 
-            sendPacketQueue_.pop_front();
-            if (!sendPacketQueue_.empty())
-                SendData();
+            send_packet_queue_.pop_front();
+            if (!send_packet_queue_.empty())
+                send_data();
         }
 
       protected:
-        DataRouter<MessageHandler> router_;
-        ServiceBase& service_;
+        data_router<MessageHandler> router_;
+        service_base& service_;
     };
 }

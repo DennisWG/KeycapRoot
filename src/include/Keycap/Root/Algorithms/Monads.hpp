@@ -16,7 +16,7 @@
 
 #pragma once
 
-namespace Keycap::Root
+namespace keycap::root
 {
     template <typename T>
     inline auto array_index(T const& element, T const& begin) noexcept

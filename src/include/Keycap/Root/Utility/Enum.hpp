@@ -24,7 +24,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace Keycap::Root::Utility::impl
+namespace keycap::root::utility::impl
 {
     using nameValueMap_t = std::unordered_map<std::string, int32_t>;
     using valueNameMap_t = std::unordered_map<int32_t, std::string>;
@@ -200,8 +200,8 @@ namespace Keycap::Root::Utility::impl
 #define keycap_enum(Type, alignment, ...) \
 namespace impl \
 { \
-    static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::Keycap::Root::Utility::impl::makeNameValueMap(#__VA_ARGS__); \
-    static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::Keycap::Root::Utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
+    static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::keycap::root::utility::impl::makeNameValueMap(#__VA_ARGS__); \
+    static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::keycap::root::utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
 } \
 class Type final { \
 public: \
@@ -212,10 +212,10 @@ public: \
     Type& operator=(Enum value) { value_ = value; return *this; } \
     /*bool operator==(Type const& rhs) { return value_ == rhs.value_; }*/ \
     /* bool operator!=(Type const& rhs) { return value_ != rhs.value_; } */\
-    Enum Get() const { return value_; } \
-    void Set(Enum value) { value_ = value; } \
-    std::string ToString() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
-    static std::vector<Type> const& ToVector() { static auto vector = ::Keycap::Root::Utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
+    Enum get() const { return value_; } \
+    void set(Enum value) { value_ = value; } \
+    std::string to_string() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
+    static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
     operator alignment() const \
     { \
         return static_cast<alignment>(value_); \
@@ -225,15 +225,15 @@ private: \
 }; \
 inline std::ostream& operator << (std::ostream& os, Type const& obj) \
 { \
-    os << obj.ToString(); \
+    os << obj.to_string(); \
     return os; \
 }
 
 #define keycap_enum_flags(Type, alignment, ...) \
 namespace impl \
 { \
-    static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::Keycap::Root::Utility::impl::makeNameValueMap(#__VA_ARGS__); \
-    static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::Keycap::Root::Utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
+    static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::keycap::root::utility::impl::makeNameValueMap(#__VA_ARGS__); \
+    static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::keycap::root::utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
 } \
 class Type final { \
 public: \
@@ -244,21 +244,21 @@ public: \
     Type& operator=(Enum value) { value_ = value; return *this; } \
     bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
     bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
-    void SetFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
-    void SetAllFlags() { value_ = static_cast<Enum>(-1); } \
-    void ClearFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
-    void ClearAllFlags() { value_ = static_cast<Enum>(0); } \
-    void ToggleFlag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) ^ which); } \
-    bool TestFlag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
-    Enum Get() const { return value_; } \
-    void Set(Enum value) { value_ = value; } \
-    std::string ToString() const { return ::impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
-    static std::vector<Type> const& ToVector() { static auto vector = ::Keycap::Root::Utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
+    void set_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
+    void set_all_flags() { value_ = static_cast<Enum>(-1); } \
+    void clear_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
+    void clear_all_flags() { value_ = static_cast<Enum>(0); } \
+    void toggle_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) ^ which); } \
+    bool test_flag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
+    Enum get() const { return value_; } \
+    void set(Enum value) { value_ = value; } \
+    std::string to_string() const { return ::impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
+    static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
 private: \
     Enum value_; \
 }; \
 inline std::ostream& operator << (std::ostream& os, Type const& obj) \
 { \
-    os << obj.ToString(); \
+    os << obj.to_string(); \
 }
 // clang-format on

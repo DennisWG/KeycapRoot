@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "../Utility/Enum.hpp"
-#include "ServiceBase.hpp"
+#include "../utility/enum.hpp"
+#include "service_base.hpp"
 
 #include <boost/asio.hpp>
 
@@ -25,11 +25,11 @@
 #include <string>
 #include <thread>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
     // clang-format off
     // The mode under which the Service will operate
-    keycap_enum(ServiceMode, int,
+    keycap_enum(service_mode, int,
         // The Service will act as a Client; connecting to listening servers
         Client,
         // The Service will act as a Server; listening for incoming clients
@@ -39,23 +39,24 @@ namespace Keycap::Root::Network
 
     // Handles network communication with other services
     template <typename Connection>
-    class Service : public ServiceBase
+    class service : public service_base
     {
+      protected:
         using SharedHandler = std::shared_ptr<Connection>;
 
       public:
-        Service(ServiceMode mode, int threadCount = 1)
-          : threadCount_{threadCount}
-          , acceptor_{ioService_}
+        service(service_mode mode, int threadCount = 1)
+          : thread_count_{threadCount}
+          , acceptor_{io_service_}
           , mode_{mode}
         {
         }
 
-        ~Service()
+        ~service()
         {
-            Stop();
+            stop();
 
-            for (auto& thread : threadPool_)
+            for (auto& thread : thread_pool_)
             {
                 if (thread.joinable())
                     thread.join();
@@ -63,33 +64,42 @@ namespace Keycap::Root::Network
         }
 
         // Starts listening for network communications on or connects to the given host and port
-        void Start(std::string const& host, uint16_t port)
+        void start(std::string const& host, uint16_t port)
         {
-            if (mode_ == ServiceMode::Server)
-                BeginListen(host, port);
-            else if (mode_ == ServiceMode::Client)
-                ConnectTo(host, port);
+            if (mode_ == service_mode::Server)
+                begin_listen(host, port);
+            else if (mode_ == service_mode::Client)
+                connect_to(host, port);
         }
 
         // Stops listening for new connections. Any asynchronous accept operations will be cancelled immediately
-        void Stop()
+        void stop()
         {
             acceptor_.close();
-            ioService_.stop();
+            io_service_.stop();
         }
 
-        boost::asio::io_service& IoService() override
+        boost::asio::io_service& io_service() override
         {
-            return ioService_;
+            return io_service_;
+        }
+
+        // Will be called when a new connection was established.
+        // This gets called before the link status has been routed and
+        // before the connection has started listening for data.
+        // May return false to disconnect
+        virtual bool on_new_connection(SharedHandler handler)
+        {
+            return true;
         }
 
       private:
-        void BeginListen(std::string const& host, uint16_t port)
+        void begin_listen(std::string const& host, uint16_t port)
         {
             auto handler = std::make_shared<Connection>(*this);
-            handler->GetRouter().ConfigureOutbound(handler);
+            handler->get_router().configure_outbound(handler);
 
-            boost::asio::ip::tcp::resolver resolver{ioService_};
+            boost::asio::ip::tcp::resolver resolver{io_service_};
             auto ep = resolver.resolve({host, ""})->endpoint();
             boost::asio::ip::tcp::endpoint endpoint{ep.address(), port};
 
@@ -98,58 +108,61 @@ namespace Keycap::Root::Network
             acceptor_.bind(endpoint);
             acceptor_.listen();
 
-            acceptor_.async_accept(handler->Socket(), [=](auto errorCode) { HandleNewConnection(handler, errorCode); });
+            acceptor_.async_accept(
+                handler->socket(), [=](auto errorCode) { handle_new_connection(handler, errorCode); });
 
-            for (int i = 0; i < threadCount_; ++i)
-                threadPool_.emplace_back([=]
-            {
-                try
-                {
-                    ioService_.run();
-                }
-                catch (std::exception const& ex)
-                {
-                    ioService_.run();
-                }
-            });
+            for (int i = 0; i < thread_count_; ++i)
+                thread_pool_.emplace_back([=] {
+                    try
+                    {
+                        io_service_.run();
+                    }
+                    catch (std::exception const&)
+                    {
+                        io_service_.run();
+                    }
+                });
         }
 
-        void ConnectTo(std::string const& host, uint16_t port)
+        void connect_to(std::string const& host, uint16_t port)
         {
-            boost::asio::ip::tcp::resolver resolver{ioService_};
+            boost::asio::ip::tcp::resolver resolver{io_service_};
             auto ep = resolver.resolve({host, ""})->endpoint();
             ep.port(port);
 
             auto handler = std::make_shared<Connection>(*this);
-            handler->GetRouter().ConfigureOutbound(handler);
+            handler->get_router().configure_outbound(handler);
 
             boost::system::error_code error;
-            handler->Socket().async_connect(ep, [=](auto errorCode) { HandleNewConnection(handler, errorCode); });
+            handler->socket().async_connect(ep, [=](auto errorCode) { handle_new_connection(handler, errorCode); });
 
-            for (int i = 0; i < threadCount_; ++i)
-                threadPool_.emplace_back([=] { ioService_.run(); });
+            for (int i = 0; i < thread_count_; ++i)
+                thread_pool_.emplace_back([=] { io_service_.run(); });
         }
 
-        void HandleNewConnection(SharedHandler handler, boost::system::error_code const& error)
+        void handle_new_connection(SharedHandler handler, boost::system::error_code const& error)
         {
             if (error)
                 return;
 
-            handler->GetRouter().RouteUpdatedLinkStatus(*this, LinkStatus::Up);
-            handler->Listen();
+            if (!on_new_connection(handler))
+                return;
 
-            if (mode_ == ServiceMode::Server)
+            handler->get_router().route_updated_link_status(*this, link_status::Up);
+            handler->listen();
+
+            if (mode_ == service_mode::Server)
             {
                 auto newHandler = std::make_shared<Connection>(*this);
                 acceptor_.async_accept(
-                    newHandler->Socket(), [=](auto errorCode) { HandleNewConnection(newHandler, errorCode); });
+                    newHandler->socket(), [=](auto errorCode) { handle_new_connection(newHandler, errorCode); });
             }
         }
 
-        int threadCount_ = 1;
-        std::vector<std::thread> threadPool_;
-        boost::asio::io_service ioService_;
+        int thread_count_ = 1;
+        std::vector<std::thread> thread_pool_;
+        boost::asio::io_service io_service_;
         boost::asio::ip::tcp::acceptor acceptor_;
-        ServiceMode mode_;
+        service_mode mode_;
     };
 }

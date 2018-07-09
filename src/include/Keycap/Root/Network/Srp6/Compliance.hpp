@@ -16,9 +16,9 @@
 
 #pragma once
 
-namespace Keycap::Root::Network::Srp6
+namespace keycap::root::network::srp6
 {
-    enum class Compliance
+    enum class compliance
     {
         Wow,
         RFC5054,

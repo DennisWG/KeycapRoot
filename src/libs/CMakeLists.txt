@@ -14,12 +14,12 @@
 
 add_library(keycaproot
     ${version_file}
-    Utility/Utility.cpp
-    "Utility/String.cpp"
-    Network/MessageHandler.cpp
-    Network/Srp6/Server.cpp
-    Network/Srp6/GroupParameters.cpp
-    Network/Srp6/Utility.cpp
+    utility/utility.cpp
+    "utility/string.cpp"
+    network/message_handler.cpp
+    network/srp6/server.cpp
+    network/srp6/group_parameters.cpp
+    network/srp6/utility.cpp
 )
 
 target_include_directories(keycaproot

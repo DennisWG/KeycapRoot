@@ -1,9 +1,23 @@
-//#include "BaseConnectionHandler.hpp"
+/*
+    Copyright 2017 KeycapEmu
 
-#include <Keycap/Root/Network/Connection.hpp>
-#include <Keycap/Root/Network/DataRouter.hpp>
-#include <Keycap/Root/Network/MessageHandler.hpp>
-#include <Keycap/Root/Network/Service.hpp>
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#include <keycap/root/network/connection.hpp>
+#include <keycap/root/network/data_router.hpp>
+#include <keycap/root/network/message_handler.hpp>
+#include <keycap/root/network/service.hpp>
 
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -12,41 +26,41 @@
 
 #include <chrono>
 
-namespace net = Keycap::Root::Network;
+namespace net = keycap::root::network;
 
 namespace ServiceTest
 {
     struct ClientConnection;
 
-    struct ClientService : public net::Service<ClientConnection>
+    struct ClientService : public net::service<ClientConnection>
     {
         ClientService()
-          : Service{net::ServiceMode::Client}
+          : service{net::service_mode::Client}
         {
         }
 
-        net::LinkStatus status = net::LinkStatus::Down;
+        net::link_status status = net::link_status::Down;
         std::string data;
     };
 
-    struct ClientConnection : public net::Connection<ClientConnection>, public net::MessageHandler
+    struct ClientConnection : public net::connection<ClientConnection>, public net::message_handler
     {
-        ClientConnection(net::ServiceBase& service)
-          : Connection{service}
+        ClientConnection(net::service_base& service)
+          : connection{service}
           , myService{static_cast<ClientService&>(service)}
         {
-            router_.ConfigureInbound(this);
+            router_.configure_inbound(this);
         }
 
-        void Listen()
+        void listen()
         {
             std::string msg{"Ping"};
 
-            Send({msg.begin(), msg.end()});
-            Connection::Listen();
+            send({msg.begin(), msg.end()});
+            connection::listen();
         }
 
-        bool OnData(net::ServiceBase& service, std::vector<uint8_t> const& data) override
+        bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -54,7 +68,7 @@ namespace ServiceTest
             return true;
         }
 
-        bool OnLink(net::ServiceBase& service, net::LinkStatus status) override
+        bool on_link(net::service_base& service, net::link_status status) override
         {
             myService.status = status;
             return true;
@@ -66,27 +80,27 @@ namespace ServiceTest
 
     struct DummyConnection;
 
-    struct ServerService : public net::Service<DummyConnection>
+    struct ServerService : public net::service<DummyConnection>
     {
         ServerService()
-          : Service{net::ServiceMode::Server}
+          : service{net::service_mode::Server}
         {
         }
 
-        net::LinkStatus status = net::LinkStatus::Down;
+        net::link_status status = net::link_status::Down;
         std::string data;
     };
 
-    struct DummyConnection : public net::Connection<DummyConnection>, public net::MessageHandler
+    struct DummyConnection : public net::connection<DummyConnection>, public net::message_handler
     {
-        DummyConnection(net::ServiceBase& service)
-          : Connection{service}
+        DummyConnection(net::service_base& service)
+          : connection{service}
           , myService{static_cast<ServerService&>(service)}
         {
-            router_.ConfigureInbound(this);
+            router_.configure_inbound(this);
         }
 
-        bool OnData(net::ServiceBase& service, std::vector<uint8_t> const& data) override
+        bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -94,13 +108,13 @@ namespace ServiceTest
             if (received == "Ping")
             {
                 std::string msg{"Pong"};
-                Send({msg.begin(), msg.end()});
+                send({msg.begin(), msg.end()});
             }
 
             return true;
         }
 
-        bool OnLink(net::ServiceBase& service, net::LinkStatus status) override
+        bool on_link(net::service_base& service, net::link_status status) override
         {
             myService.status = status;
             return true;
@@ -118,18 +132,18 @@ namespace ServiceTest
         SECTION("Using the services")
         {
             ServerService server;
-            server.Start(host, port);
+            server.start(host, port);
 
             ClientService client;
-            client.Start(host, port);
+            client.start(host, port);
 
             std::this_thread::sleep_for(std::chrono::seconds{2});
 
             REQUIRE(server.data == "Ping");
-            REQUIRE(server.status == net::LinkStatus::Up);
+            REQUIRE(server.status == net::link_status::Up);
 
             REQUIRE(client.data == "Pong");
-            REQUIRE(client.status == net::LinkStatus::Up);
+            REQUIRE(client.status == net::link_status::Up);
         }
     }
 }

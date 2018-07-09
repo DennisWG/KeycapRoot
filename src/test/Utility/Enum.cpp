@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-#include <Keycap/Root/Utility/Enum.hpp>
+#include <keycap/root/utility/enum.hpp>
 
 #include <rapidcheck/catch.h>
 
@@ -31,35 +31,35 @@ TEST_CASE("Iterating enums", "[keycap_enum]")
     {
         static std::vector<std::string> expectedNames {"Entry1", "Entry3", "Entry4"};
 
-        auto values = SomeEnum::ToVector();
+        auto values = SomeEnum::to_vector();
 
         REQUIRE(values.size() == expectedNames.size());
 
         for (size_t i = 0; i < values.size(); ++i)
-            REQUIRE(values[i].ToString() == expectedNames[i]);
+            REQUIRE(values[i].to_string() == expectedNames[i]);
     }
 
     SECTION("Elements should auto deduce values starting from 0 if no value is explicitly stated")
     {
         static std::vector<int32_t> expectedValues {0, 1, -2};
 
-        auto values = SomeEnum::ToVector();
+        auto values = SomeEnum::to_vector();
 
         REQUIRE(values.size() == expectedValues.size());
 
         for (size_t i = 0; i < values.size(); ++i)
-            REQUIRE(values[i].Get() == expectedValues[i]);
+            REQUIRE(values[i].get() == expectedValues[i]);
     }
 
     SECTION("Setting the given value")
     {
         SomeEnum e;
 
-        e.Set(SomeEnum::Entry4);
-        REQUIRE(e.Get() == SomeEnum::Entry4);
+        e.set(SomeEnum::Entry4);
+        REQUIRE(e.get() == SomeEnum::Entry4);
 
         e = SomeEnum::Entry3;
-        REQUIRE(e.Get() == SomeEnum::Entry3);
+        REQUIRE(e.get() == SomeEnum::Entry3);
     }
 }
 
@@ -76,62 +76,62 @@ TEST_CASE("Iterating enum flags", "[keycap_enum_flags]")
     {
         static std::vector<std::string> expectedNames{ "None", "Red", "Green", "Blue" };
 
-        auto values = SomeFlags::ToVector();
+        auto values = SomeFlags::to_vector();
 
         REQUIRE(values.size() == expectedNames.size());
 
         for (size_t i = 0; i < values.size(); ++i)
-            REQUIRE(values[i].ToString() == expectedNames[i]);
+            REQUIRE(values[i].to_string() == expectedNames[i]);
     }
 
     SECTION("Elements should auto deduce values starting from 0 if no value is explicitly stated")
     {
         static std::vector<int32_t> expectedValues{ 0, 1, 2, 4 };
 
-        auto values = SomeFlags::ToVector();
+        auto values = SomeFlags::to_vector();
 
         REQUIRE(values.size() == expectedValues.size());
 
         for (size_t i = 0; i < values.size(); ++i)
-            REQUIRE(values[i].Get() == expectedValues[i]);
+            REQUIRE(values[i].get() == expectedValues[i]);
     }
 
     SECTION("Setting the given value")
     {
         SomeFlags e;
 
-        e.Set(SomeFlags::Red);
-        REQUIRE(e.Get() == SomeFlags::Red);
+        e.set(SomeFlags::Red);
+        REQUIRE(e.get() == SomeFlags::Red);
 
         e = SomeFlags::None;
-        REQUIRE(e.Get() == SomeFlags::None);
+        REQUIRE(e.get() == SomeFlags::None);
     }
 
     SECTION("Setting, unsetting and testing flags")
     {
         SomeFlags flags = SomeFlags::Red;
 
-        flags.SetFlag(SomeFlags::Blue);
-        REQUIRE(flags.TestFlag(SomeFlags::Blue));
-        REQUIRE(flags.TestFlag(SomeFlags::Red));
-        REQUIRE(flags.TestFlag(SomeFlags::Green) == false);
+        flags.set_flag(SomeFlags::Blue);
+        REQUIRE(flags.test_flag(SomeFlags::Blue));
+        REQUIRE(flags.test_flag(SomeFlags::Red));
+        REQUIRE(flags.test_flag(SomeFlags::Green) == false);
 
-        flags.ClearAllFlags();
-        REQUIRE(flags.Get() == 0);
+        flags.clear_all_flags();
+        REQUIRE(flags.get() == 0);
 
-        flags.SetAllFlags();
-        REQUIRE(flags.TestFlag(SomeFlags::Blue));
-        REQUIRE(flags.TestFlag(SomeFlags::Red));
-        REQUIRE(flags.TestFlag(SomeFlags::Green));
+        flags.set_all_flags();
+        REQUIRE(flags.test_flag(SomeFlags::Blue));
+        REQUIRE(flags.test_flag(SomeFlags::Red));
+        REQUIRE(flags.test_flag(SomeFlags::Green));
 
-        flags.ClearFlag(SomeFlags::Green);
-        REQUIRE(flags.TestFlag(SomeFlags::Blue));
-        REQUIRE(flags.TestFlag(SomeFlags::Red));
-        REQUIRE(flags.TestFlag(SomeFlags::Green) == false);
+        flags.clear_flag(SomeFlags::Green);
+        REQUIRE(flags.test_flag(SomeFlags::Blue));
+        REQUIRE(flags.test_flag(SomeFlags::Red));
+        REQUIRE(flags.test_flag(SomeFlags::Green) == false);
 
-        flags.ToggleFlag(SomeFlags::Red);
-        REQUIRE(flags.TestFlag(SomeFlags::Blue));
-        REQUIRE(flags.TestFlag(SomeFlags::Red) == false);
-        REQUIRE(flags.TestFlag(SomeFlags::Green) == false);
+        flags.toggle_flag(SomeFlags::Red);
+        REQUIRE(flags.test_flag(SomeFlags::Blue));
+        REQUIRE(flags.test_flag(SomeFlags::Red) == false);
+        REQUIRE(flags.test_flag(SomeFlags::Green) == false);
     }
 }

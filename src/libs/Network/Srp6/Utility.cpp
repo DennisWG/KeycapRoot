@@ -14,14 +14,14 @@
     limitations under the License.
 */
 
-#include <Keycap/Root/Network/Srp6/GroupParameters.hpp>
-#include <Keycap/Root/Network/Srp6/Utility.hpp>
-#include <Keycap/Root/Utility/String.hpp>
+#include <keycap/root/network/srp6/group_parameters.hpp>
+#include <keycap/root/network/srp6/utility.hpp>
+#include <keycap/root/utility/string.hpp>
 
 #include <botan/numthry.h>
 #include <botan/sha160.h>
 
-namespace Keycap::Root::Network::Srp6
+namespace keycap::root::network::srp6
 {
     std::vector<Botan::byte> encode_flip(const Botan::BigInt& val)
     {
@@ -43,8 +43,8 @@ namespace Keycap::Root::Network::Srp6
         return Botan::BigInt::decode(val);
     }
 
-    auto GenerateX(
-        std::string const& username, std::string const& password, Botan::BigInt const& salt, Compliance compliance)
+    auto generate_x(
+        std::string const& username, std::string const& password, Botan::BigInt const& salt, compliance compliance)
     {
         Botan::SHA_1 sha;
         sha.update(username);
@@ -52,29 +52,29 @@ namespace Keycap::Root::Network::Srp6
         sha.update(password);
         auto hash = sha.final();
 
-        if (compliance == Compliance::RFC5054)
+        if (compliance == compliance::RFC5054)
             sha.update(Botan::BigInt::encode(salt));
-        else if (compliance == Compliance::Wow)
+        else if (compliance == compliance::Wow)
             sha.update(encode_flip(salt));
 
         sha.update(hash);
 
-        if (compliance == Compliance::RFC5054)
+        if (compliance == compliance::RFC5054)
             return Botan::BigInt::decode(sha.final());
-        else if (compliance == Compliance::Wow)
+        else if (compliance == compliance::Wow)
             return decode_flip(sha.final());
 
         throw std::exception("Unknown compliance mode!");
     }
 
-    Botan::BigInt GenerateVerifier(
-        std::string username, std::string password, GroupParameter groupParameter, Botan::BigInt const& salt,
-        Compliance compliance)
+    Botan::BigInt generate_verifier(
+        std::string username, std::string password, group_parameter groupParameter, Botan::BigInt const& salt,
+        compliance compliance)
     {
-        username = Utility::ToUpper(username);
-        password = Utility::ToUpper(password);
+        username = utility::to_upper(username);
+        password = utility::to_upper(password);
 
-        auto x = GenerateX(username, password, salt, compliance);
+        auto x = generate_x(username, password, salt, compliance);
 
         Botan::BigInt N{groupParameter.N};
         Botan::BigInt g{groupParameter.g};
@@ -84,16 +84,16 @@ namespace Keycap::Root::Network::Srp6
     }
 
     template<>
-    std::array<uint8_t, 32> ToArray(Botan::BigInt const& value, Compliance compliance)
+    std::array<uint8_t, 32> to_array(Botan::BigInt const& value, compliance compliance)
     {
-        if (compliance == Compliance::RFC5054)
+        if (compliance == compliance::RFC5054)
         {
             std::array<uint8_t, 32> array;
             auto tmp = Botan::BigInt::encode_1363(value, 32);
             std::copy(std::begin(tmp), std::end(tmp), std::begin(array));
             return array;
         }
-        else if (compliance == Compliance::Wow)
+        else if (compliance == compliance::Wow)
         {
             std::array<uint8_t, 32> array;
             auto tmp = Botan::BigInt::encode_1363(value, 32);
@@ -105,16 +105,16 @@ namespace Keycap::Root::Network::Srp6
     }
 
     template <>
-    std::array<uint8_t, 20> ToArray(Botan::BigInt const& value, Compliance compliance)
+    std::array<uint8_t, 20> to_array(Botan::BigInt const& value, compliance compliance)
     {
-        if (compliance == Compliance::RFC5054)
+        if (compliance == compliance::RFC5054)
         {
             std::array<uint8_t, 20> array;
             auto tmp = Botan::BigInt::encode_1363(value, 20);
             std::copy(std::begin(tmp), std::end(tmp), std::begin(array));
             return array;
         }
-        else if (compliance == Compliance::Wow)
+        else if (compliance == compliance::Wow)
         {
             std::array<uint8_t, 20> array;
             auto tmp = Botan::BigInt::encode_1363(value, 20);
@@ -125,10 +125,10 @@ namespace Keycap::Root::Network::Srp6
         throw std::exception("Unknown compliance mode!");
     }
 
-    Botan::BigInt GenerateClientProof(
+    Botan::BigInt generate_client_proof(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& salt, std::string const& I,
         Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& sessionKey,
-        Keycap::Root::Network::Srp6::Compliance compliance)
+        keycap::root::network::srp6::compliance compliance)
     {
         Botan::SHA_1 sha1;
 

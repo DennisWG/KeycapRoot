@@ -27,13 +27,13 @@ namespace spdlog
     class logger;
 }
 
-namespace Keycap::Root::Utility
+namespace keycap::root::utility
 {
     // Sets the console's title to the given title
-    extern void SetConsoleTitle(std::string const& title) noexcept;
+    extern void set_console_title(std::string const& title) noexcept;
 
     // Returns the logger of the given name if it exists or returns a newly created one with a null_sink
-    extern std::shared_ptr<spdlog::logger> GetSafeLogger(std::string const& name);
+    extern std::shared_ptr<spdlog::logger> get_safe_logger(std::string const& name);
 
     template <typename T>
     auto shared_from_that(T* p)
@@ -42,7 +42,7 @@ namespace Keycap::Root::Utility
     }
 
     template <typename Iterator>
-    std::string ToHexString(Iterator begin, Iterator end)
+    std::string to_hex_string(Iterator begin, Iterator end)
     {
         std::stringstream ss;
         ss << std::hex << std::uppercase << std::setfill('0');
@@ -57,7 +57,7 @@ namespace Keycap::Root::Utility
     // offset                           hex                      ascii
     // 00000000 48 65 6c 6c 6f 2c 20 57  6f 72 6c 64 21          Hello, World!
     template <typename Iterator>
-    void DumpAsHex(Iterator begin, Iterator end, std::ostream& destination, int indent = 0)
+    void dump_as_hex(Iterator begin, Iterator end, std::ostream& destination, int indent = 0)
     {
         unsigned char buffer[16]{};
         int address = 0;

@@ -14,19 +14,19 @@
     limitations under the License.
 */
 
-#include <Keycap/Root/Network/Srp6/Server.hpp>
-#include <Keycap/Root/Network/Srp6/Utility.hpp>
+#include <keycap/root/network/srp6/server.hpp>
+#include <keycap/root/network/srp6/utility.hpp>
 
 #include <rapidcheck/catch.h>
 
-namespace srp = Keycap::Root::Network::Srp6;
+namespace srp = keycap::root::network::srp6;
 
-TEST_CASE("Srp6")
+TEST_CASE("srp6")
 {
     SECTION("Server proof must be correct when given valid data")
     {
-        auto parameter = srp::GetParameters(srp::GroupParameters::_256);
-        constexpr auto compliance = srp::Compliance::Wow;
+        auto parameter = srp::get_parameters(srp::group_parameters::_256);
+        constexpr auto compliance = srp::compliance::Wow;
 
         Botan::BigInt b("1690411537445209277817416133899538702421434810938158426182998584737568201187");
         Botan::BigInt A("0x6fcd7fdf9799a025174f5afe2d59e5d47d02f23c64c643400c591e5e961609d8");
@@ -37,25 +37,25 @@ TEST_CASE("Srp6")
 
         std::string username = "USER";
         std::string password = "PASSWORD";
-        auto verifier = srp::GenerateVerifier(username, password, parameter, salt, compliance);
+        auto verifier = srp::generate_verifier(username, password, parameter, salt, compliance);
 
-        auto server = srp::Server(parameter, Botan::BigInt{verifier}, compliance, b);
-        auto sessionKey = server.SessionKey(A);
+        auto server = srp::server(parameter, Botan::BigInt{verifier}, compliance, b);
+        auto sessionKey = server.session_key(A);
 
-        auto M1_S = srp::GenerateClientProof(
-            server.Prime(), server.Generator(), salt, username, A, server.PublicEphemeralValue(), sessionKey,
+        auto M1_S = srp::generate_client_proof(
+            server.prime(), server.generator(), salt, username, A, server.public_ephemeral_value(), sessionKey,
             compliance);
 
-        auto M2_S = server.Proof(M1_S, sessionKey);
+        auto M2_S = server.proof(M1_S, sessionKey);
 
         REQUIRE(M1_S == M1);
         REQUIRE(M2_S == M2);
     }
 
-    SECTION("GenerateVerifier must always yield the same verifier given the same salt")
+    SECTION("generate_verifier must always yield the same verifier given the same salt")
     {
-        auto parameter = srp::GetParameters(srp::GroupParameters::_256);
-        constexpr auto compliance = srp::Compliance::Wow;
+        auto parameter = srp::get_parameters(srp::group_parameters::_256);
+        constexpr auto compliance = srp::compliance::Wow;
 
         std::string username = "USER";
         std::string password = "PASSWD";
@@ -63,7 +63,7 @@ TEST_CASE("Srp6")
         Botan::BigInt salt{"0x8658BD63DC7B110049E5008E6BDC237788CA21DF9BFBE0255C7A82F22E504A39"};
         Botan::BigInt expected_v{"0x026A88DB43CFAE5551FE073F8699BC1F456B114EAB5E034BE7ACD7A4C27B89A8"};
 
-        auto generated_v = srp::GenerateVerifier(username, password, parameter, salt, compliance);
+        auto generated_v = srp::generate_verifier(username, password, parameter, salt, compliance);
 
         REQUIRE(expected_v == generated_v);
     }

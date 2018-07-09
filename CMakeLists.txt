@@ -15,53 +15,53 @@
 cmake_minimum_required(VERSION 3.7.0)
 project(KeycapRoot)
 enable_testing()
-
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-
-################################
-# Git
-################################
-
-include(GetGitRevisionDescription)
-get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-git_describe(GIT_BRANCH --all --tags --dirty=-d)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/Utility/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
-list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
-set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
-
-################################
-# Boost
-################################
-
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.63 COMPONENTS system date_time regex REQUIRED)
-add_library(boost INTERFACE IMPORTED)
-set_property(TARGET boost
-    PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${Botan_INCLUDE_DIR}
-)
-
-################################
-# external submodules
-################################
-
+ 
+ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+ 
+ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+ 
+ ################################
+ # Git
+ ################################
+ 
+ include(GetGitRevisionDescription)
+ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+ git_describe(GIT_BRANCH --all --tags --dirty=-d)
+ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/Utility/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
+ list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
+ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
+ 
+ ################################
+ # Boost
+ ################################
+ 
+ set(Boost_USE_STATIC_LIBS ON)
+ find_package(Boost 1.63 COMPONENTS system date_time regex REQUIRED)
+ add_library(boost INTERFACE IMPORTED)
+ set_property(TARGET boost
+     PROPERTY
+         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${Botan_INCLUDE_DIR}
+ )
+ 
+# ################################
+# # external submodules
+# ################################
+#
 add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/rapidcheck")
-
-################################
-# Compile flags
-################################
-
-# TODO: Remove once Visual Studio updates to CMake 3.8 or higher
-if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-  set(MY_CXX_FLAGS_LIST
-	/std:c++latest
-    )
-  string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
-endif()
+# 
+ ################################
+ # Compile flags
+ ################################
+ 
+ # TODO: Remove once Visual Studio updates to CMake 3.8 or higher
+ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+   set(MY_CXX_FLAGS_LIST
+ 	/std:c++latest
+     )
+   string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
+ 
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
+ endif()
 
 add_subdirectory (src/libs)
 add_subdirectory (src/test)

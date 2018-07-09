@@ -24,17 +24,24 @@ struct name { \
 namespace impl
 {
     template <typename F>
-    struct ScopeExit {
-        ScopeExit(F f) : f(f) {}
-        ~ScopeExit() { f(); }
+    struct scope_exit {
+        scope_exit(F f)
+          : f(f)
+        {
+        }
+        ~scope_exit()
+        {
+            f();
+        }
         F f;
     };
 
     template <typename F>
-    ScopeExit<F> MakeScopeExit(F f) {
-        return ScopeExit<F>(f);
+    scope_exit<F> make_scope_exit(F f)
+    {
+        return scope_exit<F>(f);
     };
 }
 
 #define SCOPE_EXIT(name, F) \
-    auto name = impl::MakeScopeExit(F)
+    auto name = impl::make_scope_exit(F)

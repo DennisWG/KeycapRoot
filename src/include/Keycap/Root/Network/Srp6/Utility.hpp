@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "Compliance.hpp"
+#include "compliance.hpp"
 
 #include <botan/bigint.h>
 
@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-namespace Keycap::Root::Network::Srp6
+namespace keycap::root::network::srp6
 {
     std::vector<Botan::byte> encode_flip(const Botan::BigInt& val);
 
@@ -32,16 +32,15 @@ namespace Keycap::Root::Network::Srp6
 
     Botan::BigInt decode_flip(Botan::secure_vector<Botan::byte> val);
 
-    Botan::BigInt GenerateVerifier(
-        std::string username, std::string password, GroupParameter groupParameter,
-        Botan::BigInt const& salt, Compliance compliance);
-
+    Botan::BigInt generate_verifier(
+        std::string username, std::string password, group_parameter groupParameter, Botan::BigInt const& salt,
+        compliance compliance);
 
     template <int N>
-    std::array<uint8_t, N> ToArray(Botan::BigInt const& value, Compliance compliance);
+    std::array<uint8_t, N> to_array(Botan::BigInt const& value, compliance compliance);
 
-    Botan::BigInt GenerateClientProof(
+    Botan::BigInt generate_client_proof(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& s, std::string const& I,
         Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& S,
-        Keycap::Root::Network::Srp6::Compliance compliance);
+        keycap::root::network::srp6::compliance compliance);
 }

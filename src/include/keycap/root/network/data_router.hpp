@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "LinkStatus.hpp"
-//#include "MessageHandler.hpp"
+#include "link_status.hpp"
 
 #include <boost/uuid/uuid.hpp>
 
@@ -26,75 +25,75 @@
 #include <memory>
 #include <vector>
 
-namespace Keycap::Root::Network
+namespace keycap::root::network
 {
-    class ServiceBase;
-    class ConnectionBase;
+    class service_base;
+    class connection_base;
 
     template <typename MessageHandler>
-    class DataRouter
+    class data_router
     {
       public:
-        DataRouter()
+        data_router()
         {
         }
 
         // Adds a new MessageHandler for incoming data
-        void ConfigureInbound(MessageHandler* handler)
+        void configure_inbound(MessageHandler* handler)
         {
-            inboundHandlers_.push_back(handler);
+            inbound_handlers_.push_back(handler);
         }
 
         // Adds a new ConnectionHandler for outgoing data
-        void ConfigureOutbound(std::weak_ptr<ConnectionBase> handler)
+        void configure_outbound(std::weak_ptr<connection_base> handler)
         {
-            outboundHandlers_.push_back(handler);
+            outbound_handlers.push_back(handler);
         }
 
         // Removes the given MessageeHandler
-        void RemoveHandler(MessageHandler* handler)
+        void remove_handler(MessageHandler* handler)
         {
-            inboundHandlers_.erase(
+            inbound_handlers_.erase(
                 std::remove_if(
-                    inboundHandlers_.begin(), inboundHandlers_.end(),
+                    inbound_handlers_.begin(), inbound_handlers_.end(),
                     [&](MessageHandler* messageHandler) { return *messageHandler == *handler; }),
-                inboundHandlers_.end());
+                inbound_handlers_.end());
         }
 
-        // Routes the updated LinkStatus to all registered MessageHandlers
-        void RouteUpdatedLinkStatus(ServiceBase& service, LinkStatus status) const
+        // Routes the updated link_status to all registered MessageHandlers
+        void route_updated_link_status(service_base& service, link_status status) const
         {
-            for (auto handler : inboundHandlers_)
-                handler->OnLink(service, status);
+            for (auto handler : inbound_handlers_)
+                handler->on_link(service, status);
         }
 
         // Routes the given data from the given Service to all registered MessageHandlers
         // Will call every registered MessageHandler, even if one of them fails
         // Returns whether or not all MessageHandlers succeeded.
-        bool RouteInbound(ServiceBase& service, std::vector<uint8_t> const& data) const
+        bool route_inbound(service_base& service, std::vector<uint8_t> const& data) const
         {
             bool succeeded = true;
 
-            for (auto handler : inboundHandlers_)
-                succeeded = succeeded && handler->OnData(service, data);
+            for (auto handler : inbound_handlers_)
+                succeeded = succeeded && handler->on_data(service, data);
 
             return succeeded;
         }
 
         // Routes the given data to the given receiver
-        void RouteOutbound(std::vector<uint8_t> const& data) const
+        void route_outbound(std::vector<uint8_t> const& data) const
         {
-            for (auto&& handlerPtr : outboundHandlers_)
+            for (auto&& handlerPtr : outbound_handlers)
             {
                 if (auto handler = handlerPtr.lock())
                 {
-                    handler->Send(data);
+                    handler->send(data);
                 }
             }
         }
 
       private:
-        std::vector<MessageHandler*> inboundHandlers_;
-        std::vector<std::weak_ptr<ConnectionBase>> outboundHandlers_;
+        std::vector<MessageHandler*> inbound_handlers_;
+        std::vector<std::weak_ptr<connection_base>> outbound_handlers;
     };
 }

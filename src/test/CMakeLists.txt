@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.7.0)
 
 add_executable (test_${PROJECT_NAME}
-    Configuration/ConfigFile.cpp
-    Network/Srp6/Srp6.cpp
-    Network/DataRouter.cpp
-    Network/MemoryStream.cpp
-    Network/Service.cpp
-    Utility/Enum.cpp
-    Utility/Utility.cpp
+    configuration/config_file.cpp
+    network/srp6/srp6.cpp
+    network/data_router.cpp
+    network/memory_stream.cpp
+    network/service.cpp
+    utility/enum.cpp
+    utility/memory.cpp
+    utility/utility.cpp
     main.cpp
 )
 
