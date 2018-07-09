@@ -16,4 +16,11 @@
 
 #pragma once
 
-#include "algorithms/monads.hpp"
+namespace keycap::root::network::srp6
+{
+    enum class compliance
+    {
+        Wow,
+        RFC5054,
+    };
+}

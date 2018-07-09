@@ -16,4 +16,17 @@
 
 #pragma once
 
-#include "algorithms/monads.hpp"
+#include <string>
+#include <vector>
+
+namespace keycap::root::utility
+{
+    // Explodes the string into a list of substrings divided by the given delimiter
+    std::vector<std::string> explode(std::string const& str, char delim = ' ');
+
+    // ASCII toupper
+    std::string to_upper(std::string s);
+
+    // ASCII tolower
+    std::string to_lower(std::string s);
+}

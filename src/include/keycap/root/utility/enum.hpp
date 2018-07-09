@@ -1,0 +1,264 @@
+/*
+    Copyright 2017 KeycapEmu
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#pragma once
+
+#include <algorithm>
+#include <bitset>
+#include <cstdint>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+
+namespace keycap::root::utility::impl
+{
+    using nameValueMap_t = std::unordered_map<std::string, int32_t>;
+    using valueNameMap_t = std::unordered_map<int32_t, std::string>;
+
+    inline std::string removeWhitespaces(std::string str)
+    {
+        [[maybe_unused]] auto end = str.erase(
+            std::remove_if(str.begin(), str.end(), [](char c) { return c == ' ' || c == '\t'; }), str.end());
+
+        return str;
+    }
+
+    inline bool convert(std::string const& str, int32_t& outInt)
+    {
+        std::stringstream ss;
+        ss << str;
+
+        if (ss >> outInt)
+            return true;
+
+        return false;
+    }
+
+    inline std::string extractEntry(std::string& values)
+    {
+        std::string result;
+        auto itr = values.find(',');
+
+        if (itr != std::string::npos)
+        {
+            auto entry = values.substr(0, itr);
+            values.erase(0, itr + 1);
+
+            result = removeWhitespaces(entry);
+        }
+        else
+        {
+            result = removeWhitespaces(values);
+            values.clear();
+        }
+
+        return result;
+    }
+
+    inline std::optional<std::string> extractValue(std::string& values)
+    {
+        std::optional<std::string> ret;
+
+        auto itr = values.find('=');
+        if (itr != std::string::npos)
+        {
+            ret = values.substr(itr + 1);
+            values.erase(itr);
+        }
+
+        return ret;
+    }
+
+    inline bool isPowerOfTwoOrZero(int32_t number)
+    {
+        return (number & (number - 1)) == 0;
+    }
+
+    template <typename Callback>
+    inline std::pair<int32_t, int32_t>
+    doForEachEntry(std::string& values, nameValueMap_t& map, bool fix, Callback const& callback)
+    {
+        int32_t currentValue = 0;
+        int32_t minValue = std::numeric_limits<int32_t>::max();
+
+        while (!values.empty())
+        {
+            auto entry = extractEntry(values);
+            auto value = extractValue(entry);
+
+            if (value)
+            {
+                int32_t intValue;
+                if (convert(*value, intValue))
+                    currentValue = intValue;
+                else if (fix)
+                    currentValue = map[*value];
+                else
+                    continue;
+            }
+
+            minValue = std::min(minValue, currentValue);
+            callback(entry, currentValue);
+
+            ++currentValue;
+        }
+
+        return std::make_pair(minValue, currentValue);
+    }
+
+    inline nameValueMap_t makeNameValueMap(std::string values)
+    {
+        nameValueMap_t map;
+
+        doForEachEntry(values, map, false, [&](std::string const& entry, int32_t value) { map[entry] = value; });
+
+        return map;
+    }
+
+    inline valueNameMap_t makeValueNameMap(std::string values, nameValueMap_t& lookup, bool fillMissing = false)
+    {
+        valueNameMap_t map;
+
+        auto minmax = doForEachEntry(values, lookup, false, [&](std::string const& entry, int32_t value) {
+            if (map.find(value) == map.end())
+                map[value] = entry;
+        });
+
+        if (fillMissing)
+        {
+            auto minValue = minmax.first;
+            auto maxValue = minmax.second * 2;
+
+            for (int32_t i = minValue; i < maxValue; ++i)
+            {
+                if (isPowerOfTwoOrZero(i))
+                    continue;
+
+                if (map.find(i) != map.end())
+                    continue;
+
+                const size_t numBits = CHAR_BIT * sizeof(int32_t);
+                std::bitset<numBits> bits = i;
+                bool first = true;
+
+                for (int32_t n = 0; n < numBits; ++n)
+                {
+                    if (!bits.test(n))
+                        continue;
+
+                    auto key = 1 << n;
+                    auto itr = map.find(key);
+                    if (itr != map.end())
+                    {
+                        if (first)
+                        {
+                            map[i] = itr->second;
+                            first = false;
+                        }
+                        else
+                            map[i] = map[i] + " | " + itr->second;
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
+    template <typename ElementType>
+    std::vector<ElementType> makeVector(std::string values, nameValueMap_t& lookup, valueNameMap_t& valueLookup)
+    {
+        std::vector<ElementType> vector;
+
+        doForEachEntry(values, lookup, false, [&](std::string const& entry, int32_t value) {
+            auto element = static_cast<ElementType>(value);
+
+            if (std::find(vector.begin(), vector.end(), element) == vector.end())
+                vector.push_back(element);
+
+        });
+
+        return vector;
+    }
+}
+
+// clang-format off
+#define keycap_enum(Type, alignment, ...) \
+namespace impl \
+{ \
+    static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::keycap::root::utility::impl::makeNameValueMap(#__VA_ARGS__); \
+    static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::keycap::root::utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
+} \
+class Type final { \
+public: \
+    enum Enum : alignment { __VA_ARGS__ }; \
+    Type() = default; \
+    Type(Enum value) : value_{value} {} \
+    explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
+    Type& operator=(Enum value) { value_ = value; return *this; } \
+    /*bool operator==(Type const& rhs) { return value_ == rhs.value_; }*/ \
+    /* bool operator!=(Type const& rhs) { return value_ != rhs.value_; } */\
+    Enum get() const { return value_; } \
+    void set(Enum value) { value_ = value; } \
+    std::string to_string() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
+    static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
+    operator alignment() const \
+    { \
+        return static_cast<alignment>(value_); \
+    } \
+private: \
+    Enum value_; \
+}; \
+inline std::ostream& operator << (std::ostream& os, Type const& obj) \
+{ \
+    os << obj.to_string(); \
+    return os; \
+}
+
+#define keycap_enum_flags(Type, alignment, ...) \
+namespace impl \
+{ \
+    static std::unordered_map<std::string, int32_t> Type##_name_value_map = ::keycap::root::utility::impl::makeNameValueMap(#__VA_ARGS__); \
+    static std::unordered_map<int32_t, std::string> Type##_value_name_map = ::keycap::root::utility::impl::makeValueNameMap(#__VA_ARGS__, Type##_name_value_map, false); \
+} \
+class Type final { \
+public: \
+    enum Enum : alignment { __VA_ARGS__ }; \
+    Type() = default; \
+    Type(Enum value) : value_{value} {} \
+    explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
+    Type& operator=(Enum value) { value_ = value; return *this; } \
+    bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
+    bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
+    void set_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
+    void set_all_flags() { value_ = static_cast<Enum>(-1); } \
+    void clear_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
+    void clear_all_flags() { value_ = static_cast<Enum>(0); } \
+    void toggle_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) ^ which); } \
+    bool test_flag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
+    Enum get() const { return value_; } \
+    void set(Enum value) { value_ = value; } \
+    std::string to_string() const { return ::impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
+    static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
+private: \
+    Enum value_; \
+}; \
+inline std::ostream& operator << (std::ostream& os, Type const& obj) \
+{ \
+    os << obj.to_string(); \
+}
+// clang-format on
