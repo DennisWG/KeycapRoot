@@ -32,6 +32,8 @@ namespace keycap::root::configuration
         config_file(std::experimental::filesystem::path const& filePath)
         {
             std::ifstream file(filePath.string());
+            if (!file)
+                throw std::exception(("Could not open file " + filePath.string()).c_str());
             file >> json_;
         }
 
