@@ -28,6 +28,12 @@ namespace keycap::root::network
     class memory_stream
     {
       public:
+        memory_stream() = default;
+        memory_stream(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end)
+          : buffer_(begin, end)
+        {
+        }
+
         // Puts a T into the stream
         template <typename T>
         void put(T const& value)
@@ -148,6 +154,14 @@ namespace keycap::root::network
             return string;
         }
 
+        // Returns the remaining data as a stream
+        memory_stream get_remaining()
+        {
+            auto old_poisition = read_position_;
+            read_position_ = buffer_.size();
+            return memory_stream(buffer_.begin() + old_poisition, buffer_.end());
+        }
+
         // Peeks for the given T at the given position in the stream
         template <typename T>
         T peek(size_t where = 0) const
@@ -178,6 +192,18 @@ namespace keycap::root::network
         auto data()
         {
             return buffer_.data();
+        }
+
+        auto data() const
+        {
+            return buffer_.data();
+        }
+
+        // Clears the memory_stream's buffer and resets all internal state
+        void clear()
+        {
+            buffer_.clear();
+            read_position_ = 0;
         }
 
       private:
