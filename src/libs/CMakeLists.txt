@@ -14,6 +14,7 @@
 
 add_library(keycaproot
     ${version_file}
+    utility/crc32.cpp
     utility/utility.cpp
     "utility/string.cpp"
     network/message_handler.cpp
