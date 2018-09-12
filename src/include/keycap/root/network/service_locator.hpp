@@ -1,0 +1,110 @@
+/*
+    Copyright 2017 KeycapEmu
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#pragma once
+
+#include "../types.hpp"
+#include "connection.hpp"
+#include "message_handler.hpp"
+#include "service.hpp"
+
+#include <unordered_map>
+
+namespace keycap::root::network
+{
+    class memory_stream;
+
+    using service_type_t = uint32;
+    class service_type
+    {
+      public:
+        explicit service_type(service_type_t type)
+          : type_{type}
+        {
+        }
+
+        service_type_t get() const
+        {
+            return type_;
+        }
+
+        bool operator==(service_type const& other) const
+        {
+            return type_ == other.type_;
+        }
+
+      private:
+        const service_type_t type_;
+    };
+
+    // Abstracts away the need to send messages to a specific connection. Instead, messages will be send to a service
+    // that may or may not yet be located. The to be located services must be in service_mode::Server.
+    class service_locator : public message_handler
+    {
+        friend class data_router<service_locator>;
+
+      public:
+        // Creates a new service of the given type with the given host and port if none for this type exists.
+        void locate(service_type type, std::string const& host, uint16_t port);
+
+        // Sends the given message to the given service_type. If the service hasn't been located yet (e.g.
+        // disconnected), the message will be placed in a queue and will be send once the service is located.
+        void send_to(service_type type, memory_stream const& message);
+
+        using registered_callback = std::function<bool(service_type sender, memory_stream data)>;
+        // bool (*)(service_type sender, memory_stream data);
+        // Sends the given message to the given service_type. Expects an answer back from the service. If the service
+        // hasn't been located yet (e.g. disconnected), the message will be placed in a queue and will be send once the
+        // server is located.
+        void send_registered(service_type type, memory_stream const& message, registered_callback callback);
+
+        // Returns the number of located services
+        size_t service_count() const;
+
+      private:
+        bool on_data(service_base& service, std::vector<uint8_t> const& data) override;
+
+        bool on_link(service_base& service, link_status status) override;
+
+        class connection : public keycap::root::network::connection<service_locator>
+        {
+            using base = keycap::root::network::connection<service_locator>;
+
+          public:
+            connection(service_base& service, service_locator* locator);
+        };
+
+        class service : public keycap::root::network::service<connection>
+        {
+            using base = keycap::root::network::service<connection>;
+
+          public:
+            service(service_locator* locator);
+
+            virtual SharedHandler make_handler() override;
+
+            std::weak_ptr<connection> connection_;
+
+          private:
+            service_locator* locator_ = nullptr;
+        };
+
+        std::unordered_map<service_type_t, service_locator::service> services_;
+
+        uint64 registered_callback_counter_ = 0;
+        std::unordered_map<uint64, std::pair<service_type_t, registered_callback>> registered_callbacks_;
+    };
+}

@@ -6,6 +6,7 @@ add_executable (test_${PROJECT_NAME}
     network/data_router.cpp
     network/memory_stream.cpp
     network/service.cpp
+    network/service_locator.cpp
     utility/crc32.cpp
     utility/enum.cpp
     utility/memory.cpp
