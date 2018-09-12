@@ -93,10 +93,13 @@ namespace keycap::root::network
             return true;
         }
 
+      protected:
+        virtual SharedHandler make_handler() = 0;
+
       private:
         void begin_listen(std::string const& host, uint16_t port)
         {
-            auto handler = std::make_shared<Connection>(*this);
+            auto handler = make_handler();
             handler->get_router().configure_outbound(handler);
 
             boost::asio::ip::tcp::resolver resolver{io_service_};
@@ -130,7 +133,7 @@ namespace keycap::root::network
             auto ep = resolver.resolve({host, ""})->endpoint();
             ep.port(port);
 
-            auto handler = std::make_shared<Connection>(*this);
+            auto handler = make_handler();
             handler->get_router().configure_outbound(handler);
 
             boost::system::error_code error;
@@ -153,7 +156,7 @@ namespace keycap::root::network
 
             if (mode_ == service_mode::Server)
             {
-                auto newHandler = std::make_shared<Connection>(*this);
+                auto newHandler = make_handler();
                 acceptor_.async_accept(
                     newHandler->socket(), [=](auto errorCode) { handle_new_connection(newHandler, errorCode); });
             }

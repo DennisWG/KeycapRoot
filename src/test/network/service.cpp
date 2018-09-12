@@ -39,6 +39,11 @@ namespace ServiceTest
         {
         }
 
+        virtual SharedHandler make_handler() override
+        {
+            return std::make_shared<ClientConnection>(*this);
+        }
+
         net::link_status status = net::link_status::Down;
         std::string data;
     };
@@ -85,6 +90,11 @@ namespace ServiceTest
         ServerService()
           : service{net::service_mode::Server}
         {
+        }
+
+        virtual SharedHandler make_handler() override
+        {
+            return std::make_shared<DummyConnection>(*this);
         }
 
         net::link_status status = net::link_status::Down;
@@ -137,7 +147,7 @@ namespace ServiceTest
             ClientService client;
             client.start(host, port);
 
-            std::this_thread::sleep_for(std::chrono::seconds{2});
+            std::this_thread::sleep_for(std::chrono::milliseconds{10});
 
             REQUIRE(server.data == "Ping");
             REQUIRE(server.status == net::link_status::Up);
