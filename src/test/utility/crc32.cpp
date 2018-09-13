@@ -31,4 +31,11 @@ TEST_CASE("crc32")
     {
         REQUIRE(0x4A17B156 == util::crc32(std::string("Hello"), ' ', std::string("World")));
     }
+
+    SECTION("Subsequent hashes must yield the same results", "[regression]")
+    {
+        REQUIRE(0x4A17B156 == util::crc32(std::string("Hello"), ' ', std::string("World")));
+        REQUIRE(0x4A17B156 == util::crc32(std::string("Hello"), ' ', std::string("World")));
+        REQUIRE(0x4A17B156 == util::crc32(std::string("Hello"), ' ', std::string("World")));
+    }
 }

@@ -46,6 +46,7 @@ namespace keycap::root::utility
     uint32 crc32(ARGS&&... args)
     {
         thread_local boost::crc_32_type crc;
+        crc.reset();
 
         (impl::hash(crc, args), ...);
 
