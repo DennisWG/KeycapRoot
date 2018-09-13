@@ -16,8 +16,10 @@
 
 #include <keycap/root/network/memory_stream.hpp>
 #include <keycap/root/network/registered_message.hpp>
+#include <keycap/root/network/service_connection.hpp>
 #include <keycap/root/network/service_locator.hpp>
 #include <keycap/root/utility/crc32.hpp>
+#include <keycap/root/utility/utility.hpp>
 
 #include <rapidcheck/catch.h>
 
@@ -26,71 +28,81 @@
 namespace net = keycap::root::network;
 namespace util = keycap::root::utility;
 
-struct DummyConnection;
-
-struct ServerService : public net::service<DummyConnection>
+template <typename connection>
+struct server_service : public net::service<connection>
 {
-    ServerService()
+    server_service()
       : service{net::service_mode::Server}
     {
     }
 
     virtual SharedHandler make_handler() override
     {
-        return std::make_shared<DummyConnection>(*this);
+        return std::make_shared<connection>(*this);
     }
 
     net::link_status status = net::link_status::Down;
     std::string data;
 };
 
-struct DummyConnection : public net::connection<DummyConnection>, public net::message_handler
+struct string_connection : public net::connection, public net::message_handler
 {
-    DummyConnection(net::service_base& service)
+    string_connection(net::service_base& service)
       : connection{service}
-      , myService{static_cast<ServerService&>(service)}
+      , my_service_{static_cast<server_service<string_connection>&>(service)}
     {
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
+    bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
     {
-        // string received
-        if (data.size() < 15)
-        {
-            auto received = std::string{std::begin(data), std::end(data)};
-            myService.data = received;
-        }
-        // data received
-        else
-        {
-            net::memory_stream stream(data.begin(), data.end());
-
-            auto msg = net::registered_message::decode(stream);
-            myService.data = msg.payload.get_string(strlen("Foobar"));
-
-            msg.payload.clear();
-            msg.payload.put("Arrived");
-            msg.crc = util::crc32(msg.sender, msg.command, msg.payload);
-
-            stream = msg.encode();
-            send(std::vector<uint8>{stream.data(), stream.data() + stream.size()});
-        }
+        auto received = std::string{std::begin(data), std::end(data)};
+        my_service_.data = received;
 
         return true;
     }
 
-    bool on_link(net::service_base& service, net::link_status status) override
+    bool on_link(net::data_router const& router, net::link_status status) override
     {
-        myService.status = status;
+        my_service_.status = status;
         return true;
     }
 
   private:
-    ServerService& myService;
+    server_service<string_connection>& my_service_;
 };
 
-TEST_CASE("servicce_locator")
+struct data_connection : public net::service_connection
+{
+    data_connection(net::service_base& service)
+      : service_connection{service}
+      , my_service_{static_cast<server_service<data_connection>&>(service)}
+    {
+        router_.configure_inbound(this);
+    }
+
+    bool on_data(net::data_router const& router, uint64 sender, net::memory_stream& stream) override
+    {
+        my_service_.data = stream.get_string(strlen("Foobar"));
+
+        stream.clear();
+        stream.put("Arrived");
+        send_answer(sender, stream);
+
+        return true;
+    }
+
+    bool on_link(net::data_router const& router, net::link_status status) override
+    {
+        my_service_.status = status;
+        return true;
+    }
+
+  private:
+    server_service<data_connection>& my_service_;
+};
+
+TEST_CASE("service_locator")
 {
     net::service_locator locator;
 
@@ -119,7 +131,7 @@ TEST_CASE("servicce_locator")
         std::string const host = "localhost";
         uint16_t const port = 5568;
 
-        ServerService service;
+        server_service<string_connection> service;
         service.start(host, port);
 
         locator.locate(net::service_type{1}, host, port);
@@ -137,10 +149,10 @@ TEST_CASE("servicce_locator")
         net::service_type const type_1{1};
         net::service_type const type_2{2};
 
-        ServerService service_1;
+        server_service<string_connection> service_1;
         service_1.start(host, port_1);
 
-        ServerService service_2;
+        server_service<string_connection> service_2;
         service_2.start(host, port_2);
 
         locator.locate(type_1, host, port_1);
@@ -167,10 +179,10 @@ TEST_CASE("servicce_locator")
         net::service_type const type_1{1};
         net::service_type const type_2{2};
 
-        ServerService service_1;
+        server_service<string_connection> service_1;
         service_1.start(host, port_1);
 
-        ServerService service_2;
+        server_service<string_connection> service_2;
         service_2.start(host, port_2);
 
         locator.locate(type_1, host, port_1);
@@ -202,7 +214,7 @@ TEST_CASE("servicce_locator")
         uint16_t const port = 5571;
         net::service_type const type{1};
 
-        ServerService service;
+        server_service<data_connection> service;
         service.start(host, port);
 
         locator.locate(type, host, port);

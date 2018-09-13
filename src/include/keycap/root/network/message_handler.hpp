@@ -25,7 +25,6 @@
 
 namespace keycap::root::network
 {
-    template <typename MessageHandler>
     class data_router;
 
     class service_base;
@@ -41,13 +40,11 @@ namespace keycap::root::network
         bool operator==(message_handler const& rhs) noexcept;
 
         // Will get called whenever we've received data.
-        // Return type is currently not used.
-        virtual bool on_data(service_base& service, std::vector<uint8_t> const& data) = 0;
+        virtual bool on_data(data_router const& router, std::vector<uint8_t> const& data) = 0;
 
         // Will get called whenever a connection has been established or after it got disconnected.
         // Will be called before the server socket starts listening for data.
-        // Return type is currently not used.
-        virtual bool on_link(service_base& service, link_status status) = 0;
+        virtual bool on_link(data_router const& router, link_status status) = 0;
 
       protected:
         boost::uuids::uuid uuid_;

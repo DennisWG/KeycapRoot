@@ -49,19 +49,19 @@ struct DummyConnection
 class TestHandler : public net::message_handler
 {
   public:
-    explicit TestHandler(net::data_router<TestHandler>& router)
+    explicit TestHandler(net::data_router& router)
       : router_{router}
     {
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
+    bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
     {
         OnMessageCalled = true;
         return true;
     }
 
-    bool on_link(net::service_base& service, net::link_status status) override
+    bool on_link(net::data_router const& router, net::link_status status) override
     {
         OnLinkCalled = true;
         return true;
@@ -71,13 +71,13 @@ class TestHandler : public net::message_handler
     bool OnLinkCalled = false;
 
   private:
-    net::data_router<TestHandler>& router_;
+    net::data_router& router_;
 };
 
 TEST_CASE("data_router")
 {
     DummyService service;
-    net::data_router<TestHandler> router;
+    net::data_router router;
     TestHandler handler{router};
     TestHandler handler2{router};
     std::vector<uint8_t> data;

@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+#include <keycap/root/network/data_router.hpp>
 #include <keycap/root/network/registered_message.hpp>
 #include <keycap/root/network/service_locator.hpp>
 #include <keycap/root/utility/crc32.hpp>
@@ -54,7 +55,7 @@ namespace keycap::root::network
         registered_callbacks_[counter] = std::make_pair(type.get(), callback);
 
         registered_message msg;
-        msg.crc = utility::crc32(counter, 1, message);
+        msg.crc = utility::crc32(counter, uint16{1}, message);
         msg.sender = counter;
         msg.command = 1; // TODO
         msg.payload = message;
@@ -68,7 +69,7 @@ namespace keycap::root::network
         return services_.size();
     }
 
-    bool service_locator::on_data(service_base& service, std::vector<uint8_t> const& data)
+    bool service_locator::on_data(data_router const& router, std::vector<uint8_t> const& data)
     {
         memory_stream stream(data.begin(), data.end());
 
@@ -91,7 +92,7 @@ namespace keycap::root::network
         return callback(service_type{sender}, msg.payload);
     }
 
-    bool service_locator::on_link(service_base& service, link_status status)
+    bool service_locator::on_link(data_router const& router, link_status status)
     {
         // TODO
         return true;

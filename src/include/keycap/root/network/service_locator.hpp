@@ -54,7 +54,7 @@ namespace keycap::root::network
     // that may or may not yet be located. The to be located services must be in service_mode::Server.
     class service_locator : public message_handler
     {
-        friend class data_router<service_locator>;
+        friend class data_router;
 
       public:
         // Creates a new service of the given type with the given host and port if none for this type exists.
@@ -75,13 +75,13 @@ namespace keycap::root::network
         size_t service_count() const;
 
       private:
-        bool on_data(service_base& service, std::vector<uint8_t> const& data) override;
+        bool on_data(data_router const& router, std::vector<uint8_t> const& data) override;
 
-        bool on_link(service_base& service, link_status status) override;
+        bool on_link(data_router const& router, link_status status) override;
 
-        class connection : public keycap::root::network::connection<service_locator>
+        class connection : public keycap::root::network::connection
         {
-            using base = keycap::root::network::connection<service_locator>;
+            using base = keycap::root::network::connection;
 
           public:
             connection(service_base& service, service_locator* locator);

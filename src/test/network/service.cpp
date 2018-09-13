@@ -48,7 +48,7 @@ namespace ServiceTest
         std::string data;
     };
 
-    struct ClientConnection : public net::connection<ClientConnection>, public net::message_handler
+    struct ClientConnection : public net::connection, public net::message_handler
     {
         ClientConnection(net::service_base& service)
           : connection{service}
@@ -65,7 +65,7 @@ namespace ServiceTest
             connection::listen();
         }
 
-        bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
+        bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -73,7 +73,7 @@ namespace ServiceTest
             return true;
         }
 
-        bool on_link(net::service_base& service, net::link_status status) override
+        bool on_link(net::data_router const& router, net::link_status status) override
         {
             myService.status = status;
             return true;
@@ -101,7 +101,7 @@ namespace ServiceTest
         std::string data;
     };
 
-    struct DummyConnection : public net::connection<DummyConnection>, public net::message_handler
+    struct DummyConnection : public net::connection, public net::message_handler
     {
         DummyConnection(net::service_base& service)
           : connection{service}
@@ -110,7 +110,7 @@ namespace ServiceTest
             router_.configure_inbound(this);
         }
 
-        bool on_data(net::service_base& service, std::vector<uint8_t> const& data) override
+        bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -124,7 +124,7 @@ namespace ServiceTest
             return true;
         }
 
-        bool on_link(net::service_base& service, net::link_status status) override
+        bool on_link(net::data_router const& router, net::link_status status) override
         {
             myService.status = status;
             return true;

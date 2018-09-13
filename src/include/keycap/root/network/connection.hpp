@@ -25,7 +25,6 @@ namespace keycap::root::network
 {
     class service_base;
 
-    template <typename MessageHandler>
     class connection : public connection_base
     {
       public:
@@ -59,7 +58,7 @@ namespace keycap::root::network
             }));
         }
 
-        data_router<MessageHandler>& get_router()
+        data_router& get_router()
         {
             return router_;
         }
@@ -115,7 +114,7 @@ namespace keycap::root::network
         }
 
       protected:
-        data_router<MessageHandler> router_;
+        data_router router_;
         service_base& service_;
     };
 }
