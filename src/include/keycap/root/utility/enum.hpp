@@ -252,7 +252,7 @@ public: \
     bool test_flag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
     Enum get() const { return value_; } \
     void set(Enum value) { value_ = value; } \
-    std::string to_string() const { return ::impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
+    std::string to_string() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
     static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
 private: \
     Enum value_; \
