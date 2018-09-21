@@ -206,6 +206,19 @@ namespace keycap::root::network
             read_position_ = 0;
         }
 
+        // Copies the memory_stream's data beginning from the current read position to a newly created vector and
+        // returns it
+        auto to_vector() const
+        {
+            return std::vector<uint8_t>{buffer_.begin() + size(), buffer_.end()};
+        }
+
+        // Returns the memory_stream's buffer
+        auto& buffer() const
+        {
+            return buffer_;
+        }
+
       private:
         size_t read_position_ = 0;
         std::vector<uint8_t> buffer_;
