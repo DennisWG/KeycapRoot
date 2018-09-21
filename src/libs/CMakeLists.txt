@@ -17,6 +17,7 @@ add_library(keycaproot
     utility/crc32.cpp
     utility/utility.cpp
     "utility/string.cpp"
+    network/connection.cpp
     network/message_handler.cpp
     network/service_locator.cpp
     network/srp6/server.cpp
