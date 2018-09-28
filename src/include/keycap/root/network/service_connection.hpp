@@ -37,9 +37,9 @@ namespace keycap::root::network
         void send_answer(uint64 receiver, memory_stream const& payload)
         {
             registered_message msg;
-            msg.crc = utility::crc32(receiver, uint16{1}, payload);
+            msg.crc = utility::crc32(receiver, registered_command::Request, payload);
             msg.sender = receiver;
-            msg.command = 1; // TODO
+            msg.command = registered_command::Request;
             msg.payload = payload;
 
             auto stream = msg.encode();

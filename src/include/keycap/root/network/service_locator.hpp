@@ -79,6 +79,8 @@ namespace keycap::root::network
 
         bool on_link(data_router const& router, link_status status) override;
 
+        void send_to_(service_type type, memory_stream const& message);
+
         class connection : public keycap::root::network::connection
         {
             using base = keycap::root::network::connection;

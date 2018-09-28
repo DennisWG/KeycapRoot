@@ -32,21 +32,14 @@ namespace keycap::root::network
 
     void service_locator::send_to(service_type type, memory_stream const& message)
     {
-        auto itr = services_.find(type.get());
-        if (itr == services_.end())
-        {
-            // TODO: place in queue!
-            return;
-        }
+        registered_message msg;
+        msg.crc = utility::crc32(uint64{0}, registered_command::Update, message);
+        msg.sender = 0;
+        msg.command = registered_command::Update;
+        msg.payload = message;
 
-        auto& service = itr->second;
-
-        if (auto conn = service.connection_.lock())
-            conn->send(std::vector<uint8_t>(message.data(), message.data() + message.size()));
-        else
-        {
-            // TODO: place in queue!
-        }
+        auto stream = msg.encode();
+        send_to_(type, stream);
     }
 
     void service_locator::send_registered(service_type type, memory_stream const& message, registered_callback callback)
@@ -55,13 +48,13 @@ namespace keycap::root::network
         registered_callbacks_[counter] = std::make_pair(type.get(), callback);
 
         registered_message msg;
-        msg.crc = utility::crc32(counter, uint16{1}, message);
+        msg.crc = utility::crc32(counter, registered_command::Request, message);
         msg.sender = counter;
-        msg.command = 1; // TODO
+        msg.command = registered_command::Request;
         msg.payload = message;
 
         auto stream = msg.encode();
-        send_to(type, stream);
+        send_to_(type, stream);
     }
 
     size_t service_locator::service_count() const
@@ -96,6 +89,25 @@ namespace keycap::root::network
     {
         // TODO
         return true;
+    }
+
+    void service_locator::send_to_(service_type type, memory_stream const& message)
+    {
+        auto itr = services_.find(type.get());
+        if (itr == services_.end())
+        {
+            // TODO: place in queue!
+            return;
+        }
+
+        auto& service = itr->second;
+
+        if (auto conn = service.connection_.lock())
+            conn->send(std::vector<uint8_t>(message.data(), message.data() + message.size()));
+        else
+        {
+            // TODO: place in queue!
+        }
     }
 
     service_locator::connection::connection(service_base& service, service_locator* locator)

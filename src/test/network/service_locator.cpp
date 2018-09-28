@@ -56,8 +56,10 @@ struct string_connection : public net::connection, public net::message_handler
 
     bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
     {
-        auto received = std::string{std::begin(data), std::end(data)};
-        my_service_.data = received;
+        net::memory_stream stream{data.begin(), data.end()};
+        auto msg = net::registered_message::decode(stream);
+        
+        my_service_.data = msg.payload.get_string(msg.payload.size());
 
         return true;
     }

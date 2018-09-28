@@ -36,6 +36,7 @@ namespace keycap::root::network
         // The connection handler will start to asynchronously listen for incoming data
         void listen();
 
+        // Sends the given stream asynchronously
         void send(memory_stream const& stream);
 
         // Sends the given data asynchronously

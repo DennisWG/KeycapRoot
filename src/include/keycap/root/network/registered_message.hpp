@@ -17,10 +17,16 @@
 #pragma once
 
 #include "../types.hpp"
+#include "../utility/enum.hpp"
 #include "memory_stream.hpp"
 
 namespace keycap::root::network
 {
+    keycap_enum(registered_command, uint16,
+        Update = 0,
+        Request = 1,
+    );
+
     // A message that allows RPC like messaging
     struct registered_message
     {
@@ -29,7 +35,7 @@ namespace keycap::root::network
         // Unique number of the sender. Used to route the answer back to the sender
         uint64 sender = 0;
         // The command that needs to be executed at the other end
-        uint16 command = 0;
+        registered_command command;
         // The command's payload
         memory_stream payload;
 
@@ -48,7 +54,7 @@ namespace keycap::root::network
             registered_message packet;
             packet.crc = decoder.get<uint32>();
             packet.sender = decoder.get<uint64>();
-            packet.command = decoder.get<uint16>();
+            packet.command = decoder.get<registered_command>();
             packet.payload = decoder.get_remaining();
             return packet;
         }
