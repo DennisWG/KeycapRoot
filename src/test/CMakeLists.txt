@@ -10,6 +10,7 @@ add_executable (test_${PROJECT_NAME}
     utility/crc32.cpp
     utility/enum.cpp
     utility/memory.cpp
+    utility/random.cpp
     utility/utility.cpp
     main.cpp
 )
