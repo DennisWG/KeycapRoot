@@ -15,6 +15,7 @@
 add_library(keycaproot
     ${version_file}
     utility/crc32.cpp
+    utility/random.cpp
     utility/utility.cpp
     "utility/string.cpp"
     network/connection.cpp
