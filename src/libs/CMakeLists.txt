@@ -18,6 +18,7 @@ add_library(keycaproot
     utility/random.cpp
     utility/utility.cpp
     "utility/string.cpp"
+    cryptography/ARC4.cpp
     network/connection.cpp
     network/message_handler.cpp
     network/service_locator.cpp
