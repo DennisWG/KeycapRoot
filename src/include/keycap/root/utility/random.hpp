@@ -17,46 +17,61 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 namespace keycap::root::utility
 {
     // Returns a random uint16 between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    uint16_t random_ui16(uint16_t const min, uint16_t const max);
+    uint16_t random_ui16(
+        uint16_t const min = std::numeric_limits<uint16_t>::min(),
+        uint16_t const max = std::numeric_limits<uint16_t>::max());
 
     // Returns a random uint32 between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    uint32_t random_ui32(uint32_t const min, uint32_t const max);
+    uint32_t random_ui32(
+        uint32_t const min = std::numeric_limits<uint32_t>::min(),
+        uint32_t const max = std::numeric_limits<uint32_t>::max());
 
     // Returns a random uint64 between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    uint64_t random_ui64(uint64_t const min, uint64_t const max);
+    uint64_t random_ui64(
+        uint64_t const min = std::numeric_limits<uint64_t>::min(),
+        uint64_t const max = std::numeric_limits<uint64_t>::max());
 
     // Returns a random int16 between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    int16_t random_i16(int16_t const min, int16_t const max);
+    int16_t random_i16(
+        int16_t const min = std::numeric_limits<int16_t>::min(),
+        int16_t const max = std::numeric_limits<int16_t>::max());
 
     // Returns a random int32 between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    int32_t random_i32(int32_t const min, int32_t const max);
+    int32_t random_i32(
+        int32_t const min = std::numeric_limits<int32_t>::min(),
+        int32_t const max = std::numeric_limits<int32_t>::max());
 
     // Returns a random int64 between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    int64_t random_i64(int64_t const min, int64_t const max);
+    int64_t random_i64(
+        int64_t const min = std::numeric_limits<int64_t>::min(),
+        int64_t const max = std::numeric_limits<int64_t>::max());
 
     // Returns a random float between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    float random_float(float const min, float const max);
+    float random_float(
+        float const min = std::numeric_limits<float>::min(), float const max = std::numeric_limits<float>::max());
 
-    // Returns a random float between min and max (inclusive)
+    // Returns a random double between min and max (inclusive)
     // Very fast, not cryptographically safe
     // Thread safe.
-    double random_double(double const min, double const max);
+    double random_double(
+        double const min = std::numeric_limits<double>::min(), double const max = std::numeric_limits<double>::max());
 }
