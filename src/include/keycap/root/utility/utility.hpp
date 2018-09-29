@@ -42,10 +42,14 @@ namespace keycap::root::utility
     }
 
     template <typename Iterator>
-    std::string to_hex_string(Iterator begin, Iterator end)
+    std::string to_hex_string(Iterator begin, Iterator end, bool prepend_0x = false)
     {
         std::stringstream ss;
         ss << std::hex << std::uppercase << std::setfill('0');
+
+        if(prepend_0x)
+            ss << "0x";
+
         for (; begin != end; ++begin)
             ss << std::setw(2) << static_cast<unsigned int>(*begin);
 
