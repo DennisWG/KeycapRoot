@@ -17,6 +17,7 @@
 #pragma once
 
 #include "compliance.hpp"
+#include "group_parameters.hpp"
 
 #include <botan/bigint.h>
 
