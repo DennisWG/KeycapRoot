@@ -154,6 +154,22 @@ namespace keycap::root::network
             return string;
         }
 
+        // Returns a std::string from the stream. Assumes the string is zero-terminated
+        std::string get_string()
+        {
+            std::string str;
+            while (read_position_ < buffer_.size())
+            {
+                char c = get<char>();
+                if (c == '\0')
+                    break;
+
+                str += c;
+            }
+
+            return str;
+        }
+
         // Returns the remaining data as a stream
         memory_stream get_remaining()
         {
