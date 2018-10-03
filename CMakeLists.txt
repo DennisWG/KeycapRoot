@@ -43,6 +43,12 @@ enable_testing()
          INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${Botan_INCLUDE_DIR}
  )
  
+ ################################
+ # Zlib
+ ################################
+
+ find_package(ZLIB REQUIRED)
+ 
 # ################################
 # # external submodules
 # ################################

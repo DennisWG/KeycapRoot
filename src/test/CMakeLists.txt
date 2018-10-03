@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.7.0)
 
 add_executable (test_${PROJECT_NAME}
+    compression/zip.cpp
     configuration/config_file.cpp
     cryptography/ARC4.cpp
     network/srp6/srp6.cpp
