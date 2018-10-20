@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "../utility/string.hpp"
+
 #include <experimental/filesystem>
 #include <json.hpp>
 
@@ -24,17 +26,13 @@
 
 namespace keycap::root::configuration
 {
-    // Manages configuration data stored on file
-    class config_file
+    // Represents an arbitrary entry withing the config file
+    class config_entry
     {
       public:
-        // Opens and parsed the file at the given filePath
-        config_file(std::experimental::filesystem::path const& filePath)
+        config_entry(nlohmann::json::value_type const& value)
+          : json_{value}
         {
-            std::ifstream file(filePath.string());
-            if (!file)
-                throw std::exception(("Could not open file " + filePath.string()).c_str());
-            file >> json_;
         }
 
         // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do
@@ -92,6 +90,104 @@ namespace keycap::root::configuration
             }
 
             return default;
+        }
+
+      private:
+        nlohmann::json::value_type const& json_;
+    };
+
+    // Manages configuration data stored on file
+    class config_file
+    {
+      public:
+        // Opens and parsed the file at the given filePath
+        config_file(std::experimental::filesystem::path const& filePath);
+
+        // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do
+        // so
+        template <typename ReturnType>
+        ReturnType get(std::string const& category, std::string const& value) const
+        {
+            auto itr = json_.find(category);
+            if (itr != json_.end())
+            {
+                if (!itr->is_object())
+                    throw std::exception{(category + " does not contain any items!").c_str()};
+
+                auto value_itr = itr->find(value);
+                if (value_itr == itr->end())
+                {
+                    auto msg = ("Category " + category + " does not contain item " + value).c_str();
+                    throw std::exception{msg};
+                }
+
+                return value_itr->get<ReturnType>();
+            }
+            else
+            {
+                itr = json_.find(value);
+                if (itr != json_.end())
+                    return itr->get<ReturnType>();
+            }
+
+            throw std::exception{("Could not find standalone key " + category + " " + value).c_str()};
+        }
+
+        // Attempts to retreive the value of the given category with the given name. Returns the given default if it
+        // fails to do so
+        template <typename ReturnType>
+        ReturnType get_or_default(std::string const& category, std::string const& value, ReturnType default) const
+        {
+            auto itr = json_.find(category);
+            if (itr != json_.end())
+            {
+                if (!itr->is_object())
+                    return default;
+
+                auto value_itr = itr->find(value);
+                if (value_itr == itr->end())
+                    return default;
+
+                return value_itr->get<ReturnType>();
+            }
+            else
+            {
+                itr = json_.find(value);
+                if (itr != json_.end())
+                    return itr->get<ReturnType>();
+            }
+
+            return default;
+        }
+
+        template <typename Callback>
+        void iterate_array(std::string const& category, std::string const& value, Callback&& callback) const
+        {
+            auto iterate = [callback = std::forward<Callback>(callback)](nlohmann::json::value_type const& value)
+            {
+                for (auto& i : value)
+                    callback(config_entry{i});
+            };
+
+            if (auto itr = json_.find(category); itr != json_.end())
+            {
+                if (!itr->is_object())
+                    return;
+
+                auto value_itr = itr->find(value);
+                if (value_itr == itr->end() || !value_itr->is_array())
+                    return;
+
+                iterate(*value_itr);
+            }
+            else
+            {
+                itr = json_.find(value);
+                if (itr == json_.end() || !itr->is_array())
+                    return;
+
+                iterate(*itr);
+            }
         }
 
       private:

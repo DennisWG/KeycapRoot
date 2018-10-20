@@ -23,12 +23,12 @@ TEST_CASE("Constructing a config_file", "[config_file]")
 {
     SECTION("Given a valid file path with valid json, constructing a config_file should not throw")
     {
-        REQUIRE_NOTHROW(config::config_file{"../test.cfg"});
+        REQUIRE_NOTHROW(config::config_file{"test.cfg"});
     }
 
     SECTION("Given a valid file path with invalid json, constructing a config_file should throw")
     {
-        REQUIRE_THROWS(config::config_file{"../invalid.cfg"});
+        REQUIRE_THROWS(config::config_file{"invalid.cfg"});
     }
 
     SECTION("Given an invalid file path, constructing a config_file should throw")
@@ -39,7 +39,7 @@ TEST_CASE("Constructing a config_file", "[config_file]")
 
 TEST_CASE("Testing config_file::get", "[config_file]")
 {
-    config::config_file cfgFile{"../test.cfg"};
+    config::config_file cfgFile{"test.cfg"};
 
     SECTION("config_file::get must return the requested value if both the category and the value are valid")
     {
@@ -77,7 +77,7 @@ TEST_CASE("Testing config_file::get", "[config_file]")
 
 TEST_CASE("Testing config_file::get_or_default", "[config_file]")
 {
-    config::config_file cfgFile{"../test.cfg"};
+    config::config_file cfgFile{"test.cfg"};
 
     SECTION("config_file::get_or_default must return the requested value if both the category and the value are valid")
     {
@@ -123,4 +123,23 @@ TEST_CASE("Testing config_file::get_or_default", "[config_file]")
         auto value = cfgFile.get_or_default<bool>("", "Invalid", defaultValue);
         REQUIRE(value == defaultValue);
     }
+}
+
+TEST_CASE("Testing config_file::iterate_array", "[config_file]")
+{
+    config::config_file cfgFile{"test.cfg"};
+
+    std::vector<std::pair<std::string, int>> expected_values = {{"Huey", 21}, {"Marry", 25}, {"Hans", 18}};
+    auto current_values = expected_values.begin();
+
+    cfgFile.iterate_array("", "Array", [&current_values](config::config_entry& value) {
+        auto name = value.get_or_default<std::string>("", "name", "no-name");
+        auto age = value.get_or_default("", "age", 21);
+
+        auto[required_name, required_age] = *current_values;
+        ++current_values;
+
+        REQUIRE(name == required_name);
+        REQUIRE(age == required_age);
+    });
 }

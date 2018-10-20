@@ -18,6 +18,7 @@ add_library(keycaproot
     utility/random.cpp
     utility/utility.cpp
     "utility/string.cpp"
+    "configuration/config_file.cpp"
     compression/zip.cpp
     cryptography/ARC4.cpp
     network/connection.cpp
