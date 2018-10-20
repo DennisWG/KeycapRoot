@@ -24,6 +24,9 @@ namespace keycap::root::utility
     // Explodes the string into a list of substrings divided by the given delimiter
     std::vector<std::string> explode(std::string const& str, char delim = ' ');
 
+    // Joins the given vector of strings into one single string delimited by the given delimiter
+    std::string join(std::vector<std::string> const& vec, char delim = ' ');
+
     // ASCII toupper
     std::string to_upper(std::string s);
 

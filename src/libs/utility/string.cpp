@@ -33,6 +33,26 @@ namespace keycap::root::utility
         return result;
     }
 
+    std::string join(std::vector<std::string> const& vec, char delim)
+    {
+        std::string str;
+        str.reserve(256);
+
+        bool first = true;
+
+        for (auto const& s : vec)
+        {
+            if (!first)
+                str += delim;
+
+            str += s;
+
+            first = false;
+        }
+
+        return str;
+    }
+
     std::string to_upper(std::string s)
     {
         [[maybe_unused]] auto end
