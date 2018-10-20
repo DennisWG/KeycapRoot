@@ -32,5 +32,11 @@ namespace keycap::root::utility
         {
             crc.process_bytes(str.data(), str.size());
         }
+
+        template <>
+        void hash<std::array<uint8, 256>>(boost::crc_32_type& crc, std::array<uint8, 256> const& ar)
+        {
+            crc.process_bytes(ar.data(), 256);
+        }
     }
 }
