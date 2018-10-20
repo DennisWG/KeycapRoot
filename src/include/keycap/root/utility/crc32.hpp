@@ -40,6 +40,9 @@ namespace keycap::root::utility
 
         template <>
         void hash<std::string>(boost::crc_32_type& crc, std::string const& str);
+
+        template <>
+        void hash<std::array<uint8, 256>>(boost::crc_32_type& crc, std::array<uint8, 256> const& ar);
     }
 
     template <typename... ARGS>
@@ -52,7 +55,7 @@ namespace keycap::root::utility
 
         return crc.checksum();
     }
-    
+
     template <typename... ARGS>
     bool validate_crc32(uint32 crc, ARGS&&... args)
     {
