@@ -235,6 +235,12 @@ namespace keycap::root::network
             return buffer_;
         }
 
+        // Decompresses the given length of the buffer
+        // May resize (and therefore reallocate) the buffer
+        void decompress(uint32_t length);
+
+        bool has_data_remaining() const;
+
       private:
         size_t read_position_ = 0;
         std::vector<uint8_t> buffer_;
@@ -247,7 +253,7 @@ namespace keycap::root::network
             typedef std::false_type no;
 
             template <typename U>
-            static auto test(int) -> decltype(std::declval<U>().Encode() == 1, yes());
+            static auto test(int) -> decltype(std::declval<U>().encode() == 1, yes());
 
             template <typename>
             static no test(...);
@@ -264,7 +270,7 @@ namespace keycap::root::network
             typedef std::false_type no;
 
             template <typename U>
-            static auto test(int) -> decltype(std::declval<U>().Decode() == 1, yes());
+            static auto test(int) -> decltype(std::declval<U>().decode() == 1, yes());
 
             template <typename>
             static no test(...);

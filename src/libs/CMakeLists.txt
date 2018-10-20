@@ -22,6 +22,7 @@ add_library(keycaproot
     compression/zip.cpp
     cryptography/ARC4.cpp
     network/connection.cpp
+    network/memory_stream.cpp
     network/message_handler.cpp
     network/service_locator.cpp
     network/srp6/server.cpp
