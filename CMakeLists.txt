@@ -63,6 +63,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/rapidcheck")
  if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
    set(MY_CXX_FLAGS_LIST
  	/std:c++latest
+    /permissive-
      )
    string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
  

@@ -132,7 +132,7 @@ TEST_CASE("Testing config_file::iterate_array", "[config_file]")
     std::vector<std::pair<std::string, int>> expected_values = {{"Huey", 21}, {"Marry", 25}, {"Hans", 18}};
     auto current_values = expected_values.begin();
 
-    cfgFile.iterate_array("", "Array", [&current_values](config::config_entry& value) {
+    cfgFile.iterate_array("", "Array", [&current_values](config::config_entry&& value) {
         auto name = value.get_or_default<std::string>("", "name", "no-name");
         auto age = value.get_or_default("", "age", 21);
 

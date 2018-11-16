@@ -31,7 +31,8 @@ namespace keycap::root::compression::zip
     template <typename Iter>
     std::vector<uint8_t> compress(Iter begin, Iter end)
     {
-        assert((end - begin) < unsigned long(-1), "The range mustn't be bigger than 2^32 bytes!");
+        constexpr unsigned long minus_one = -1;
+        assert((end - begin) < minus_one, "The range mustn't be bigger than 2^32 bytes!");
 
         if (begin == end)
             return {};
@@ -42,7 +43,8 @@ namespace keycap::root::compression::zip
     template <typename Iter>
     std::vector<uint8_t> decompress(Iter begin, Iter end)
     {
-        assert((end - begin) < unsigned long(-1), "The range mustn't be bigger than 2^32 bytes!");
+        constexpr unsigned long minus_one = -1;
+        assert((end - begin) < minus_one, "The range mustn't be bigger than 2^32 bytes!");
 
         if (begin == end)
             return {};

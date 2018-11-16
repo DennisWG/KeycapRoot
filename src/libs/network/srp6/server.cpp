@@ -47,7 +47,7 @@ auto Scramble(Botan::BigInt const& A, Botan::BigInt const& B, size_t length, srp
 }
 
 /* Refer to https://www.ietf.org/rfc/rfc2945.txt section "3.1.  Interleaved SHA" */
-auto ShaInterleaved(std::vector<uint8_t>& S)
+auto ShaInterleaved(std::vector<uint8_t> S)
 {
     using namespace keycap::root;
 

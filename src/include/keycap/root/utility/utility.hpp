@@ -17,6 +17,7 @@
 #pragma once
 
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include <cctype>
@@ -47,7 +48,7 @@ namespace keycap::root::utility
         std::stringstream ss;
         ss << std::hex << std::uppercase << std::setfill('0');
 
-        if(prepend_0x)
+        if (prepend_0x)
             ss << "0x";
 
         for (; begin != end; ++begin)

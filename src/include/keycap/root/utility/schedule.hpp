@@ -95,7 +95,7 @@ namespace keycap::root::utility
         void cancel(scheduled_item item)
         {
             std::lock_guard<std::mutex> lock{timers_mutex_};
-            if (auto& itr = timers_.find(item.counter_); itr != timers_.end())
+            if (auto itr = timers_.find(item.counter_); itr != timers_.end())
             {
                 itr->second.cancel();
                 timers_.erase(itr);

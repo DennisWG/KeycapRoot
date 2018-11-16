@@ -32,11 +32,11 @@ template <typename connection>
 struct server_service : public net::service<connection>
 {
     server_service()
-      : service{net::service_mode::Server, net::service_type{0}}
+      : net::service<connection>{net::service_mode::Server, net::service_type{0}}
     {
     }
 
-    virtual SharedHandler make_handler() override
+    virtual net::service<connection>::SharedHandler make_handler() override
     {
         return std::make_shared<connection>(*this);
     }

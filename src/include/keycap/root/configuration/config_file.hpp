@@ -68,17 +68,17 @@ namespace keycap::root::configuration
         // Attempts to retreive the value of the given category with the given name. Returns the given default if it
         // fails to do so
         template <typename ReturnType>
-        ReturnType get_or_default(std::string const& category, std::string const& value, ReturnType default) const
+        ReturnType get_or_default(std::string const& category, std::string const& value, ReturnType default_value) const
         {
             auto itr = json_.find(category);
             if (itr != json_.end())
             {
                 if (!itr->is_object())
-                    return default;
+                    return default_value;
 
                 auto value_itr = itr->find(value);
                 if (value_itr == itr->end())
-                    return default;
+                    return default_value;
 
                 return value_itr->get<ReturnType>();
             }
@@ -89,7 +89,7 @@ namespace keycap::root::configuration
                     return itr->get<ReturnType>();
             }
 
-            return default;
+            return default_value;
         }
 
       private:
@@ -136,17 +136,17 @@ namespace keycap::root::configuration
         // Attempts to retreive the value of the given category with the given name. Returns the given default if it
         // fails to do so
         template <typename ReturnType>
-        ReturnType get_or_default(std::string const& category, std::string const& value, ReturnType default) const
+        ReturnType get_or_default(std::string const& category, std::string const& value, ReturnType default_value) const
         {
             auto itr = json_.find(category);
             if (itr != json_.end())
             {
                 if (!itr->is_object())
-                    return default;
+                    return default_value;
 
                 auto value_itr = itr->find(value);
                 if (value_itr == itr->end())
-                    return default;
+                    return default_value;
 
                 return value_itr->get<ReturnType>();
             }
@@ -157,7 +157,7 @@ namespace keycap::root::configuration
                     return itr->get<ReturnType>();
             }
 
-            return default;
+            return default_value;
         }
 
         template <typename Callback>
