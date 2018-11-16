@@ -32,7 +32,7 @@ template <typename connection>
 struct server_service : public net::service<connection>
 {
     server_service()
-      : service{net::service_mode::Server}
+      : service{net::service_mode::Server, net::service_type{0}}
     {
     }
 
@@ -54,17 +54,17 @@ struct string_connection : public net::connection, public net::message_handler
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
+    bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
     {
         net::memory_stream stream{data.begin(), data.end()};
         auto msg = net::registered_message::decode(stream);
-        
+
         my_service_.data = msg.payload.get_string(msg.payload.size());
 
         return true;
     }
 
-    bool on_link(net::data_router const& router, net::link_status status) override
+    bool on_link(net::data_router const& router, net::service_type service, net::link_status status) override
     {
         my_service_.status = status;
         return true;
@@ -83,7 +83,7 @@ struct data_connection : public net::service_connection
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, uint64 sender, net::memory_stream& stream) override
+    bool on_data(net::data_router const& router, net::service_type service, uint64 sender, net::memory_stream& stream) override
     {
         my_service_.data = stream.get_string(strlen("Foobar"));
 
@@ -94,7 +94,7 @@ struct data_connection : public net::service_connection
         return true;
     }
 
-    bool on_link(net::data_router const& router, net::link_status status) override
+    bool on_link(net::data_router const& router, net::service_type service, net::link_status status) override
     {
         my_service_.status = status;
         return true;

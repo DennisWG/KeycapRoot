@@ -18,14 +18,26 @@
 
 namespace keycap::root::network
 {
-    // Defines the status of a link between two services
-    enum class link_status
+    using service_type_t = uint32_t;
+    class service_type
     {
-        // There is currently no link established
-        Down,
-        // A link has been established
-        Up,
-        // Failed to establish a link
-        Failed,
+      public:
+        explicit service_type(service_type_t type)
+          : type_{type}
+        {
+        }
+
+        service_type_t get() const
+        {
+            return type_;
+        }
+
+        bool operator==(service_type const& other) const
+        {
+            return type_ == other.type_;
+        }
+
+      private:
+        const service_type_t type_;
     };
 }

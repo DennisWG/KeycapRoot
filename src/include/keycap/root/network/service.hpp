@@ -45,8 +45,9 @@ namespace keycap::root::network
         using SharedHandler = std::shared_ptr<Connection>;
 
       public:
-        service(service_mode mode, int threadCount = 1)
-          : thread_count_{threadCount}
+        service(service_mode mode, service_type type, int threadCount = 1)
+          : service_base{type}
+          , thread_count_{threadCount}
           , acceptor_{io_service_}
           , mode_{mode}
         {
@@ -66,10 +67,23 @@ namespace keycap::root::network
         // Starts listening for network communications on or connects to the given host and port
         void start(std::string const& host, uint16_t port)
         {
+            resolve(host, port);
             if (mode_ == service_mode::Server)
-                begin_listen(host, port);
+                begin_listen();
             else if (mode_ == service_mode::Client)
-                connect_to(host, port);
+                connect();
+
+            run_thread_pool();
+        }
+
+        void restart()
+        {
+            if (mode_ == service_mode::Server)
+                begin_listen();
+            else if (mode_ == service_mode::Client)
+                connect();
+
+            run_thread_pool();
         }
 
         // Stops listening for new connections. Any asynchronous accept operations will be cancelled immediately
@@ -97,22 +111,45 @@ namespace keycap::root::network
         virtual SharedHandler make_handler() = 0;
 
       private:
-        void begin_listen(std::string const& host, uint16_t port)
+        void resolve(std::string const& host, uint16_t port)
+        {
+            boost::asio::ip::tcp::resolver resolver{io_service_};
+            endpoint_ = resolver.resolve({host, ""})->endpoint();
+            endpoint_.port(port);
+        }
+
+        void begin_listen()
         {
             auto handler = make_handler();
             handler->get_router().configure_outbound(handler);
 
-            boost::asio::ip::tcp::resolver resolver{io_service_};
-            auto ep = resolver.resolve({host, ""})->endpoint();
-            boost::asio::ip::tcp::endpoint endpoint{ep.address(), port};
-
-            acceptor_.open(endpoint.protocol());
+            acceptor_.open(endpoint_.protocol());
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address{true});
-            acceptor_.bind(endpoint);
+            acceptor_.bind(endpoint_);
             acceptor_.listen();
 
-            acceptor_.async_accept(
-                handler->socket(), [=](auto errorCode) { handle_new_connection(handler, errorCode); });
+            acceptor_.async_accept(handler->socket(), [=](auto errorCode) {
+                ;
+                handle_new_connection(handler, errorCode);
+            });
+        }
+
+        void connect()
+        {
+            auto handler = make_handler();
+            handler->get_router().configure_outbound(handler);
+
+            boost::system::error_code error;
+            handler->socket().async_connect(endpoint_, [=](auto errorCode) {
+                ;
+                handle_new_connection(handler, errorCode);
+            });
+        }
+
+        void run_thread_pool()
+        {
+            if(io_service_.stopped())
+                io_service_.restart();
 
             for (int i = 0; i < thread_count_; ++i)
                 thread_pool_.emplace_back([=] {
@@ -127,29 +164,19 @@ namespace keycap::root::network
                 });
         }
 
-        void connect_to(std::string const& host, uint16_t port)
-        {
-            boost::asio::ip::tcp::resolver resolver{io_service_};
-            auto ep = resolver.resolve({host, ""})->endpoint();
-            ep.port(port);
-
-            auto handler = make_handler();
-            handler->get_router().configure_outbound(handler);
-
-            boost::system::error_code error;
-            handler->socket().async_connect(ep, [=](auto errorCode) { handle_new_connection(handler, errorCode); });
-
-            for (int i = 0; i < thread_count_; ++i)
-                thread_pool_.emplace_back([=] { io_service_.run(); });
-        }
-
         void handle_new_connection(SharedHandler handler, boost::system::error_code const& error)
         {
             if (error)
+            {
+                handler->get_router().route_updated_link_status(*this, link_status::Failed);
                 return;
+            }
 
             if (!on_new_connection(handler))
+            {
+                handler->get_router().route_updated_link_status(*this, link_status::Failed);
                 return;
+            }
 
             handler->get_router().route_updated_link_status(*this, link_status::Up);
             handler->listen();
@@ -167,5 +194,7 @@ namespace keycap::root::network
         boost::asio::io_service io_service_;
         boost::asio::ip::tcp::acceptor acceptor_;
         service_mode mode_;
+
+        boost::asio::ip::tcp::endpoint endpoint_;
     };
 }

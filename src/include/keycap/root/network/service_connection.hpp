@@ -32,7 +32,7 @@ namespace keycap::root::network
         {
         }
 
-        virtual bool on_data(data_router const& router, uint64 sender, memory_stream& stream) = 0;
+        virtual bool on_data(data_router const& router,  service_type service, uint64 sender, memory_stream& stream) = 0;
 
         void send_answer(uint64 receiver, memory_stream const& payload)
         {
@@ -47,7 +47,7 @@ namespace keycap::root::network
         }
 
       private:
-        bool on_data(data_router const& router, std::vector<uint8_t> const& data) final
+        bool on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data) final
         {
             memory_stream stream(data.begin(), data.end());
 
@@ -59,7 +59,7 @@ namespace keycap::root::network
                 return false;
             }
 
-            return on_data(router, msg.sender, msg.payload);
+            return on_data(router, service, msg.sender, msg.payload);
         }
     };
 }

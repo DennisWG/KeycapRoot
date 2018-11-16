@@ -33,63 +33,27 @@ namespace keycap::root::network
     class data_router
     {
       public:
-        data_router()
-        {
-        }
+        data_router();
 
         // Adds a new message_handler for incoming data
-        void configure_inbound(message_handler* handler)
-        {
-            inbound_handlers_.push_back(handler);
-        }
+        void configure_inbound(message_handler* handler);
 
         // Adds a new ConnectionHandler for outgoing data
-        void configure_outbound(std::weak_ptr<connection_base> handler)
-        {
-            outbound_handlers.push_back(handler);
-        }
+        void configure_outbound(std::weak_ptr<connection_base> handler);
 
         // Removes the given MessageeHandler
-        void remove_handler(message_handler* handler)
-        {
-            inbound_handlers_.erase(
-                std::remove_if(
-                    inbound_handlers_.begin(), inbound_handlers_.end(),
-                    [&](message_handler* messageHandler) { return *messageHandler == *handler; }),
-                inbound_handlers_.end());
-        }
+        void remove_handler(message_handler* handler);
 
         // Routes the updated link_status to all registered message_handlers
-        void route_updated_link_status(service_base& service, link_status status) const
-        {
-            for (auto handler : inbound_handlers_)
-                handler->on_link(*this, status);
-        }
+        void route_updated_link_status(service_base& service, link_status status) const;
 
         // Routes the given data from the given Service to all registered message_handlers
         // Will call every registered message_handler, even if one of them fails
         // Returns whether or not all message_handler succeeded.
-        bool route_inbound(service_base& service, std::vector<uint8_t> const& data) const
-        {
-            bool succeeded = true;
-
-            for (auto handler : inbound_handlers_)
-                succeeded = succeeded && handler->on_data(*this, data);
-
-            return succeeded;
-        }
+        bool route_inbound(service_base& service, std::vector<uint8_t> const& data) const;
 
         // Routes the given data to the given receiver
-        void route_outbound(std::vector<uint8_t> const& data) const
-        {
-            for (auto&& handlerPtr : outbound_handlers)
-            {
-                if (auto handler = handlerPtr.lock())
-                {
-                    handler->send(data);
-                }
-            }
-        }
+        void route_outbound(std::vector<uint8_t> const& data) const;
 
       private:
         std::vector<message_handler*> inbound_handlers_;

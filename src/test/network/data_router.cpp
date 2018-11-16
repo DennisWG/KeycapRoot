@@ -30,6 +30,7 @@ class TestHandler;
 struct DummyService : public net::service_base
 {
     DummyService()
+      : net::service_base{net::service_type{0}}
     {
     }
 
@@ -55,13 +56,13 @@ class TestHandler : public net::message_handler
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
+    bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
     {
         OnMessageCalled = true;
         return true;
     }
 
-    bool on_link(net::data_router const& router, net::link_status status) override
+    bool on_link(net::data_router const& router, net::service_type service, net::link_status status) override
     {
         OnLinkCalled = true;
         return true;

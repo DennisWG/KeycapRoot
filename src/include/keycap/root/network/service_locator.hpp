@@ -17,6 +17,7 @@
 #pragma once
 
 #include "../types.hpp"
+#include "../utility/schedule.hpp"
 #include "connection.hpp"
 #include "message_handler.hpp"
 #include "service.hpp"
@@ -26,29 +27,6 @@
 namespace keycap::root::network
 {
     class memory_stream;
-
-    using service_type_t = uint32;
-    class service_type
-    {
-      public:
-        explicit service_type(service_type_t type)
-          : type_{type}
-        {
-        }
-
-        service_type_t get() const
-        {
-            return type_;
-        }
-
-        bool operator==(service_type const& other) const
-        {
-            return type_ == other.type_;
-        }
-
-      private:
-        const service_type_t type_;
-    };
 
     // Abstracts away the need to send messages to a specific connection. Instead, messages will be send to a service
     // that may or may not yet be located. The to be located services must be in service_mode::Server.
@@ -75,9 +53,9 @@ namespace keycap::root::network
         size_t service_count() const;
 
       private:
-        bool on_data(data_router const& router, std::vector<uint8_t> const& data) override;
+        bool on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data) override;
 
-        bool on_link(data_router const& router, link_status status) override;
+        bool on_link(data_router const& router, service_type service, link_status status) override;
 
         void send_to_(service_type type, memory_stream const& message);
 
@@ -94,7 +72,7 @@ namespace keycap::root::network
             using base = keycap::root::network::service<connection>;
 
           public:
-            service(service_locator* locator);
+            service(service_type type, service_locator* locator);
 
             virtual SharedHandler make_handler() override;
 
@@ -108,5 +86,7 @@ namespace keycap::root::network
 
         uint64 registered_callback_counter_ = 0;
         std::unordered_map<uint64, std::pair<service_type_t, registered_callback>> registered_callbacks_;
+
+        utility::schedule schedule_;
     };
 }

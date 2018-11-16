@@ -35,7 +35,7 @@ namespace ServiceTest
     struct ClientService : public net::service<ClientConnection>
     {
         ClientService()
-          : service{net::service_mode::Client}
+          : service{net::service_mode::Client, net::service_type{0}}
         {
         }
 
@@ -65,7 +65,7 @@ namespace ServiceTest
             connection::listen();
         }
 
-        bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
+        bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -73,7 +73,7 @@ namespace ServiceTest
             return true;
         }
 
-        bool on_link(net::data_router const& router, net::link_status status) override
+        bool on_link(net::data_router const& router, net::service_type service, net::link_status status) override
         {
             myService.status = status;
             return true;
@@ -88,7 +88,7 @@ namespace ServiceTest
     struct ServerService : public net::service<DummyConnection>
     {
         ServerService()
-          : service{net::service_mode::Server}
+          : service{net::service_mode::Server, net::service_type{0}}
         {
         }
 
@@ -110,7 +110,7 @@ namespace ServiceTest
             router_.configure_inbound(this);
         }
 
-        bool on_data(net::data_router const& router, std::vector<uint8_t> const& data) override
+        bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -124,7 +124,7 @@ namespace ServiceTest
             return true;
         }
 
-        bool on_link(net::data_router const& router, net::link_status status) override
+        bool on_link(net::data_router const& router, net::service_type service, net::link_status status) override
         {
             myService.status = status;
             return true;

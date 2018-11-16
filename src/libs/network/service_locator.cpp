@@ -26,7 +26,7 @@ namespace keycap::root::network
         if (auto itr = services_.find(type.get()); itr != services_.end())
             return;
 
-        auto& service = services_.try_emplace(type.get(), this).first->second;
+        auto& service = services_.try_emplace(services_.end(), type.get(), type, this)->second;
         service.start(host, port);
     }
 
@@ -62,7 +62,7 @@ namespace keycap::root::network
         return services_.size();
     }
 
-    bool service_locator::on_data(data_router const& router, std::vector<uint8_t> const& data)
+    bool service_locator::on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data)
     {
         memory_stream stream(data.begin(), data.end());
 
@@ -85,9 +85,20 @@ namespace keycap::root::network
         return callback(service_type{sender}, msg.payload);
     }
 
-    bool service_locator::on_link(data_router const& router, link_status status)
+    bool service_locator::on_link(data_router const& router, service_type service, link_status status)
     {
-        // TODO
+        if(status == link_status::Up)
+            return true;
+
+        schedule_.add(std::chrono::seconds(5), [=](auto error){
+            auto itr = services_.find(service.get());
+            if(itr == services_.end())
+                return;
+            
+            auto &serv = itr->second;
+            serv.restart();
+        });
+
         return true;
     }
 
@@ -116,8 +127,8 @@ namespace keycap::root::network
         router_.configure_inbound(locator);
     }
 
-    service_locator::service::service(service_locator* locator)
-      : base{service_mode::Client}
+    service_locator::service::service(service_type type, service_locator* locator)
+      : base{service_mode::Client, type}
       , locator_{locator}
     {
     }
