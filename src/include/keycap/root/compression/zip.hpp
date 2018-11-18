@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "../utility/assert.hpp"
+
 #include <cassert>
 #include <cstdint>
 #include <vector>
@@ -32,7 +34,7 @@ namespace keycap::root::compression::zip
     std::vector<uint8_t> compress(Iter begin, Iter end)
     {
         constexpr unsigned long minus_one = -1;
-        assert((end - begin) < minus_one, "The range mustn't be bigger than 2^32 bytes!");
+        kcr_assert((end - begin) < minus_one, "The range mustn't be bigger than 2^32 bytes!");
 
         if (begin == end)
             return {};
@@ -44,7 +46,7 @@ namespace keycap::root::compression::zip
     std::vector<uint8_t> decompress(Iter begin, Iter end)
     {
         constexpr unsigned long minus_one = -1;
-        assert((end - begin) < minus_one, "The range mustn't be bigger than 2^32 bytes!");
+        kcr_assert((end - begin) < minus_one, "The range mustn't be bigger than 2^32 bytes!");
 
         if (begin == end)
             return {};

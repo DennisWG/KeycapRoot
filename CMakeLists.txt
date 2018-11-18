@@ -64,6 +64,9 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/rapidcheck")
    set(MY_CXX_FLAGS_LIST
  	/std:c++latest
     /permissive-
+    /experimental:external
+    /external:W0
+    /external:env:cpp_external_paths
      )
    string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
  
