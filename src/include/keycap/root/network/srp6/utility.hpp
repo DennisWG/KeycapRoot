@@ -42,6 +42,6 @@ namespace keycap::root::network::srp6
 
     Botan::BigInt generate_client_proof(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& s, std::string const& I,
-        Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& S,
+        Botan::BigInt const& A, Botan::BigInt const& B, Botan::BigInt const& S,
         keycap::root::network::srp6::compliance compliance);
 }

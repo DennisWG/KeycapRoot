@@ -127,7 +127,7 @@ namespace keycap::root::network::srp6
 
     Botan::BigInt generate_client_proof(
         Botan::BigInt const& N, Botan::BigInt const& g, Botan::BigInt const& salt, std::string const& I,
-        Botan::BigInt const& A, Botan::BigInt const& B, std::vector<uint8_t> const& sessionKey,
+        Botan::BigInt const& A, Botan::BigInt const& B, Botan::BigInt const& sessionKey,
         keycap::root::network::srp6::compliance compliance)
     {
         Botan::SHA_1 sha1;
@@ -144,7 +144,7 @@ namespace keycap::root::network::srp6
         sha1.update(encode_flip(salt));
         sha1.update(encode_flip(A));
         sha1.update(encode_flip(B));
-        sha1.update(sessionKey);
+        sha1.update(encode_flip(sessionKey));
         return decode_flip(sha1.final());
     }
 }

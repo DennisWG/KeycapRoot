@@ -36,10 +36,10 @@ namespace keycap::root::network::srp6
         Botan::BigInt const& public_ephemeral_value() const noexcept;
 
         // Returns the session key (K = H(S))
-        std::vector<uint8_t> session_key(Botan::BigInt const& A);
+        Botan::BigInt session_key(Botan::BigInt const& A);
 
         // Generates the server proof (M2_S)
-        Botan::BigInt proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const;
+        Botan::BigInt proof(Botan::BigInt const& clientProof, Botan::BigInt const& sessionKey) const;
 
         // Returns the Compliance mode
         compliance compliance_mode() const noexcept;

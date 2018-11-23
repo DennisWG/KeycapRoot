@@ -23,11 +23,11 @@ namespace srp = keycap::root::network::srp6;
 
 TEST_CASE("srp6")
 {
+    auto parameter = srp::get_parameters(srp::group_parameters::_256);
+    constexpr auto compliance = srp::compliance::Wow;
+
     SECTION("Server proof must be correct when given valid data")
     {
-        auto parameter = srp::get_parameters(srp::group_parameters::_256);
-        constexpr auto compliance = srp::compliance::Wow;
-
         Botan::BigInt b("1690411537445209277817416133899538702421434810938158426182998584737568201187");
         Botan::BigInt A("0x6fcd7fdf9799a025174f5afe2d59e5d47d02f23c64c643400c591e5e961609d8");
         Botan::BigInt M1("0xadfd0d5fb71ed0680bf7c3ca37215ea722d801e1");
@@ -54,9 +54,6 @@ TEST_CASE("srp6")
 
     SECTION("generate_verifier must always yield the same verifier given the same salt")
     {
-        auto parameter = srp::get_parameters(srp::group_parameters::_256);
-        constexpr auto compliance = srp::compliance::Wow;
-
         std::string username = "USER";
         std::string password = "PASSWD";
 
@@ -66,5 +63,26 @@ TEST_CASE("srp6")
         auto generated_v = srp::generate_verifier(username, password, parameter, salt, compliance);
 
         REQUIRE(expected_v == generated_v);
+    }
+
+    SECTION("Going through the whole sequence with validated data", "Regression Test")
+    {
+        Botan::BigInt salt("0x5E01729F0605E6511C2F1EAEBB120A732D2E426871A258A10A7767B3B385760C");
+        Botan::BigInt A("0x5a42c68bd5d1a5aa89a80794618a0ba9966ce677b578f2dec770605eaacd4361");
+        Botan::BigInt b("0x8ADDDADEAFE428BFA47A62E98D29C86410E1FD79484B995FC255C430BAE11658");
+        Botan::BigInt verifier{"0x71D75E755E3D89996E10FA642CDFB9783D4A913FCF1A8D34CAB05A6645072A2C"};
+        
+        std::string username = "A";
+
+        Botan::BigInt required_session_key{"0xB840C0A3E2EA5AEA4E94C4CA4FE3BDD6E8354032DB9CCDE0F5807296984F9BB254D2500551B0A209"};
+        Botan::BigInt required_proof{"0x9F28F1519D913403EE6FE422B4122E8533515C64"};
+
+        srp::server serv{parameter, verifier, compliance, b};
+
+        auto session_key = serv.session_key(A);
+        auto M = srp::generate_client_proof(serv.prime(), serv.generator(), salt, username, A, serv.public_ephemeral_value(), session_key, compliance);
+
+        REQUIRE(session_key == required_session_key);
+        REQUIRE(M == required_proof);
     }
 }

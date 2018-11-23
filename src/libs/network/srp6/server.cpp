@@ -74,6 +74,7 @@ auto ShaInterleaved(std::vector<uint8_t> S)
 
     // Interleave the two hashes back together to form the output
     std::vector<uint8_t> result;
+    result.reserve(2 * G.size());
     for (int i = 0; i < G.size(); ++i)
     {
         result.push_back(G[i]);
@@ -111,7 +112,7 @@ namespace keycap::root::network::srp6
         return B_;
     }
 
-    std::vector<uint8_t> server::session_key(Botan::BigInt const& A)
+    Botan::BigInt server::session_key(Botan::BigInt const& A)
     {
         if ((A % N_) == 0 || A <= 0)
             throw std::exception("Ephemeral value of A must not be 0 (mod N) and not be <= 0!");
@@ -124,19 +125,24 @@ namespace keycap::root::network::srp6
         Botan::BigInt S = Botan::power_mod(A * Botan::power_mod(v_, u, N_), b_, N_);
 
         if (compliance_ == compliance::Wow)
-            return ShaInterleaved(encode_flip(S));
+        {
+            auto K = ShaInterleaved(encode_flip(S));
+            std::reverse(std::begin(K), std::end(K));
 
-        return Botan::BigInt::encode(S);
+            return Botan::BigInt::decode(K);
+        }
+
+        return S;
     }
 
-    Botan::BigInt server::proof(Botan::BigInt const& clientProof, std::vector<uint8_t> const& sessionKey) const
+    Botan::BigInt server::proof(Botan::BigInt const& clientProof, Botan::BigInt const& sessionKey) const
     {
         // M = H(A, M, K)
         Botan::SHA_1 sha1;
 
         sha1.update(encode_flip(A_));
         sha1.update(encode_flip(clientProof));
-        sha1.update(sessionKey);
+        sha1.update(encode_flip(sessionKey));
 
         return decode_flip(sha1.final());
     }
