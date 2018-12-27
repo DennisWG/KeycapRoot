@@ -15,6 +15,7 @@
 add_library(keycaproot
     ${version_file}
     utility/crc32.cpp
+    utility/md5.cpp
     utility/random.cpp
     utility/utility.cpp
     "utility/string.cpp"

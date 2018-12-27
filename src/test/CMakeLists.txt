@@ -10,6 +10,7 @@ add_executable (test_${PROJECT_NAME}
     network/service.cpp
     network/service_locator.cpp
     utility/crc32.cpp
+    utility/md5.cpp
     utility/enum.cpp
     utility/memory.cpp
     utility/random.cpp
