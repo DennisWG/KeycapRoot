@@ -34,6 +34,6 @@ namespace keycap::root::network
 
     bool memory_stream::has_data_remaining() const
     {
-        return size() == 0;
+        return size() != 0;
     }
 }

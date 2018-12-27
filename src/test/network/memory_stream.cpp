@@ -127,7 +127,7 @@ TEST_CASE("memory_stream")
         size_t const NumElements = 4;
         using ArrayType = std::array<ElementType, NumElements>;
 
-        ArrayType arr{ 1,2,3,4 };
+        ArrayType arr{1, 2, 3, 4};
         uint32_t const junk = 0xDEADBEEF;
 
         stream.put(arr);
@@ -139,5 +139,25 @@ TEST_CASE("memory_stream")
             REQUIRE(arr[i] == out[i]);
 
         REQUIRE(stream.get<uint32_t>() == junk);
+    }
+
+    SECTION("memory_stream::has_data_remaining must return false on empty stream", "[regression]")
+    {
+        REQUIRE(stream.has_data_remaining() == false);
+    }
+
+    SECTION("memory_stream::has_data_remaining must return true on non-empty stream", "[regression]")
+    {
+        stream.put(1);
+        REQUIRE(stream.has_data_remaining() != false);
+    }
+
+    SECTION("memory_stream::has_data_remaining must return true on non-empty stream", "[regression]")
+    {
+        stream.put(1);
+        stream.put(2);
+        stream.get<int>();
+
+        REQUIRE(stream.has_data_remaining() != false);
     }
 }
