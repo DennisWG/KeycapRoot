@@ -21,13 +21,22 @@
 
 namespace keycap::root::network
 {
-    void service_locator::locate(service_type type, std::string const& host, uint16_t port)
+    void service_locator::locate(
+        service_type type, std::string const& host, uint16_t port, std::optional<located_callback> callback)
     {
         if (auto itr = services_.find(type.get()); itr != services_.end())
             return;
 
+        if (callback)
+            located_callbacks_[type.get()] = *callback;
+
         auto& service = services_.try_emplace(services_.end(), type.get(), type, this)->second;
         service.start(host, port);
+    }
+
+    void service_locator::remove_located_callback(service_type type)
+    {
+        located_callbacks_.erase(type.get());
     }
 
     void service_locator::send_to(service_type type, memory_stream const& message)
@@ -82,20 +91,26 @@ namespace keycap::root::network
         }
 
         auto[sender, callback] = itr->second;
+        registered_callbacks_.erase(itr); // TODO: is this valid?
         return callback(service_type{sender}, msg.payload);
     }
 
     bool service_locator::on_link(data_router const& router, service_type service, link_status status)
     {
-        if(status == link_status::Up)
-            return true;
+        if (status == link_status::Up)
+        {
+            if (auto itr = located_callbacks_.find(service.get()); itr != located_callbacks_.end())
+                itr->second(*this, service);
 
-        schedule_.add(std::chrono::seconds(5), [=](auto error){
+            return true;
+        }
+
+        schedule_.add(std::chrono::seconds(5), [=](auto error) {
             auto itr = services_.find(service.get());
-            if(itr == services_.end())
+            if (itr == services_.end())
                 return;
-            
-            auto &serv = itr->second;
+
+            auto& serv = itr->second;
             serv.restart();
         });
 

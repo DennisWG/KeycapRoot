@@ -22,6 +22,7 @@
 #include "message_handler.hpp"
 #include "service.hpp"
 
+#include <optional>
 #include <unordered_map>
 
 namespace keycap::root::network
@@ -35,14 +36,22 @@ namespace keycap::root::network
         friend class data_router;
 
       public:
+        using located_callback = std::function<void(service_locator& locator, service_type sender)>;
+
         // Creates a new service of the given type with the given host and port if none for this type exists.
-        void locate(service_type type, std::string const& host, uint16_t port);
+        // Will call the given callback, when the service is located, if provided
+        void locate(
+            service_type type, std::string const& host, uint16_t port, std::optional<located_callback> callback = {});
+
+        // Removes the callback when locating the given service_type
+        void remove_located_callback(service_type type);
 
         // Sends the given message to the given service_type. If the service hasn't been located yet (e.g.
         // disconnected), the message will be placed in a queue and will be send once the service is located.
         void send_to(service_type type, memory_stream const& message);
 
         using registered_callback = std::function<bool(service_type sender, memory_stream data)>;
+
         // bool (*)(service_type sender, memory_stream data);
         // Sends the given message to the given service_type. Expects an answer back from the service. If the service
         // hasn't been located yet (e.g. disconnected), the message will be placed in a queue and will be send once the
@@ -86,6 +95,8 @@ namespace keycap::root::network
 
         uint64 registered_callback_counter_ = 0;
         std::unordered_map<uint64, std::pair<service_type_t, registered_callback>> registered_callbacks_;
+
+        std::unordered_map<service_type_t, located_callback> located_callbacks_;
 
         utility::schedule schedule_;
     };

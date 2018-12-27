@@ -73,6 +73,7 @@ namespace keycap::root::network
             else if (mode_ == service_mode::Client)
                 connect();
 
+            running_ = true;
             run_thread_pool();
         }
 
@@ -82,13 +83,15 @@ namespace keycap::root::network
                 begin_listen();
             else if (mode_ == service_mode::Client)
                 connect();
-
+            
+            running_ = true;
             run_thread_pool();
         }
 
         // Stops listening for new connections. Any asynchronous accept operations will be cancelled immediately
         void stop()
         {
+            running_ = false;
             acceptor_.close();
             io_service_.stop();
         }
@@ -105,6 +108,12 @@ namespace keycap::root::network
         virtual bool on_new_connection(SharedHandler handler)
         {
             return true;
+        }
+
+        // Returns wether or not the service has been started.
+        bool running() const
+        {
+            return running_;
         }
 
       protected:
@@ -148,7 +157,7 @@ namespace keycap::root::network
 
         void run_thread_pool()
         {
-            if(io_service_.stopped())
+            if (io_service_.stopped())
                 io_service_.restart();
 
             for (int i = 0; i < thread_count_; ++i)
@@ -196,5 +205,7 @@ namespace keycap::root::network
         service_mode mode_;
 
         boost::asio::ip::tcp::endpoint endpoint_;
+
+        bool running_ = false;
     };
 }
