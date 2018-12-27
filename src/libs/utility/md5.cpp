@@ -18,10 +18,9 @@
 
 namespace keycap::root::utility::impl
 {
-
-        template <>
-        void hash<std::vector<uint8>>(Botan::HashFunction& md5, std::vector<uint8> const& data)
-        {
-            md5.update(data.data(), data.size());
-        }
+    template <>
+    void hash<std::vector<uint8>>(Botan::HashFunction& md5, std::vector<uint8> const& data)
+    {
+        md5.update(data.data(), data.size());
+    }
 }

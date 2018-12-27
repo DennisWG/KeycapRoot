@@ -29,7 +29,7 @@ TEST_CASE("md5")
 
         REQUIRE(util::md5("Hello World") == expected_result);
     }
-    
+
     SECTION("Hashing multiple values must yield a valid result")
     {
         std::array<uint8, 16> expected_result{0xb1, 0x0a, 0x8d, 0xb1, 0x64, 0xe0, 0x75, 0x41,
@@ -37,7 +37,7 @@ TEST_CASE("md5")
 
         REQUIRE(util::md5("Hello", ' ', "World") == expected_result);
     }
-    
+
     SECTION("Subsequent hashes must yield the same results", "[regression]")
     {
         std::array<uint8, 16> expected_result{0xb1, 0x0a, 0x8d, 0xb1, 0x64, 0xe0, 0x75, 0x41,
