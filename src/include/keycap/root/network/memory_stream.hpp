@@ -96,6 +96,14 @@ namespace keycap::root::network
             [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), stream.buffer_.begin(), stream.buffer_.end());
         }
 
+        uint8_t& operator[](size_t index)
+        {
+            if ((index + read_position_) > buffer_.size())
+                throw std::exception("Tried to override past the stream's end!");
+
+            return buffer_[index + read_position_];
+        }
+
         // Overrides the given value at the given position
         template <typename T>
         void override(T const& value, size_t position)
