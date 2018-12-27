@@ -206,17 +206,17 @@ namespace impl \
 class Type final { \
 public: \
     enum Enum : alignment { __VA_ARGS__ }; \
-    Type() = default; \
-    Type(Enum value) : value_{value} {} \
-    explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
-    Type& operator=(Enum value) { value_ = value; return *this; } \
+    constexpr Type() = default; \
+    constexpr Type(Enum value) : value_{value} {} \
+    constexpr explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
+    constexpr Type& operator=(Enum value) { value_ = value; return *this; } \
     /*bool operator==(Type const& rhs) { return value_ == rhs.value_; }*/ \
     /* bool operator!=(Type const& rhs) { return value_ != rhs.value_; } */\
-    Enum get() const { return value_; } \
-    void set(Enum value) { value_ = value; } \
+    constexpr Enum get() const { return value_; } \
+    constexpr void set(Enum value) { value_ = value; } \
     std::string to_string() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
     static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
-    operator alignment() const \
+    constexpr operator alignment() const \
     { \
         return static_cast<alignment>(value_); \
     } \
@@ -238,20 +238,20 @@ namespace impl \
 class Type final { \
 public: \
     enum Enum : alignment { __VA_ARGS__ }; \
-    Type() = default; \
-    Type(Enum value) : value_{value} {} \
-    explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
-    Type& operator=(Enum value) { value_ = value; return *this; } \
-    bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
-    bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
-    void set_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
-    void set_all_flags() { value_ = static_cast<Enum>(-1); } \
-    void clear_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
-    void clear_all_flags() { value_ = static_cast<Enum>(0); } \
-    void toggle_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) ^ which); } \
-    bool test_flag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
-    Enum get() const { return value_; } \
-    void set(Enum value) { value_ = value; } \
+    constexpr Type() = default; \
+    constexpr Type(Enum value) : value_{value} {} \
+    constexpr explicit Type (int32_t value) : value_{static_cast<Enum>(value)} {} \
+    constexpr Type& operator=(Enum value) { value_ = value; return *this; } \
+    constexpr bool operator==(Type const& rhs) { return value_ == rhs.value_; } \
+    constexpr bool operator!=(Type const& rhs) { return value_ != rhs.value_; } \
+    constexpr void set_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) | which); } \
+    constexpr void set_all_flags() { value_ = static_cast<Enum>(-1); } \
+    constexpr void clear_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) & ~which); } \
+    constexpr void clear_all_flags() { value_ = static_cast<Enum>(0); } \
+    constexpr void toggle_flag(Enum which) { value_ = static_cast<Enum>(static_cast<int32_t>(value_) ^ which); } \
+    constexpr bool test_flag(Enum which) const { return static_cast<Enum>(static_cast<int32_t>(value_) & which) == which; } \
+    constexpr Enum get() const { return value_; } \
+    constexpr void set(Enum value) { value_ = value; } \
     std::string to_string() const { return impl::Type##_value_name_map[static_cast<int32_t>(value_)]; } \
     static std::vector<Type> const& to_vector() { static auto vector = ::keycap::root::utility::impl::makeVector<Type>(#__VA_ARGS__, impl::Type##_name_value_map, impl::Type##_value_name_map); return vector; } \
 private: \
