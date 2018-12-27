@@ -22,22 +22,22 @@ namespace keycap::root::network
     class service_type
     {
       public:
-        explicit service_type(service_type_t type)
+        constexpr explicit service_type(service_type_t type) noexcept
           : type_{type}
         {
         }
 
-        service_type_t get() const
+        constexpr service_type_t get() const noexcept
         {
             return type_;
         }
 
-        bool operator==(service_type const& other) const
+        constexpr bool operator==(service_type const& other) const noexcept
         {
             return type_ == other.type_;
         }
 
       private:
-        const service_type_t type_;
+        service_type_t type_;
     };
 }
