@@ -18,6 +18,8 @@
 
 #include <zlib.h>
 
+#include <array>
+
 namespace keycap::root::compression::zip
 {
     namespace impl
@@ -29,7 +31,7 @@ namespace keycap::root::compression::zip
 
             unsigned long buffer_size = static_cast<unsigned long>(buffer.size());
 
-            if (::compress(buffer.data(), &buffer_size, begin, size) != Z_OK)
+            if (::compress2(buffer.data(), &buffer_size, begin, size, 8) != Z_OK)
                 return {};
 
             buffer.resize(buffer_size);
@@ -37,15 +39,60 @@ namespace keycap::root::compression::zip
             return buffer;
         }
 
+        void inflate(std::vector<uint8_t>& data, uint8_t* ptr, unsigned long size)
+        {
+            constexpr int buffer_size = 1024;
+            std::array<uint8_t, buffer_size> in{};
+            std::array<uint8_t, buffer_size> out{};
+            int ret = Z_OK;
+
+            z_stream stream{};
+            if (inflateInit(&stream) != Z_OK)
+                return;
+
+            do
+            {
+                if (size - stream.total_in < buffer_size)
+                    stream.avail_in = size - stream.total_in;
+                else
+                    stream.avail_in = buffer_size;
+
+                stream.next_in = ptr + stream.total_in;
+
+                do
+                {
+                    stream.avail_out = buffer_size;
+                    stream.next_out = out.data();
+
+                    ret = inflate(&stream, Z_NO_FLUSH);
+
+                    data.insert(data.end(), out.begin(), out.end());
+
+                    switch (ret)
+                    {
+                        case Z_STREAM_ERROR:
+                            [[fallthrough]];
+                        case Z_NEED_DICT:
+                            [[fallthrough]];
+                        case Z_DATA_ERROR:
+                            [[fallthrough]];
+                        case Z_MEM_ERROR:
+                            inflateEnd(&stream);
+                    }
+                } while (stream.avail_out == 0);
+
+            } while (ret != Z_STREAM_END);
+
+            data.resize(stream.total_out);
+
+            inflateEnd(&stream);
+        }
+
         std::vector<uint8_t> decompress(uint8_t* begin, unsigned long size)
         {
             std::vector<uint8_t> buffer;
-            buffer.resize(size);
 
-            if (::uncompress(buffer.data(), &size, begin, size) != Z_OK)
-                return {};
-
-            buffer.resize(size);
+            inflate(buffer, begin, size);
 
             return buffer;
         }
