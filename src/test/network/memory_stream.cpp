@@ -160,4 +160,83 @@ TEST_CASE("memory_stream")
 
         REQUIRE(stream.has_data_remaining() != false);
     }
+
+    SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
+    {
+        stream.put<uint8_t>(1);
+        stream.put<uint8_t>(2);
+        stream.put<uint8_t>(3);
+        stream.put<uint8_t>(4);
+
+        auto vec = stream.to_vector();
+        REQUIRE(vec.size() == 4);
+        REQUIRE(vec[0] == 1);
+        REQUIRE(vec[1] == 2);
+        REQUIRE(vec[2] == 3);
+        REQUIRE(vec[3] == 4);
+    }
+    
+    SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
+    {
+        stream.put<uint8_t>(1);
+        stream.put<uint8_t>(2);
+        stream.put<uint8_t>(3);
+        stream.put<uint8_t>(4);
+
+        stream.get<uint8_t>();
+
+        auto vec = stream.to_vector();
+        REQUIRE(vec.size() == 3);
+        REQUIRE(vec[0] == 2);
+        REQUIRE(vec[1] == 3);
+        REQUIRE(vec[2] == 4);
+    }
+    
+    SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
+    {
+        stream.put<uint8_t>(1);
+        stream.put<uint8_t>(2);
+        stream.put<uint8_t>(3);
+        stream.put<uint8_t>(4);
+
+        stream.get<uint8_t>();
+        stream.get<uint8_t>();
+
+        auto vec = stream.to_vector();
+        REQUIRE(vec.size() == 2);
+        REQUIRE(vec[0] == 3);
+        REQUIRE(vec[1] == 4);
+    }
+    
+    SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
+    {
+        stream.put<uint8_t>(1);
+        stream.put<uint8_t>(2);
+        stream.put<uint8_t>(3);
+        stream.put<uint8_t>(4);
+
+        stream.get<uint8_t>();
+        stream.get<uint8_t>();
+        stream.get<uint8_t>();
+
+        auto vec = stream.to_vector();
+        REQUIRE(vec.size() == 1);
+        REQUIRE(vec[0] == 4);
+    }
+    
+    SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
+    {
+        stream.put<uint8_t>(1);
+        stream.put<uint8_t>(2);
+        stream.put<uint8_t>(3);
+        stream.put<uint8_t>(4);
+
+        stream.get<uint8_t>();
+        stream.get<uint8_t>();
+        stream.get<uint8_t>();
+        stream.get<uint8_t>();
+
+        auto vec = stream.to_vector();
+        REQUIRE(vec.size() == 0);
+    }
 }
