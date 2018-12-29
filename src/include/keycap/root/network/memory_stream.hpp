@@ -246,7 +246,8 @@ namespace keycap::root::network
 
         // Decompresses the given length of the buffer
         // May resize (and therefore reallocate) the buffer
-        void decompress(uint32_t length);
+        // Returns the size of the decompressed data
+        size_t decompress(uint32_t length);
 
         bool has_data_remaining() const;
 

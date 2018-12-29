@@ -19,7 +19,7 @@
 
 namespace keycap::root::network
 {
-    void memory_stream::decompress(uint32_t length)
+    size_t memory_stream::decompress(uint32_t length)
     {
         auto buffer = compression::zip::impl::decompress(buffer_.data() + read_position_, length);
 
@@ -30,6 +30,7 @@ namespace keycap::root::network
             buffer_.resize(new_size);
 
         std::copy(buffer.begin(), buffer.end(), buffer_.begin() + read_position_);
+        return buffer.size();
     }
 
     bool memory_stream::has_data_remaining() const
