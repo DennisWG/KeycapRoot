@@ -91,6 +91,8 @@ namespace keycap::root::compression::zip
         std::vector<uint8_t> decompress(uint8_t* begin, unsigned long size)
         {
             std::vector<uint8_t> buffer;
+            if(size == 0)
+                return buffer;
 
             inflate(buffer, begin, size);
 
