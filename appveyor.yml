@@ -17,6 +17,10 @@ configuration:
 
 clone_folder: C:\projects\KeycapRoot
 
+install:
+  - cd %clone_folder%
+  - git submodule update --init --recursive
+
 branches:
   only: 
     - master
