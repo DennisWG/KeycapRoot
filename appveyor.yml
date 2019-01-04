@@ -9,16 +9,15 @@ environment:
 
 platform:
   - x86
-  - x64
+# - x64
   
 configuration:
   - Debug
-  - Release
+#  - Release
 
 clone_folder: C:\projects\KeycapRoot
 
 install:
-  - cd %clone_folder%
   - git submodule update --init --recursive
 
 branches:
