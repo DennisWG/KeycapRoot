@@ -27,6 +27,7 @@ add_library(keycaproot
     network/memory_stream.cpp
     network/message_handler.cpp
     network/service_locator.cpp
+    network/srp6/client.cpp
     network/srp6/server.cpp
     network/srp6/group_parameters.cpp
     network/srp6/utility.cpp

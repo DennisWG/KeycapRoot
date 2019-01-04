@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+#include <keycap/root/network/srp6/client.hpp>
 #include <keycap/root/network/srp6/server.hpp>
 #include <keycap/root/network/srp6/utility.hpp>
 
@@ -71,18 +72,45 @@ TEST_CASE("srp6")
         Botan::BigInt A("0x5a42c68bd5d1a5aa89a80794618a0ba9966ce677b578f2dec770605eaacd4361");
         Botan::BigInt b("0x8ADDDADEAFE428BFA47A62E98D29C86410E1FD79484B995FC255C430BAE11658");
         Botan::BigInt verifier{"0x71D75E755E3D89996E10FA642CDFB9783D4A913FCF1A8D34CAB05A6645072A2C"};
-        
+
         std::string username = "A";
 
-        Botan::BigInt required_session_key{"0xB840C0A3E2EA5AEA4E94C4CA4FE3BDD6E8354032DB9CCDE0F5807296984F9BB254D2500551B0A209"};
+        Botan::BigInt required_session_key{
+            "0xB840C0A3E2EA5AEA4E94C4CA4FE3BDD6E8354032DB9CCDE0F5807296984F9BB254D2500551B0A209"};
         Botan::BigInt required_proof{"0x9F28F1519D913403EE6FE422B4122E8533515C64"};
 
         srp::server serv{parameter, verifier, compliance, b};
 
         auto session_key = serv.session_key(A);
-        auto M = srp::generate_client_proof(serv.prime(), serv.generator(), salt, username, A, serv.public_ephemeral_value(), session_key, compliance);
+        auto M = srp::generate_client_proof(
+            serv.prime(), serv.generator(), salt, username, A, serv.public_ephemeral_value(), session_key, compliance);
 
         REQUIRE(session_key == required_session_key);
         REQUIRE(M == required_proof);
+    }
+
+    SECTION("Client/Server must work together and return the expected results")
+    {
+        Botan::BigInt salt("0x93C999AFF408B3A3CF78D1CF36482C09F7FF0714EF2A982C46C3DFF5A9DC0DE6");
+        Botan::BigInt verifier{"0x46FF4F26CC2AB0EA82B849044AC68D6CC772C8232086C890C0FBC5DE13BA3111"};
+
+        std::string account_name = "ADMIN";
+
+        srp::client client{parameter, account_name, compliance};
+        srp::server serv{parameter, verifier, compliance};
+
+        auto K_c = client.session_key(serv.public_ephemeral_value(), account_name, account_name, salt);
+        auto K_s = serv.session_key(client.public_ephemeral_value());
+
+        auto M_c = srp::generate_client_proof(
+            serv.prime(), serv.generator(), salt, account_name, client.public_ephemeral_value(),
+            serv.public_ephemeral_value(), K_c, compliance);
+
+        auto M_s = srp::generate_client_proof(
+            serv.prime(), serv.generator(), salt, account_name, client.public_ephemeral_value(),
+            serv.public_ephemeral_value(), K_s, compliance);
+
+        REQUIRE(K_c == K_s);
+        REQUIRE(M_c == M_s);
     }
 }
