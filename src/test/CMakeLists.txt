@@ -34,3 +34,18 @@ add_test(
 
 configure_file("configuration/test.cfg" "${CMAKE_CURRENT_BINARY_DIR}/test.cfg" @ONLY)
 configure_file("configuration/invalid.cfg" "${CMAKE_CURRENT_BINARY_DIR}/invalid.cfg" @ONLY)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    include(CodeCoverage)
+    set_target_properties(
+            test_${PROJECT_NAME} PROPERTIES
+            COMPILE_FLAGS "-O0 -g -fprofile-arcs -ftest-coverage"
+            LINK_FLAGS "-O0 -g -lgcov -fprofile-arcs -ftest-coverage"
+    )
+
+    SETUP_TARGET_FOR_COVERAGE(
+        coverage
+        test_${PROJECT_NAME}
+        coverage_report
+    )
+endif()
