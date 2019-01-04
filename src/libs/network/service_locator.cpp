@@ -75,6 +75,9 @@ namespace keycap::root::network
     {
         memory_stream stream(data.begin(), data.end());
 
+        if(!registered_message::can_decode(stream))
+            return true;
+
         auto msg = registered_message::decode(stream);
 
         if (!utility::validate_crc32(msg.crc, msg.sender, msg.command, msg.payload))

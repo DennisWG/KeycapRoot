@@ -22,10 +22,7 @@
 
 namespace keycap::root::network
 {
-    keycap_enum(registered_command, uint16,
-        Update = 0,
-        Request = 1,
-    );
+    keycap_enum(registered_command, uint16, Update = 0, Request = 1, );
 
     // A message that allows RPC like messaging
     struct registered_message
@@ -42,6 +39,7 @@ namespace keycap::root::network
         memory_stream encode()
         {
             memory_stream encoder;
+            encoder.put<uint64>(sizeof(uint32) + sizeof(uint64) + sizeof(registered_command) + payload.size());
             encoder.put(crc);
             encoder.put(sender);
             encoder.put(command);
@@ -52,11 +50,20 @@ namespace keycap::root::network
         static registered_message decode(memory_stream& decoder)
         {
             registered_message packet;
+            decoder.get<uint64>();
             packet.crc = decoder.get<uint32>();
             packet.sender = decoder.get<uint64>();
             packet.command = decoder.get<registered_command>();
             packet.payload = decoder.get_remaining();
+
+            decoder.shrink();
+
             return packet;
+        }
+
+        static bool can_decode(memory_stream const& decoder)
+        {
+            return decoder.peek<uint64>() <= decoder.size();
         }
     };
 }

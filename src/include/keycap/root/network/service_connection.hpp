@@ -49,9 +49,12 @@ namespace keycap::root::network
       private:
         bool on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data) final
         {
-            memory_stream stream(data.begin(), data.end());
+            input_stream_.put(gsl::make_span(data));
 
-            auto msg = registered_message::decode(stream);
+            if(!registered_message::can_decode(input_stream_))
+                return true;
+
+            auto msg = registered_message::decode(input_stream_);
 
             if (!utility::validate_crc32(msg.crc, msg.sender, msg.command, msg.payload))
             {
@@ -61,5 +64,7 @@ namespace keycap::root::network
 
             return on_data(router, service, msg.sender, msg.payload);
         }
+
+        memory_stream input_stream_;
     };
 }
