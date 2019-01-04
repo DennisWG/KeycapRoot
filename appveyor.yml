@@ -28,6 +28,7 @@ build_script:
 
   - appveyor DownloadFile http://zlib.net/zlib-1.2.11.tar.gz -FileName zlib-1.2.11.tar.gz
   - 7z x zlib-1.2.11.tar.gz > NUL
+  - 7z x zlib-1.2.11.tar > NUL
   - cd zlib-1.2.11
   - md build
   - cd build
