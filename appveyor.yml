@@ -9,11 +9,11 @@ environment:
 
 platform:
   - x86
-# - x64
+  - x64
   
 configuration:
   - Debug
-#  - Release
+  - Release
 
 clone_folder: C:\projects\KeycapRoot
 
@@ -52,7 +52,7 @@ build_script:
   # build it
   - if "%platform%" == "x86" set msbuild_platform=Win32
   - if "%platform%" == "x64" set msbuild_platform=%platform%
-  - msbuild KeycapRoot.sln /p:Configuration=%configuration% /toolsversion:14.1 /p:PlatformToolset=v140 /p:Platform=%msbuild_platform%
+  - msbuild KeycapRoot.sln /p:Configuration=%configuration% /toolsversion:15.0 /p:PlatformToolset=v140 /p:Platform=%msbuild_platform%
 
 test_script:
   - ps: cd c:\projects\KeycapRoot\build
