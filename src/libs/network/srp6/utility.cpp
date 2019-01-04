@@ -14,6 +14,8 @@
     limitations under the License.
 */
 
+#include "utility.hpp"
+
 #include <keycap/root/network/srp6/group_parameters.hpp>
 #include <keycap/root/network/srp6/utility.hpp>
 #include <keycap/root/utility/string.hpp>
@@ -43,30 +45,6 @@ namespace keycap::root::network::srp6
         return Botan::BigInt::decode(val);
     }
 
-    auto generate_x(
-        std::string const& username, std::string const& password, Botan::BigInt const& salt, compliance compliance)
-    {
-        Botan::SHA_1 sha;
-        sha.update(username);
-        sha.update(":");
-        sha.update(password);
-        auto hash = sha.final();
-
-        if (compliance == compliance::RFC5054)
-            sha.update(Botan::BigInt::encode(salt));
-        else if (compliance == compliance::Wow)
-            sha.update(encode_flip(salt));
-
-        sha.update(hash);
-
-        if (compliance == compliance::RFC5054)
-            return Botan::BigInt::decode(sha.final());
-        else if (compliance == compliance::Wow)
-            return decode_flip(sha.final());
-
-        throw std::exception("Unknown compliance mode!");
-    }
-
     Botan::BigInt generate_verifier(
         std::string username, std::string password, group_parameter groupParameter, Botan::BigInt const& salt,
         compliance compliance)
@@ -83,7 +61,7 @@ namespace keycap::root::network::srp6
         return v;
     }
 
-    template<>
+    template <>
     std::array<uint8_t, 32> to_array(Botan::BigInt const& value, compliance compliance)
     {
         if (compliance == compliance::RFC5054)
