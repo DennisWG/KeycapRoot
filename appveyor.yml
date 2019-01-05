@@ -49,6 +49,7 @@ build_script:
   # build it
   - cmake --build . --config %configuration%
 
+  - copy C:\build_cache\Botan-2.8.0\build\%configuration%\botan.dll %APPVEYOR_BUILD_FOLDER%\build\botan.dll
 test_script:
-  - ps: cd c:\projects\KeycapRoot\build
+  - ps: cd %APPVEYOR_BUILD_FOLDER%\build
   - ctest -VV -C "%configuration%"
