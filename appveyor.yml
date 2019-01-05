@@ -17,7 +17,7 @@ configuration:
 clone_folder: C:\projects\KeycapRoot
 
 cache:
-    - '%APPVEYOR_BUILD_FOLDER%\build_cache' -> build_cache.bat
+    - %APPVEYOR_BUILD_FOLDER%\build_cache -> build_cache.bat
 
 clone_script:
   - cmd: >-
