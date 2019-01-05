@@ -28,6 +28,7 @@ cmake -G "Visual Studio 15 2017 Win64" ..
 cmake --build . --config %configuration%
 
 :END
+dir C:\build_cache\zlib-1.2.11\build\%configuration%\
 set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlibstatic.lib"
 if %configuration% == "Debug" set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlibstaticd.lib"
 set ZLIB_INCLUDE_DIR="C:\build_cache\zlib-1.2.11"
