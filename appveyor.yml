@@ -17,7 +17,8 @@ configuration:
 clone_folder: C:\projects\KeycapRoot
 
 cache:
-    - 'C:\build_cache -> build_cache.bat'
+    - 'C:\build_cache\zlib-1.2.11' -> build_scripts\build_zlib.bat'
+    - 'C:\build_cache\Botan-2.8.0 -> build_scripts\build_botan.bat'
 
 clone_script:
   - cmd: >-
@@ -36,18 +37,19 @@ build_script:
   - echo %configuration%
 
   # build cache
-  - call build_cache.bat
-
-  - cd c:\projects\KeycapRoot
-  - mkdir build
-  - cd build
-  - if "%platform%" == "x64" set cmake_platform=%platform%
-  - if "%platform%" == "x64" set BOOST_LIBRARYDIR="C:\Libraries\boost_1_67_0\lib64-msvc-14.1"
-  - cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY="%ZLIB_LIBRARY%" -DZLIB_INCLUDE_DIR="%ZLIB_INCLUDE_DIR%" -DBotan_INCLUDE_DIR="%Botan_INCLUDE_DIR%" -DBotan_LIBRARIES="%Botan_LIBRARIES%"
-  
-  # build it
-  - cmake --build . --config %configuration%
+  #- call build_cache.bat
+  #
+  #- cd c:\projects\KeycapRoot
+  #- mkdir build
+  #- cd build
+  #- if "%platform%" == "x64" set cmake_platform=%platform%
+  #- if "%platform%" == "x64" set BOOST_LIBRARYDIR="C:\Libraries\boost_1_67_0\lib64-msvc-14.1"
+  #- cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY="%ZLIB_LIBRARY%" -DZLIB_INCLUDE_DIR="%ZLIB_INCLUDE_DIR%" -DBotan_INCLUDE_DIR="%Botan_INCLUDE_DIR%" -DBotan_LIBRARIES="%Botan_LIBRARIES%"
+  #
+  ## build it
+  #- cmake --build . --config %configuration%
 
 test_script:
-  - ps: cd c:\projects\KeycapRoot\build
-  - ctest -VV -C "%CONFIG%"
+  #- ps: cd c:\projects\KeycapRoot\build
+  #- ctest -VV -C "%CONFIG%"
+   - echo done
