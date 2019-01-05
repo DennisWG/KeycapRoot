@@ -1,4 +1,3 @@
-dir
 IF NOT EXIST "C:\build_cache" GOTO BUILD_DIR
 GOTO END
 
@@ -29,7 +28,8 @@ cmake -G "Visual Studio 15 2017 Win64" ..
 cmake --build . --config %configuration%
 
 :END
-set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlib.lib"
+set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlibstatic.lib"
+if %configuration% == "Debug" set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlibstaticd.lib"
 set ZLIB_INCLUDE_DIR="C:\build_cache\zlib-1.2.11"
 
 set Botan_INCLUDE_DIR="C:\build_cache\Botan-2.8.0\build\include"
