@@ -47,7 +47,7 @@ build_script:
   - 7z x Botan-2.8.0.tgz > NUL
   - 7z x Botan-2.8.0.tar > NUL
   - cd Botan-2.8.0
-  - ./configure.py --with-cmake --cpu=%platform%
+  - configure.py --with-cmake --cpu=%platform%
   - cd build
   - cmake -G "Visual Studio 15 2017 Win64" ..
   - cmake --build . --config %configuration%
