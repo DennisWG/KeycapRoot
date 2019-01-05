@@ -37,6 +37,9 @@ build_script:
 
   # build cache
   - call build_cache.bat
+  - dir
+  - dir %ZLIB_LIBRARY%\
+  - dir %Botan_INCLUDE_DIR%\
 
   - cd c:\projects\KeycapRoot
   - mkdir build
