@@ -1,11 +1,11 @@
 dir
-IF NOT EXIST "%APPVEYOR_BUILD_FOLDER%\build_cache" GOTO BUILD_DIR
+IF NOT EXIST "C:\build_cache" GOTO BUILD_DIR
 GOTO END
 
 :BUILD_DIR
 
-md build_cache
-cd build_cache
+md C:\build_cache
+cd C:\build_cache
 
 appveyor DownloadFile http://zlib.net/zlib-1.2.11.tar.gz -FileName zlib-1.2.11.tar.gz
 7z x zlib-1.2.11.tar.gz > NUL
@@ -29,8 +29,8 @@ cmake -G "Visual Studio 15 2017 Win64" ..
 cmake --build . --config %configuration%
 
 :END
-set ZLIB_LIBRARY="%APPVEYOR_BUILD_FOLDER%\build_cache\zlib-1.2.11\build\%configuration%\zlib.lib"
-set ZLIB_INCLUDE_DIR="%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11"
+set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlib.lib"
+set ZLIB_INCLUDE_DIR="C:\build_cache\zlib-1.2.11"
 
-set Botan_INCLUDE_DIR="%APPVEYOR_BUILD_FOLDER%\build_cache\Botan-2.8.0\build\include"
-set Botan_LIBRARIES="%APPVEYOR_BUILD_FOLDER%\build_cache\Botan-2.8.0\build\%configuration%\botan.lib"
+set Botan_INCLUDE_DIR="C:\build_cache\Botan-2.8.0\build\include"
+set Botan_LIBRARIES="C:\build_cache\Botan-2.8.0\build\%configuration%\botan.lib"
