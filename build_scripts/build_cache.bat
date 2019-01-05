@@ -15,13 +15,9 @@ echo "calling build_botan"
 call %APPVEYOR_BUILD_FOLDER%\build_scripts\build_botan.bat
 
 :END
-dir C:\build_cache\zlib-1.2.11\build\%configuration%\
-echo %configuration%
-
 set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlibstatic.lib"
 if "%configuration%" == "Debug" set ZLIB_LIBRARY="C:\build_cache\zlib-1.2.11\build\%configuration%\zlibstaticd.lib"
 set ZLIB_INCLUDE_DIR="C:\build_cache\zlib-1.2.11"
-echo %ZLIB_LIBRARY%
 
 set Botan_INCLUDE_DIR="C:\build_cache\Botan-2.8.0\build\include"
 set Botan_LIBRARIES="C:\build_cache\Botan-2.8.0\build\%configuration%\botan.lib"
