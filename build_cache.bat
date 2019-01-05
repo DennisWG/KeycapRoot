@@ -1,4 +1,5 @@
-IF NOT EXIST build_cache GOTO BUILD_DIR
+dir
+IF NOT EXIST "%APPVEYOR_BUILD_FOLDER%\build_cache" GOTO BUILD_DIR
 GOTO END
 
 :BUILD_DIR
@@ -27,8 +28,6 @@ cmake -G "Visual Studio 15 2017 Win64" ..
 cmake --build . --config %configuration%
 
 :END
-copy zlib-1.2.11\build\Botan-2.8.0 build_cache\Botan-2.8.0
-
 set ZLIB_LIBRARY="%APPVEYOR_BUILD_FOLDER%\build_cache\zlib-1.2.11\build\%configuration%\zlib.lib"
 set ZLIB_INCLUDE_DIR="%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11"
 

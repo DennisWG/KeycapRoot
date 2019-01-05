@@ -46,8 +46,7 @@ build_script:
   - cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY="%ZLIB_LIBRARY%" -DZLIB_INCLUDE_DIR="%ZLIB_INCLUDE_DIR%" -DBotan_INCLUDE_DIR="%Botan_INCLUDE_DIR%" -DBotan_LIBRARIES="%Botan_LIBRARIES%"
   
   # build it
-  - if "%platform%" == "x64" set msbuild_platform=%platform%
-  - msbuild KeycapRoot.sln /p:Configuration=%configuration% /toolsversion:15.0 /p:PlatformToolset=v140 /p:Platform=%msbuild_platform%
+  - cmake --build . --config %configuration%
 
 test_script:
   - ps: cd c:\projects\KeycapRoot\build
