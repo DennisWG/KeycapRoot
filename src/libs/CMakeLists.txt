@@ -39,7 +39,7 @@ target_include_directories(keycaproot
         ${PROJECT_SOURCE_DIR}/contrib/gsl/include
         ${PROJECT_SOURCE_DIR}/src/include
         ${PROJECT_SOURCE_DIR}/contrib/json/src
-        ${ZLIB_INCLUDE_DIRS}
+        ${ZLIB_INCLUDE_DIR}
 )
 
 target_link_libraries(keycaproot boost ${ZLIB_LIBRARIES})
