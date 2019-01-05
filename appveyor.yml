@@ -8,7 +8,6 @@ environment:
   BOOST_LIBRARYDIR: C:\Libraries\boost_1_67_0\lib32-msvc-14.1
 
 platform:
-  - x86
   - x64
   
 configuration:
@@ -28,11 +27,15 @@ branches:
   only: 
     - master
 
+install:
+  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64'
+
 build_script:
   - cmake -version
   - echo %platform%
   - echo %configuration%
 
+  # zlib
   - appveyor DownloadFile http://zlib.net/zlib-1.2.11.tar.gz -FileName zlib-1.2.11.tar.gz
   - 7z x zlib-1.2.11.tar.gz > NUL
   - 7z x zlib-1.2.11.tar > NUL
@@ -42,15 +45,24 @@ build_script:
   - cmake -G "Visual Studio 15 2017" ..
   - cmake --build . --config %configuration%
 
+  # Botan
+  - appveyor DownloadFile https://botan.randombit.net/releases/Botan-2.8.0.tgz -FileName Botan-2.8.0.tgz
+  - 7z x Botan-2.8.0.tgz > NUL
+  - 7z x Botan-2.8.0.tar > NUL
+  - cd Botan-2.8.0
+  - ./configure.py --with-cmake --cpu=%platform%
+  - cd build
+  - cmake -G "Visual Studio 15 2017 Win64" ..
+  - cmake --build . --config %configuration%
+
   - cd c:\projects\KeycapRoot
   - mkdir build
   - cd build
   - if "%platform%" == "x64" set cmake_platform=%platform%
   - if "%platform%" == "x64" set BOOST_LIBRARYDIR="C:\Libraries\boost_1_67_0\lib64-msvc-14.1"
-  - cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY=%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11\build\Release\zlib.lib -DZLIB_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11
+  - cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY=%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11\build\Release\zlib.lib -DZLIB_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11 -DBotan_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%\Botan-2.8.0\build\include -DBotan_LIBRARIES=%APPVEYOR_BUILD_FOLDER%\Botan-2.8.0\build\%configuration%\botan.lib
   
   # build it
-  - if "%platform%" == "x86" set msbuild_platform=Win32
   - if "%platform%" == "x64" set msbuild_platform=%platform%
   - msbuild KeycapRoot.sln /p:Configuration=%configuration% /toolsversion:15.0 /p:PlatformToolset=v140 /p:Platform=%msbuild_platform%
 
