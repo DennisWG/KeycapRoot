@@ -37,7 +37,7 @@ build_script:
   - echo %configuration%
 
   # build cache
-  #- call build_cache.bat
+  - call build_scripts\build_cache.bat
   #
   #- cd c:\projects\KeycapRoot
   #- mkdir build
