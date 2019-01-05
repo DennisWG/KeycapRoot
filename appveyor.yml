@@ -16,6 +16,9 @@ configuration:
 
 clone_folder: C:\projects\KeycapRoot
 
+cache:
+    - build_cache -> appveyor.yml
+
 clone_script:
   - cmd: >-
       git clone -q --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
@@ -32,32 +35,15 @@ build_script:
   - echo %platform%
   - echo %configuration%
 
-  # zlib
-  - appveyor DownloadFile http://zlib.net/zlib-1.2.11.tar.gz -FileName zlib-1.2.11.tar.gz
-  - 7z x zlib-1.2.11.tar.gz > NUL
-  - 7z x zlib-1.2.11.tar > NUL
-  - cd zlib-1.2.11
-  - md build
-  - cd build
-  - cmake -G "Visual Studio 15 2017" ..
-  - cmake --build . --config %configuration%
-
-  # Botan
-  - appveyor DownloadFile https://botan.randombit.net/releases/Botan-2.8.0.tgz -FileName Botan-2.8.0.tgz
-  - 7z x Botan-2.8.0.tgz > NUL
-  - 7z x Botan-2.8.0.tar > NUL
-  - cd Botan-2.8.0
-  - configure.py --with-cmake --cpu=%platform%
-  - cd build
-  - cmake -G "Visual Studio 15 2017 Win64" ..
-  - cmake --build . --config %configuration%
+  # build cache
+  - call build_cache.bat
 
   - cd c:\projects\KeycapRoot
   - mkdir build
   - cd build
   - if "%platform%" == "x64" set cmake_platform=%platform%
   - if "%platform%" == "x64" set BOOST_LIBRARYDIR="C:\Libraries\boost_1_67_0\lib64-msvc-14.1"
-  - cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY="%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11\build\Release\zlib.lib" -DZLIB_INCLUDE_DIR="%APPVEYOR_BUILD_FOLDER%\zlib-1.2.11" -DBotan_INCLUDE_DIR="%APPVEYOR_BUILD_FOLDER%\Botan-2.8.0\build\include" -DBotan_LIBRARIES="%APPVEYOR_BUILD_FOLDER%\Botan-2.8.0\build\%configuration%\botan.lib"
+  - cmake -g "Visual Studio 15 2017" .. -DCMAKE_GENERATOR_PLATFORM=%cmake_platform% -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DBoost_USE_STATIC_LIBS="ON" -DZLIB_LIBRARY="%ZLIB_LIBRARY%" -DZLIB_INCLUDE_DIR="%ZLIB_INCLUDE_DIR%" -DBotan_INCLUDE_DIR="%Botan_INCLUDE_DIR%" -DBotan_LIBRARIES="%Botan_LIBRARIES%"
   
   # build it
   - if "%platform%" == "x64" set msbuild_platform=%platform%
