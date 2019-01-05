@@ -6,10 +6,12 @@ GOTO END
 md C:\build_cache
 cd C:\build_cache
 
+echo "calling build_zlib"
 call build_scripts\build_zlib.bat
 
 cd C:\build_cache
 
+echo "calling build_botan"
 call build_scripts\build_botan.bat
 
 :END
