@@ -17,7 +17,7 @@ configuration:
 clone_folder: C:\projects\KeycapRoot
 
 cache:
-    - 'C:\build_cache\zlib-1.2.11' -> build_scripts\build_zlib.bat'
+    - 'C:\build_cache\zlib-1.2.11 -> build_scripts\build_zlib.bat'
     - 'C:\build_cache\Botan-2.8.0 -> build_scripts\build_botan.bat'
 
 clone_script:
