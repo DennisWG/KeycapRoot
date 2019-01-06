@@ -41,9 +41,11 @@ install:
   - ${CXX} --version
 
   # Install Boost
-  - BOOST_DIR=${TRAVIS_BUILD_DIR}/deps/boost-${BOOST_VERSION}
-  - mkdir -p ${BOOST_DIR} && cd ${BOOST_DIR}
-  - |
+  -|
+    BOOST_DIR=${TRAVIS_BUILD_DIR}/deps/boost-${BOOST_VERSION}
+    if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
+      mkdir -p ${BOOST_DIR} && cd ${BOOST_DIR}
+  
       if [[ "${BOOST_VERSION}" == "trunk" ]]; then
         BOOST_URL="http://github.com/boostorg/boost.git"
         travis_retry git clone --depth 1 --recursive --quiet ${BOOST_URL} ${BOOST_DIR} || exit 1
@@ -54,6 +56,7 @@ install:
           { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
       fi
       CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
+    fi
 
   # Install a newer CMake
   - cd ${TRAVIS_BUILD_DIR}/deps
