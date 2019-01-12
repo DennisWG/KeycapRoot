@@ -19,6 +19,7 @@ enable_testing()
  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
  
  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/contrib/sanitizers-cmake/cmake ${CMAKE_MODULE_PATH})
  
  ################################
  # Git
@@ -52,8 +53,13 @@ enable_testing()
 # ################################
 # # external submodules
 # ################################
-#
+
 add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/rapidcheck")
+ 
+# ################################
+# # sanitizers
+# ################################
+find_package(Sanitizers)
 # 
  ################################
  # Compile flags
