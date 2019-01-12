@@ -13,3 +13,6 @@
 [submodule "contrib/gsl"]
 	path = contrib/gsl
 	url = https://github.com/Microsoft/GSL.git
+[submodule "contrib/sanitizers-cmake"]
+	path = contrib/sanitizers-cmake
+	url = https://github.com/arsenm/sanitizers-cmake.git
