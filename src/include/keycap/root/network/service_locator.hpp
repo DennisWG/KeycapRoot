@@ -37,12 +37,17 @@ namespace keycap::root::network
 
       public:
         using located_callback = std::function<void(service_locator& locator, service_type sender)>;
+        struct located_callback_container
+        {
+            boost::asio::io_service& io_service;
+            located_callback callback;
+        };
 
         // Creates a new service of the given type with the given host and port if none for this type exists.
         // Will call the given callback, when the service is located, if provided
         void locate(
             service_type type, std::string const& host, uint16_t port,
-            std::optional<std::pair<boost::asio::io_service&, located_callback>> callback = {});
+            std::optional<located_callback_container> callback = {});
 
         // Removes the callback when locating the given service_type
         void remove_located_callback(service_type type);
@@ -105,11 +110,6 @@ namespace keycap::root::network
         };
         std::unordered_map<uint64, registered_callback_container> registered_callbacks_;
 
-        struct located_callback_container
-        {
-            boost::asio::io_service& io_service;
-            located_callback calback;
-        };
         std::unordered_map<service_type_t, located_callback_container> located_callbacks_;
 
         utility::schedule schedule_;

@@ -22,14 +22,13 @@
 namespace keycap::root::network
 {
     void service_locator::locate(
-        service_type type, std::string const& host, uint16_t port,
-        std::optional<std::pair<boost::asio::io_service&, located_callback>> callback)
+        service_type type, std::string const& host, uint16_t port, std::optional<located_callback_container> callback)
     {
         if (auto itr = services_.find(type.get()); itr != services_.end())
             return;
 
         if (callback)
-            located_callbacks_.try_emplace(type.get(), located_callback_container{callback->first, callback->second});
+            located_callbacks_.try_emplace(type.get(), *callback);
 
         auto& service = services_.try_emplace(services_.end(), type.get(), type, this)->second;
         service.start(host, port);
@@ -115,7 +114,7 @@ namespace keycap::root::network
             if (auto itr = located_callbacks_.find(service.get()); itr != located_callbacks_.end())
             {
                 auto[io_service, callback] = itr->second;
-                io_service.post([ this, callback = itr->second.calback, service ]() {
+                io_service.post([ this, callback = itr->second.callback, service ]() {
                     callback(*this, service);
                     //
                 });

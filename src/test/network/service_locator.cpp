@@ -133,11 +133,18 @@ TEST_CASE("service_locator")
     {
         std::string const host = "localhost";
         uint16_t const port = 5568;
+        net::service_type const service_type{1};
 
         server_service<string_connection> service;
         service.start(host, port);
 
-        locator.locate(net::service_type{1}, host, port);
+        net::service_locator::located_callback_container container{
+            service.io_service(), [&](net::service_locator& locator, net::service_type sender) {
+                REQUIRE(sender == service_type);
+                //
+            }};
+
+        locator.locate(service_type, host, port, container);
 
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
 

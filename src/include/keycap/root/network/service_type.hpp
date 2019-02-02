@@ -37,6 +37,11 @@ namespace keycap::root::network
             return type_ == other.type_;
         }
 
+        constexpr bool operator!=(service_type const& other) const noexcept
+        {
+            return type_ != other.type_;
+        }
+
       private:
         service_type_t type_;
     };
