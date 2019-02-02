@@ -41,7 +41,8 @@ namespace keycap::root::network
         // Creates a new service of the given type with the given host and port if none for this type exists.
         // Will call the given callback, when the service is located, if provided
         void locate(
-            service_type type, std::string const& host, uint16_t port, std::optional<located_callback> callback = {});
+            service_type type, std::string const& host, uint16_t port,
+            std::optional<std::pair<boost::asio::io_service&, located_callback>> callback = {});
 
         // Removes the callback when locating the given service_type
         void remove_located_callback(service_type type);
@@ -56,7 +57,9 @@ namespace keycap::root::network
         // Sends the given message to the given service_type. Expects an answer back from the service. If the service
         // hasn't been located yet (e.g. disconnected), the message will be placed in a queue and will be send once the
         // server is located.
-        void send_registered(service_type type, memory_stream const& message, registered_callback callback);
+        void send_registered(
+            service_type type, memory_stream const& message, boost::asio::io_service& io_service,
+            registered_callback callback);
 
         // Returns the number of located services
         size_t service_count() const;
@@ -94,9 +97,20 @@ namespace keycap::root::network
         std::unordered_map<service_type_t, service_locator::service> services_;
 
         uint64 registered_callback_counter_ = 0;
-        std::unordered_map<uint64, std::pair<service_type_t, registered_callback>> registered_callbacks_;
+        struct registered_callback_container
+        {
+            service_type_t type;
+            boost::asio::io_service& io_service;
+            registered_callback calback;
+        };
+        std::unordered_map<uint64, registered_callback_container> registered_callbacks_;
 
-        std::unordered_map<service_type_t, located_callback> located_callbacks_;
+        struct located_callback_container
+        {
+            boost::asio::io_service& io_service;
+            located_callback calback;
+        };
+        std::unordered_map<service_type_t, located_callback_container> located_callbacks_;
 
         utility::schedule schedule_;
     };

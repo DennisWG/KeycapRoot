@@ -22,13 +22,14 @@
 namespace keycap::root::network
 {
     void service_locator::locate(
-        service_type type, std::string const& host, uint16_t port, std::optional<located_callback> callback)
+        service_type type, std::string const& host, uint16_t port,
+        std::optional<std::pair<boost::asio::io_service&, located_callback>> callback)
     {
         if (auto itr = services_.find(type.get()); itr != services_.end())
             return;
 
         if (callback)
-            located_callbacks_[type.get()] = *callback;
+            located_callbacks_.try_emplace(type.get(), located_callback_container{callback->first, callback->second});
 
         auto& service = services_.try_emplace(services_.end(), type.get(), type, this)->second;
         service.start(host, port);
@@ -51,10 +52,13 @@ namespace keycap::root::network
         send_to_(type, stream);
     }
 
-    void service_locator::send_registered(service_type type, memory_stream const& message, registered_callback callback)
+    void service_locator::send_registered(
+        service_type type, memory_stream const& message, boost::asio::io_service& io_service,
+        registered_callback callback)
     {
         auto counter = registered_callback_counter_++;
-        registered_callbacks_[counter] = std::make_pair(type.get(), callback);
+
+        registered_callbacks_.try_emplace(counter, registered_callback_container{type.get(), io_service, callback});
 
         registered_message msg;
         msg.crc = utility::crc32(counter, registered_command::Request, message);
@@ -75,7 +79,7 @@ namespace keycap::root::network
     {
         memory_stream stream(data.begin(), data.end());
 
-        if(!registered_message::can_decode(stream))
+        if (!registered_message::can_decode(stream))
             return true;
 
         auto msg = registered_message::decode(stream);
@@ -93,9 +97,15 @@ namespace keycap::root::network
             return false;
         }
 
-        auto[sender, callback] = itr->second;
+        auto[sender, io_service, _] = itr->second;
+
+        io_service.post([ sender = service_type{sender}, payload = msg.payload, callback = itr->second.calback ]() {
+            callback(service_type{sender}, payload);
+        });
+
         registered_callbacks_.erase(itr); // TODO: is this valid?
-        return callback(service_type{sender}, msg.payload);
+
+        return true;
     }
 
     bool service_locator::on_link(data_router const& router, service_type service, link_status status)
@@ -103,7 +113,13 @@ namespace keycap::root::network
         if (status == link_status::Up)
         {
             if (auto itr = located_callbacks_.find(service.get()); itr != located_callbacks_.end())
-                itr->second(*this, service);
+            {
+                auto[io_service, callback] = itr->second;
+                io_service.post([ this, callback = itr->second.calback, service ]() {
+                    callback(*this, service);
+                    //
+                });
+            }
 
             return true;
         }

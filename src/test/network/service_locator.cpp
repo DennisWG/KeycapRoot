@@ -83,7 +83,8 @@ struct data_connection : public net::service_connection
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, net::service_type service, uint64 sender, net::memory_stream& stream) override
+    bool on_data(
+        net::data_router const& router, net::service_type service, uint64 sender, net::memory_stream& stream) override
     {
         my_service_.data = stream.get_string(strlen("Foobar"));
 
@@ -206,10 +207,11 @@ TEST_CASE("service_locator")
     SECTION("Sending registered messages must yield an answer if handled properly")
     {
         auto send = [](net::service_locator& locator, net::service_type const type, std::string const& data,
-                       net::service_locator::registered_callback callback) {
+                       boost::asio::io_service& io_service, net::service_locator::registered_callback callback) {
             net::memory_stream stream;
             stream.put(data);
-            locator.send_registered(type, stream, callback);
+
+            locator.send_registered(type, stream, io_service, callback);
         };
 
         std::string const host = "localhost";
@@ -222,12 +224,13 @@ TEST_CASE("service_locator")
         locator.locate(type, host, port);
 
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
-
         std::string received_data;
-        send(locator, type, "Foobar", [&](net::service_type sender, net::memory_stream data) -> bool {
-            received_data = data.get_string(strlen("Arrived"));
-            return true;
-        });
+        send(
+            locator, type, "Foobar", service.io_service(),
+            [&](net::service_type sender, net::memory_stream data) -> bool {
+                received_data = data.get_string(strlen("Arrived"));
+                return true;
+            });
 
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
 
