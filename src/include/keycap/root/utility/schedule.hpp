@@ -69,9 +69,12 @@ namespace keycap::root::utility
         }
 
         // Adds the given callback to the schedule. Will be called after the given duration. Returns a scheduled_item
-        // allowing you to stop the callback early, if needed.
+        // allowing you to stop the callback early, if needed. An optional boost::asio::io_service may be passed
+        // so the callback will be called on the io_service's thread pool.
         template <typename Rep, typename Period, typename Callback>
-        scheduled_item add(std::chrono::duration<Rep, Period> duration, Callback&& callback)
+        scheduled_item
+        add(std::chrono::duration<Rep, Period> duration, Callback&& callback,
+            boost::asio::io_service* io_service = nullptr)
         {
             auto counter = counter_++;
 
@@ -80,12 +83,17 @@ namespace keycap::root::utility
                 = timers_.try_emplace(counter, io_service_, std::chrono::steady_clock::now() + duration).first->second;
 
             timer.async_wait(
-                [this, counter, callback = std::forward<Callback>(callback)](boost::system::error_code error) {
+                [ this, counter, callback = std::forward<Callback>(callback),
+                  io_service = std::move(io_service) ](boost::system::error_code error) {
                     if (timers_.find(counter) == timers_.end())
                         return;
 
                     cancel(scheduled_item{counter});
-                    callback(error);
+
+                    if (io_service)
+                        io_service->post([callback, error]() { callback(error); });
+                    else
+                        callback(error);
                 });
 
             return scheduled_item{counter};
@@ -106,7 +114,7 @@ namespace keycap::root::utility
         void cancel_all()
         {
             std::lock_guard<std::mutex> lock{timers_mutex_};
-            for (auto& [_, timer] : timers_)
+            for (auto & [ _, timer ] : timers_)
                 timer.cancel();
         }
 
