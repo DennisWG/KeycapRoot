@@ -4,6 +4,7 @@ add_executable (test_${PROJECT_NAME}
     compression/zip.cpp
     configuration/config_file.cpp
     cryptography/ARC4.cpp
+    cryptography/OTP.cpp
     network/srp6/srp6.cpp
     network/data_router.cpp
     network/memory_stream.cpp

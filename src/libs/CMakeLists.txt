@@ -22,6 +22,7 @@ add_library(keycaproot
     "configuration/config_file.cpp"
     compression/zip.cpp
     cryptography/ARC4.cpp
+    cryptography/OTP.cpp
     network/connection.cpp
     network/data_router.cpp
     network/memory_stream.cpp
