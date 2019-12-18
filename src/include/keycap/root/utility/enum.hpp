@@ -260,5 +260,6 @@ private: \
 inline std::ostream& operator << (std::ostream& os, Type const& obj) \
 { \
     os << obj.to_string(); \
+    return os; \
 }
 // clang-format on
