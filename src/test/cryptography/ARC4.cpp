@@ -16,9 +16,6 @@
 
 #include <keycap/root/cryptography/ARC4.hpp>
 
-#include <botan/passhash9.h>
-#include <botan/hmac.h>
-
 #include <rapidcheck/catch.h>
 
 namespace crypt = keycap::root::cryptography;
