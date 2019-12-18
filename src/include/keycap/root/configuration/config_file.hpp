@@ -18,7 +18,7 @@
 
 #include "../utility/string.hpp"
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <json.hpp>
 
 #include <fstream>
@@ -101,7 +101,7 @@ namespace keycap::root::configuration
     {
       public:
         // Opens and parsed the file at the given filePath
-        config_file(std::experimental::filesystem::path const& filePath);
+        config_file(std::filesystem::path const& filePath);
 
         // Attempts to retreive the value of the given category with the given name. Throws an exception if fails to do
         // so

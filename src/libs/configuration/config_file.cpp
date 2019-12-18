@@ -18,7 +18,7 @@
 
 namespace keycap::root::configuration
 {
-    config_file::config_file(std::experimental::filesystem::path const& filePath)
+    config_file::config_file(std::filesystem::path const& filePath)
     {
         std::ifstream file(filePath.string());
         if (!file)
