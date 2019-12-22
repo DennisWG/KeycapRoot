@@ -292,4 +292,15 @@ TEST_CASE("memory_stream")
 
         REQUIRE(stream.get<uint16_t>() == expected);
     }
+
+    SECTION("advacne mustn't decrease the read position below zero")
+    {
+        uint16_t expected = 0xC0CA;
+
+        stream.put(expected);
+
+        stream.advance(-4);
+
+        REQUIRE(stream.get<uint16_t>() == expected);
+    }
 }

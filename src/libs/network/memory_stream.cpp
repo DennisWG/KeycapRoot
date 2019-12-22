@@ -38,8 +38,11 @@ namespace keycap::root::network
         return size() != 0;
     }
 
-    void memory_stream::advance(size_t amount)
+    void memory_stream::advance(int amount)
     {
-        read_position_ += amount;
+        if (amount < 0 && read_position_ < amount)
+            read_position_ = 0;
+        else
+            read_position_ += amount;
     }
 }

@@ -271,7 +271,7 @@ namespace keycap::root::network
         }
 
         // Advances the read position by the given amount
-        void advance(size_t amount);
+        void advance(int amount);
 
       private:
         size_t read_position_ = 0;
