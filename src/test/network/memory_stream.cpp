@@ -175,7 +175,7 @@ TEST_CASE("memory_stream")
         REQUIRE(vec[2] == 3);
         REQUIRE(vec[3] == 4);
     }
-    
+
     SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
     {
         stream.put<uint8_t>(1);
@@ -191,7 +191,7 @@ TEST_CASE("memory_stream")
         REQUIRE(vec[1] == 3);
         REQUIRE(vec[2] == 4);
     }
-    
+
     SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
     {
         stream.put<uint8_t>(1);
@@ -207,7 +207,7 @@ TEST_CASE("memory_stream")
         REQUIRE(vec[0] == 3);
         REQUIRE(vec[1] == 4);
     }
-    
+
     SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
     {
         stream.put<uint8_t>(1);
@@ -223,7 +223,7 @@ TEST_CASE("memory_stream")
         REQUIRE(vec.size() == 1);
         REQUIRE(vec[0] == 4);
     }
-    
+
     SECTION("memory_stream::to_vector must return the remaining stream as a vector of uint8s", "[regression]")
     {
         stream.put<uint8_t>(1);
@@ -238,5 +238,46 @@ TEST_CASE("memory_stream")
 
         auto vec = stream.to_vector();
         REQUIRE(vec.size() == 0);
+    }
+
+    SECTION("write_to must copy the entire buffer")
+    {
+        std::vector<uint8_t> expected = {0xEF, 0xBE, 0xAD, 0xDE, 0xCA, 0xC0};
+        std::vector<uint8_t> data(4 + 2, '#');
+
+        stream.put<uint32_t>(0xDEADBEEF);
+        stream.put<uint16_t>(0xC0CA);
+
+        stream.write_to(data.begin());
+
+        REQUIRE(data == expected);
+    }
+
+    SECTION("write_to must copy the remaining buffer")
+    {
+        std::vector<uint8_t> expected = {0xEF, 0xBE, 0xAD, 0xDE, 0xCA, 0xC0};
+        std::vector<uint8_t> data(4 + 2, '#');
+
+        stream.put<uint32_t>(0xDEADBEEF);
+        stream.put<uint16_t>(0xC0CA);
+
+        stream.write_to(data.begin(), 4);
+        stream.write_to(data.begin() + 4);
+
+        REQUIRE(data == expected);
+    }
+
+    SECTION("write_to must copy only the given amount of bytes")
+    {
+        std::vector<uint8_t> expected = {0xEF, 0xBE, 0xAD, 0xDE, 0xCA, 0xC0};
+        std::vector<uint8_t> data(4 + 2, '#');
+
+        stream.put<uint32_t>(0xDEADBEEF);
+        stream.put<uint16_t>(0xC0CA);
+
+        stream.write_to(data.begin(), 4);
+        stream.write_to(data.begin() + 4, 2);
+
+        REQUIRE(data == expected);
     }
 }

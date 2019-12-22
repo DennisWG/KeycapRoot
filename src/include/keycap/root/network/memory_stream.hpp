@@ -19,6 +19,7 @@
 #include <gsl/span>
 
 #include <cstdint>
+#include <optional>
 #include <type_traits>
 #include <vector>
 
@@ -98,7 +99,7 @@ namespace keycap::root::network
 
         uint8_t& operator[](size_t index)
         {
-            if ((index + read_position_) > buffer_.size())
+            if (!has_remaining(index))
                 throw std::exception("Tried to override past the stream's end!");
 
             return buffer_[index + read_position_];
@@ -124,7 +125,7 @@ namespace keycap::root::network
             }
             else
             {
-                if (sizeof(T) + read_position_ > buffer_.size())
+                if (!has_remaining(sizeof(T)))
                     throw std::exception("Attempted to read past buffer end!");
 
                 T value = *reinterpret_cast<T const*>(buffer_.data() + read_position_);
@@ -154,7 +155,7 @@ namespace keycap::root::network
         // Returns a std::string with the given size from the stream
         std::string get_string(size_t size)
         {
-            if (size + read_position_ > buffer_.size())
+            if (!has_remaining(size))
                 throw std::exception("Attempted to read past buffer end!");
 
             std::string string = {buffer_.begin() + read_position_, buffer_.begin() + read_position_ + size};
@@ -190,7 +191,7 @@ namespace keycap::root::network
         template <typename T>
         T peek(size_t where = 0) const
         {
-            if (sizeof(T) + where + read_position_ > buffer_.size())
+            if (!has_remaining(sizeof(T) + where))
                 throw std::exception("Attempted to read past buffer end!");
 
             return *reinterpret_cast<T const*>(buffer_.data() + where + read_position_);
@@ -251,9 +252,32 @@ namespace keycap::root::network
 
         bool has_data_remaining() const;
 
+        // Writes the given amount of num_bytes to the given desitnation iterator
+        template <typename ITER>
+        void write_to(ITER destination, std::optional<size_t> num_bytes = {})
+        {
+            auto begin = std::begin(buffer_);
+            auto end = std::end(buffer_);
+
+            if (num_bytes)
+            {
+                if (!has_remaining(*num_bytes))
+                    throw std::exception("Attempted to read past buffer end!");
+                end = begin + read_position_ + num_bytes.value();
+            }
+
+            std::copy(begin + read_position_, end, destination);
+            read_position_ += end - (begin + read_position_);
+        }
+
       private:
         size_t read_position_ = 0;
         std::vector<uint8_t> buffer_;
+
+        bool has_remaining(size_t num_bytes) const
+        {
+            return read_position_ < buffer_.size();
+        }
 
         template <typename T>
         struct has_encode_method
