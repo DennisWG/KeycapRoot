@@ -270,6 +270,9 @@ namespace keycap::root::network
             read_position_ += end - (begin + read_position_);
         }
 
+        // Advances the read position by the given amount
+        void advance(size_t amount);
+
       private:
         size_t read_position_ = 0;
         std::vector<uint8_t> buffer_;

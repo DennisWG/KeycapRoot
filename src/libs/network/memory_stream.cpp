@@ -37,4 +37,9 @@ namespace keycap::root::network
     {
         return size() != 0;
     }
+
+    void memory_stream::advance(size_t amount)
+    {
+        read_position_ += amount;
+    }
 }

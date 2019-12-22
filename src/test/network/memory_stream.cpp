@@ -280,4 +280,16 @@ TEST_CASE("memory_stream")
 
         REQUIRE(data == expected);
     }
+
+    SECTION("advance must increase the read position by the given amount")
+    {
+        uint16_t expected = 0xC0CA;
+
+        stream.put(0xDEADBEEF);
+        stream.put(expected);
+
+        stream.advance(4);
+
+        REQUIRE(stream.get<uint16_t>() == expected);
+    }
 }
