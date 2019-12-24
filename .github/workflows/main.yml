@@ -162,13 +162,6 @@ jobs:
           message(FATAL_ERROR "Bad exit status")
         endif()
         
-        message(STATUS "Contents of the current folder:")
-        execute_process(COMMAND dir)
-        message(STATUS "Contents of folder 'Botan-2.9.0':")
-        execute_process(COMMAND dir Botan-2.9.0)
-        message(STATUS "Contents of folder 'Botan-2.9.0/build':")
-        execute_process(COMMAND dir Botan-2.9.0/build)
-        
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
         execute_process(
@@ -189,6 +182,7 @@ jobs:
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${build_botan}" build_botan)
         message("::set-output name=build_botan::${build_botan}")
         
+        execute_process(COMMAND dir ${build_botan})
 
     - name: Configure
       shell: cmake -P {0}
@@ -218,6 +212,9 @@ jobs:
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=${ninja_program}
+            -D ZLIB_ROOT =${{ steps.cmake_and_ninja.outputs.build_zlib }}
+            -D Botan_LIBRARIES=${{ steps.cmake_and_ninja.outputs.build_botan }}
+            -D Botan_INCLUDE_DIR=${{ steps.cmake_and_ninja.outputs.build_botan }}/include
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
