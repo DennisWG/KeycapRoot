@@ -155,7 +155,7 @@ jobs:
             COMMAND python
               ${botan_dir}/configure.py
                 --with-cmake
-                --with-build-dir=${botan_dir}/build
+                --with-build-dir=${botan_dir}
             RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
