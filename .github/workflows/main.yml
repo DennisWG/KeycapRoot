@@ -204,7 +204,7 @@ jobs:
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
         
         message(STATUS "build_zlib:")
-        execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_zlib 
+        execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_zlib }})
         
         message(STATUS "build_botan:")
         execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_botan }})
