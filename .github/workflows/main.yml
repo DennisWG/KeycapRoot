@@ -171,7 +171,7 @@ jobs:
 
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
-            -S ${botan_dir}/build
+            -S .
             -B build_botan
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
