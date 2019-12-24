@@ -76,6 +76,42 @@ jobs:
             COMMAND chmod +x ${cmake_dir}/cmake
           )
         endif()
+        
+    - name: Download zlib
+      id: zlib
+      shell: cmake -P {0}
+      run: |
+        set(zlib_version "1.2.11")
+        
+        set(zlib_url "http://zlib.net/zlib-${zlib_version}.tar.gz")
+        file(DOWNLOAD "${zlib_url}" ./zlib.tar.gz SHOW_PROGRESS)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./zlib.tar.gz)
+        
+        set(zlib_dir "zlib${zlib_version}")
+
+        # Save the path for other steps
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${zlib_dir}" zlib_dir)
+        message("::set-output name=zlib_dir::${zlib_dir}")
+        
+        if(NOT "${{ runner.os }}" STREQUAL "Windows")
+          execute_process(COMMAND chmod +x ${zlib_dir})
+        endif()
+        
+
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
+
+        execute_process(
+          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
+            -S ${zlib_dir}
+            -B build_zlib
+            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+            -G Ninja
+            -D CMAKE_MAKE_PROGRAM=${ninja_program}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
 
     - name: Configure
       shell: cmake -P {0}
