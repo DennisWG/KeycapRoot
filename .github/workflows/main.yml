@@ -181,8 +181,6 @@ jobs:
         message(STATUS "Saving path")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${build_botan}" build_botan)
         message("::set-output name=build_botan::${build_botan}")
-        
-        execute_process(COMMAND dir ${build_botan})
 
     - name: Configure
       shell: cmake -P {0}
@@ -204,6 +202,12 @@ jobs:
         endif()
 
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
+        
+        message(STATUS "build_zlib:")
+        execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_zlib 
+        
+        message(STATUS "build_botan:")
+        execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_botan }})
 
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
@@ -212,7 +216,7 @@ jobs:
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=${ninja_program}
-            -D ZLIB_ROOT =${{ steps.cmake_and_ninja.outputs.build_zlib }}
+            -D ZLIB_ROOT=${{ steps.cmake_and_ninja.outputs.build_zlib }}
             -D Botan_LIBRARIES=${{ steps.cmake_and_ninja.outputs.build_botan }}
             -D Botan_INCLUDE_DIR=${{ steps.cmake_and_ninja.outputs.build_botan }}/include
           RESULT_VARIABLE result
