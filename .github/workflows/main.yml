@@ -95,6 +95,8 @@ jobs:
           execute_process(COMMAND chmod +x ${zlib_dir})
         endif()
         
+        set(build_zlib "contrib/zlib")
+        
         message(STATUS "Building...")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
@@ -133,6 +135,8 @@ jobs:
         if(NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(COMMAND chmod +x ${botan_dir})
         endif()
+        
+        set(botan_dir "contrib/botan")
         
         execute_process(COMMAND dir)
         
