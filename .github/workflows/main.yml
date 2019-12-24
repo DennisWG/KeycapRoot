@@ -162,10 +162,8 @@ jobs:
           message(FATAL_ERROR "Bad exit status")
         endif()
         
-        execute_process(COMMAND dir)
-        
         message(STATUS "Contents of folder 'Botan-2.9.0':")
-        execute_process(COMMAND dir Botan-2.9.0)
+        execute_process(COMMAND dir Botan-2.9.0/build)
         
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
