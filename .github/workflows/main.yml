@@ -88,8 +88,7 @@ jobs:
         
         message(STATUS "Extracting zlib")
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./zlib.tar.gz)
-        execute_process(COMMAND dir)
-        set(zlib_dir "zlib${zlib_version}")
+        set(zlib_dir "zlib-${zlib_version}")
 
         # Save the path for other steps
         message(STATUS "Saving path")
