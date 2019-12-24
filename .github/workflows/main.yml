@@ -88,7 +88,7 @@ jobs:
         
         message(STATUS "Extracting zlib")
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./zlib.tar.gz)
-        
+        execute_process(COMMAND dir)
         set(zlib_dir "zlib${zlib_version}")
 
         # Save the path for other steps
@@ -100,6 +100,7 @@ jobs:
           execute_process(COMMAND chmod +x ${zlib_dir})
         endif()
         
+        message(STATUS "Building")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
         execute_process(
