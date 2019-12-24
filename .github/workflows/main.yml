@@ -77,29 +77,25 @@ jobs:
           )
         endif()
         
-    - name: Download zlib
+    - name: Download and build zlib
       id: zlib
       shell: cmake -P {0}
       run: |
+        message(STATUS "Downloading...")
         set(zlib_version "1.2.11")
         
         set(zlib_url "http://zlib.net/zlib-${zlib_version}.tar.gz")
         file(DOWNLOAD "${zlib_url}" ./zlib.tar.gz SHOW_PROGRESS)
         
-        message(STATUS "Extracting zlib")
+        message(STATUS "Extracting...")
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./zlib.tar.gz)
         set(zlib_dir "zlib-${zlib_version}")
-
-        # Save the path for other steps
-        message(STATUS "Saving path")
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${zlib_dir}" zlib_dir)
-        message("::set-output name=zlib_dir::${zlib_dir}")
         
         if(NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(COMMAND chmod +x ${zlib_dir})
         endif()
         
-        message(STATUS "Building")
+        message(STATUS "Building...")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
         execute_process(
@@ -114,6 +110,63 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
+
+        # Save the path for other steps
+        message(STATUS "Saving path")
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${build_zlib}" build_zlib)
+        message("::set-output name=build_zlib::${build_zlib}")
+        
+    - name: Download and build botan
+      id: botan
+      shell: cmake -P {0}
+      run: |
+        message(STATUS "Downloading...")
+        set(botan_version "2.9.0")
+        
+        set(botan_url "https://botan.randombit.net/releases/Botan-${botan_version}.tgz")
+        file(DOWNLOAD "${botan_url}" ./botan.tgz SHOW_PROGRESS)
+        
+        message(STATUS "Extracting...")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./botan.tgz)
+        set(botan_dir "botan-${botan_version}")
+        
+        if(NOT "${{ runner.os }}" STREQUAL "Windows")
+          execute_process(COMMAND chmod +x ${botan_dir})
+        endif()
+        
+        message(STATUS "Building...")
+        
+        cd botan_dir
+        execute_process(
+            COMMAND python configure.py --with-cmake
+            RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+        
+        cd build
+        
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
+
+        execute_process(
+          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
+            -S ${botan_dir}
+            -B build_botan
+            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+            -G Ninja
+            -D CMAKE_MAKE_PROGRAM=${ninja_program}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+        # Save the path for other steps
+        message(STATUS "Saving path")
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${build_botan}" build_botan)
+        message("::set-output name=build_botan::${build_botan}")
+        
 
     - name: Configure
       shell: cmake -P {0}
