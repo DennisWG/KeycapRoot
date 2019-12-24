@@ -124,7 +124,7 @@ jobs:
         set(botan_version "2.9.0")
         
         set(botan_url "https://botan.randombit.net/releases/Botan-${botan_version}.tgz")
-        file(DOWNLOAD "${botan_url}" ./botan.tgz SHOW_PROGRESS)
+        file(DOWNLOAD "${botan_url}" ./botan.tgz)
         
         message(STATUS "Extracting...")
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./botan.tgz)
@@ -134,10 +134,12 @@ jobs:
           execute_process(COMMAND chmod +x ${botan_dir})
         endif()
         
+        execute_process(COMMAND dir)
+        
         message(STATUS "Building...")
         
         execute_process(
-            COMMAND python ${botan_dir}configure.py --with-cmake
+            COMMAND python ${botan_dir}/configure.py --with-cmake
             RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
