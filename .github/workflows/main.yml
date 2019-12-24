@@ -151,6 +151,8 @@ jobs:
           endforeach()
         endif()
         
+        file(RENAME CMakeLists.txt ${botan_dir}/CMakeLists.txt)
+        
         execute_process(
             COMMAND python
               ${botan_dir}/configure.py
@@ -173,7 +175,7 @@ jobs:
 
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
-            -S .
+            -S ${botan_dir}
             -B build_botan
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
