@@ -85,11 +85,14 @@ jobs:
         
         set(zlib_url "http://zlib.net/zlib-${zlib_version}.tar.gz")
         file(DOWNLOAD "${zlib_url}" ./zlib.tar.gz SHOW_PROGRESS)
+        
+        message(STATUS "Extracting zlib")
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./zlib.tar.gz)
         
         set(zlib_dir "zlib${zlib_version}")
 
         # Save the path for other steps
+        message(STATUS "Saving path")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${zlib_dir}" zlib_dir)
         message("::set-output name=zlib_dir::${zlib_dir}")
         
@@ -97,7 +100,6 @@ jobs:
           execute_process(COMMAND chmod +x ${zlib_dir})
         endif()
         
-
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
         execute_process(
