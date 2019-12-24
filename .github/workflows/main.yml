@@ -209,12 +209,12 @@ jobs:
 
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
         
-        message(STATUS "build_zlib: ${{ steps.cmake_and_ninja.outputs.build_zlib }}")
-        execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_zlib }})
+        message(STATUS "build_zlib: ${{ steps.zlib.outputs.build_zlib }}")
+        execute_process(COMMAND dir ${{ steps.zlib.outputs.build_zlib }})
         
-        message(STATUS "build_botan: ${{ steps.cmake_and_ninja.outputs.build_botan }}")
+        message(STATUS "build_botan: ${{ steps.botan.outputs.build_botan }}")
         message(STATUS "build_botan:")
-        execute_process(COMMAND dir ${{ steps.cmake_and_ninja.outputs.build_botan }})
+        execute_process(COMMAND dir ${{ steps.botan.outputs.build_botan }})
 
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
@@ -223,9 +223,9 @@ jobs:
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=${ninja_program}
-            -D ZLIB_ROOT=${{ steps.cmake_and_ninja.outputs.build_zlib }}
-            -D Botan_LIBRARIES=${{ steps.cmake_and_ninja.outputs.build_botan }}
-            -D Botan_INCLUDE_DIR=${{ steps.cmake_and_ninja.outputs.build_botan }}/include
+            -D ZLIB_ROOT=${{ steps.zlib.outputs.build_zlib }}
+            -D Botan_LIBRARIES=${{ steps.botan.outputs.build_botan }}
+            -D Botan_INCLUDE_DIR=${{ steps.botan.outputs.build_botan }}/include
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
