@@ -161,6 +161,8 @@ jobs:
         
         execute_process(COMMAND dir)
         
+        execute_process(COMMAND dir Botan-2.9.0)
+        
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
         execute_process(
