@@ -152,7 +152,10 @@ jobs:
         endif()
         
         execute_process(
-            COMMAND python ${botan_dir}/configure.py --with-cmake
+            COMMAND python
+              ${botan_dir}/configure.py
+                --with-cmake
+                –with-build-dir=${botan_dir}/build
             RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -161,6 +164,7 @@ jobs:
         
         execute_process(COMMAND dir)
         
+        message(STATUS "Contents of folder 'Botan-2.9.0':")
         execute_process(COMMAND dir Botan-2.9.0)
         
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
