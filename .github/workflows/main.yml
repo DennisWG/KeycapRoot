@@ -95,13 +95,15 @@ jobs:
           execute_process(COMMAND chmod +x ${zlib_dir})
         endif()
         
+        set(build_zlib "contrib/zlib")
+        
         message(STATUS "Building...")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
             -S ${zlib_dir}
-            -B build_zlib
+            -B ${build_zlib}
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=${ninja_program}
@@ -110,13 +112,13 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-        
-        set(build_zlib "contrib/zlib")
 
         # Save the path for other steps
         message(STATUS "Saving path")
+        message(STATUS "$ENV{GITHUB_WORKSPACE}/${build_zlib}")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${build_zlib}" build_zlib)
         message("::set-output name=build_zlib::${build_zlib}")
+        message(STATUS "$ENV{GITHUB_WORKSPACE}/${build_zlib}")
         
     - name: Download and build botan
       id: botan
@@ -135,6 +137,8 @@ jobs:
         if(NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(COMMAND chmod +x ${botan_dir})
         endif()
+        
+        set(build_botan "contrib/botan")
         
         execute_process(COMMAND dir)
         
@@ -169,7 +173,7 @@ jobs:
         execute_process(
           COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
             -S ${botan_dir}
-            -B build_botan
+            -B ${build_botan}
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G Ninja
             -D CMAKE_MAKE_PROGRAM=${ninja_program}
@@ -178,8 +182,6 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-        
-        set(botan_dir "contrib/botan")
 
         # Save the path for other steps
         message(STATUS "Saving path")
