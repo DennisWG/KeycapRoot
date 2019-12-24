@@ -95,8 +95,6 @@ jobs:
           execute_process(COMMAND chmod +x ${zlib_dir})
         endif()
         
-        set(build_zlib "contrib/zlib")
-        
         message(STATUS "Building...")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
 
@@ -112,6 +110,8 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
+        
+        set(build_zlib "contrib/zlib")
 
         # Save the path for other steps
         message(STATUS "Saving path")
@@ -135,8 +135,6 @@ jobs:
         if(NOT "${{ runner.os }}" STREQUAL "Windows")
           execute_process(COMMAND chmod +x ${botan_dir})
         endif()
-        
-        set(botan_dir "contrib/botan")
         
         execute_process(COMMAND dir)
         
@@ -180,6 +178,8 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
+        
+        set(botan_dir "contrib/botan")
 
         # Save the path for other steps
         message(STATUS "Saving path")
