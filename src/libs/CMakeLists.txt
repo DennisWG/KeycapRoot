@@ -39,7 +39,7 @@ target_include_directories(keycaproot
         ${PROJECT_SOURCE_DIR}/contrib/spdlog/include
         ${PROJECT_SOURCE_DIR}/contrib/gsl/include
         ${PROJECT_SOURCE_DIR}/src/include
-        ${PROJECT_SOURCE_DIR}/contrib/json/src
+        ${PROJECT_SOURCE_DIR}/contrib/json/include
         ${ZLIB_INCLUDE_DIR}
 )
 

@@ -73,7 +73,7 @@ namespace keycap::root::network
         template <typename T>
         void put(gsl::span<T> data)
         {
-            gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(data.data()), data.length_bytes()};
+            gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(data.data()), data.size_bytes()};
             buffer_.insert(buffer_.end(), d.begin(), d.end());
         }
 
@@ -155,6 +155,9 @@ namespace keycap::root::network
         // Returns a std::string with the given size from the stream
         std::string get_string(size_t size)
         {
+            if (size == 0)
+                return "";
+
             if (!has_remaining(size))
                 throw std::exception("Attempted to read past buffer end!");
 

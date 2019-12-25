@@ -21,6 +21,9 @@ namespace keycap::root::network
 {
     size_t memory_stream::decompress(uint32_t length)
     {
+        if (length == 0)
+            return 0;
+
         auto buffer = compression::zip::impl::decompress(buffer_.data() + read_position_, length);
 
         auto new_size = read_position_ + buffer.size();

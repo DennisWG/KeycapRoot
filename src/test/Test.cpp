@@ -22,7 +22,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <Keycap/Root/Network/MemoryStream.hpp>
 #include <Keycap/Root/Network/Srp6/Server.hpp>
