@@ -41,7 +41,7 @@ namespace keycap::root::network
         void listen();
 
         // Sends the given stream asynchronously
-        // void send(memory_stream const& stream);
+        void send(memory_stream&& stream);
 
         // Sends the given data asynchronously
         void send(gsl::span<uint8_t> data) override;

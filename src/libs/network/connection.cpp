@@ -64,6 +64,11 @@ namespace keycap::root::network
             detached);
     }
 
+    void connection::send(memory_stream&& stream)
+    {
+        send(stream.to_span());
+    }
+
     void connection::send(gsl::span<uint8_t> data)
     {
         send_packet_queue_.emplace_back(data.begin(), data.end());
