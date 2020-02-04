@@ -36,9 +36,9 @@ struct server_service : public net::service<connection>
     {
     }
 
-    virtual net::service<connection>::SharedHandler make_handler() override
+    virtual net::service<connection>::SharedHandler make_handler(boost::asio::ip::tcp::socket socket) override
     {
-        return std::make_shared<connection>(*this);
+        return std::make_shared<connection>(std::move(socket), *this);
     }
 
     net::link_status status = net::link_status::Down;
@@ -47,16 +47,16 @@ struct server_service : public net::service<connection>
 
 struct string_connection : public net::connection, public net::message_handler
 {
-    string_connection(net::service_base& service)
-      : connection{service}
+    string_connection(boost::asio::ip::tcp::socket socket, net::service_base& service)
+      : connection{std::move(socket), service}
       , my_service_{static_cast<server_service<string_connection>&>(service)}
     {
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
+    bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
     {
-        net::memory_stream stream{data.begin(), data.end()};
+        net::memory_stream stream{data};
         auto msg = net::registered_message::decode(stream);
 
         my_service_.data = msg.payload.get_string(msg.payload.size());
@@ -76,8 +76,8 @@ struct string_connection : public net::connection, public net::message_handler
 
 struct data_connection : public net::service_connection
 {
-    data_connection(net::service_base& service)
-      : service_connection{service}
+    data_connection(boost::asio::ip::tcp::socket socket, net::service_base& service)
+      : service_connection{std::move(socket), service}
       , my_service_{static_cast<server_service<data_connection>&>(service)}
     {
         router_.configure_inbound(this);
@@ -139,7 +139,7 @@ TEST_CASE("service_locator")
         service.start(host, port);
 
         net::service_locator::located_callback_container container{
-            service.io_service(), [&](net::service_locator& locator, net::service_type sender) {
+            service.io_context(), [&](net::service_locator& locator, net::service_type sender) {
                 REQUIRE(sender == service_type);
                 //
             }};
@@ -233,7 +233,7 @@ TEST_CASE("service_locator")
         std::this_thread::sleep_for(std::chrono::milliseconds{10});
         std::string received_data;
         send(
-            locator, type, "Foobar", service.io_service(),
+            locator, type, "Foobar", service.io_context(),
             [&](net::service_type sender, net::memory_stream data) -> bool {
                 received_data = data.get_string(strlen("Arrived"));
                 return true;

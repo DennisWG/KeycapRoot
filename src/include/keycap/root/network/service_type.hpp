@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace keycap::root::network
 {
     using service_type_t = uint32_t;

@@ -27,12 +27,12 @@ namespace keycap::root::network
         friend class data_router;
 
       public:
-        service_connection(service_base& base_service)
-          : connection{base_service}
+        service_connection(boost::asio::ip::tcp::socket socket, service_base& base_service)
+          : connection{std::move(socket), base_service}
         {
         }
 
-        virtual bool on_data(data_router const& router,  service_type service, uint64 sender, memory_stream& stream) = 0;
+        virtual bool on_data(data_router const& router, service_type service, uint64 sender, memory_stream& stream) = 0;
 
         void send_answer(uint64 receiver, memory_stream const& payload)
         {
@@ -43,15 +43,15 @@ namespace keycap::root::network
             msg.payload = payload;
 
             auto stream = msg.encode();
-            send(std::vector<uint8>{stream.data(), stream.data() + stream.size()});
+            send(gsl::make_span(stream.data(), stream.size()));
         }
 
       private:
-        bool on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data) final
+        bool on_data(data_router const& router, service_type service, gsl::span<uint8_t> data) final
         {
-            input_stream_.put(gsl::make_span(data));
+            input_stream_.put(data);
 
-            if(!registered_message::can_decode(input_stream_))
+            if (!registered_message::can_decode(input_stream_))
                 return true;
 
             auto msg = registered_message::decode(input_stream_);

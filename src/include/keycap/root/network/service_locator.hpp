@@ -70,18 +70,18 @@ namespace keycap::root::network
         size_t service_count() const;
 
       private:
-        bool on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data) override;
+        bool on_data(data_router const& router, service_type service, gsl::span<uint8_t> data) override;
 
         bool on_link(data_router const& router, service_type service, link_status status) override;
 
-        void send_to_(service_type type, memory_stream const& message);
+        void send_to_(service_type type, memory_stream& message);
 
         class connection : public keycap::root::network::connection
         {
             using base = keycap::root::network::connection;
 
           public:
-            connection(service_base& service, service_locator* locator);
+            connection(boost::asio::ip::tcp::socket socket, service_base& service, service_locator* locator);
         };
 
         class service : public keycap::root::network::service<connection>
@@ -91,7 +91,7 @@ namespace keycap::root::network
           public:
             service(service_type type, service_locator* locator);
 
-            virtual SharedHandler make_handler() override;
+            virtual SharedHandler make_handler(boost::asio::ip::tcp::socket socket) override;
 
             std::weak_ptr<connection> connection_;
 

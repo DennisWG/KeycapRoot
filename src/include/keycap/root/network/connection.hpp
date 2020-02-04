@@ -20,6 +20,10 @@ limitations under the License.
 #include "connection_base.hpp"
 #include "data_router.hpp"
 
+#include <boost/asio/awaitable.hpp>
+
+#include <gsl/span>
+
 namespace keycap::root::network
 {
     class service_base;
@@ -28,7 +32,7 @@ namespace keycap::root::network
     class connection : public connection_base
     {
       public:
-        connection(service_base& service);
+        connection(boost::asio::ip::tcp::socket socket, service_base& service);
 
         // Returns the socket used by the connection handler
         boost::asio::ip::tcp::socket& socket();
@@ -37,21 +41,21 @@ namespace keycap::root::network
         void listen();
 
         // Sends the given stream asynchronously
-        void send(memory_stream const& stream);
+        // void send(memory_stream const& stream);
 
         // Sends the given data asynchronously
-        void send(std::vector<std::uint8_t> const& data) override;
+        void send(gsl::span<uint8_t> data) override;
+
+        void send(gsl::span<char> data);
 
         data_router& get_router();
 
       private:
-        void read_packet();
+        boost::asio::awaitable<void> do_read();
 
-        void read_packet_done(boost::system::error_code const& error, size_t numBytesRead);
+        boost::asio::awaitable<void> do_write();
 
-        void send_data() override;
-
-        void send_data_done(boost::system::error_code const& error) override;
+        void stop();
 
       protected:
         data_router router_;

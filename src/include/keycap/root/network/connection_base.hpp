@@ -16,9 +16,13 @@ limitations under the License.
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/io_context_strand.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/streambuf.hpp>
 
 #include <deque>
+#include <gsl/span>
 #include <memory>
 #include <vector>
 
@@ -27,27 +31,28 @@ namespace keycap::root::network
     class connection_base : public std::enable_shared_from_this<connection_base>
     {
       public:
-        connection_base(boost::asio::io_service& ioService)
+        connection_base(boost::asio::ip::tcp::socket socket, boost::asio::io_context& ioService)
           : io_service_{ioService}
-          , socket_{ioService}
+          , socket_{std::move(socket)}
           , write_strand_{ioService}
+          , send_timer_{ioService}
         {
+            send_timer_.expires_at(std::chrono::steady_clock::time_point::max());
         }
 
         virtual ~connection_base()
         {
         }
 
-        virtual void send(std::vector<std::uint8_t> const& data) = 0;
+        virtual void send(gsl::span<uint8_t> data) = 0;
 
       protected:
-        virtual void send_data() = 0;
-        virtual void send_data_done(boost::system::error_code const& error) = 0;
-
-        boost::asio::io_service& io_service_;
+        boost::asio::io_context& io_service_;
         boost::asio::ip::tcp::socket socket_;
-        boost::asio::io_service::strand write_strand_;
+        boost::asio::io_context::strand write_strand_;
         boost::asio::streambuf in_packet_;
         std::deque<std::vector<std::uint8_t>> send_packet_queue_;
+
+        boost::asio::steady_timer send_timer_;
     };
 }

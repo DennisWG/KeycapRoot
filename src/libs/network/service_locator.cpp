@@ -19,6 +19,8 @@
 #include <keycap/root/network/service_locator.hpp>
 #include <keycap/root/utility/crc32.hpp>
 
+#include <gsl/span>
+
 namespace keycap::root::network
 {
     void service_locator::locate(
@@ -74,7 +76,7 @@ namespace keycap::root::network
         return services_.size();
     }
 
-    bool service_locator::on_data(data_router const& router, service_type service, std::vector<uint8_t> const& data)
+    bool service_locator::on_data(data_router const& router, service_type service, gsl::span<uint8_t> data)
     {
         memory_stream stream(data.begin(), data.end());
 
@@ -96,9 +98,9 @@ namespace keycap::root::network
             return false;
         }
 
-        auto[sender, io_service, _] = itr->second;
+        auto [sender, io_service, _] = itr->second;
 
-        io_service.post([ sender = service_type{sender}, payload = msg.payload, callback = itr->second.calback ]() {
+        io_service.post([sender = service_type{sender}, payload = msg.payload, callback = itr->second.calback]() {
             callback(service_type{sender}, payload);
         });
 
@@ -113,8 +115,8 @@ namespace keycap::root::network
         {
             if (auto itr = located_callbacks_.find(service.get()); itr != located_callbacks_.end())
             {
-                auto[io_service, callback] = itr->second;
-                io_service.post([ this, callback = itr->second.callback, service ]() {
+                auto [io_service, callback] = itr->second;
+                io_service.post([this, callback = itr->second.callback, service]() {
                     callback(*this, service);
                     //
                 });
@@ -135,7 +137,7 @@ namespace keycap::root::network
         return true;
     }
 
-    void service_locator::send_to_(service_type type, memory_stream const& message)
+    void service_locator::send_to_(service_type type, memory_stream& message)
     {
         auto itr = services_.find(type.get());
         if (itr == services_.end())
@@ -147,15 +149,16 @@ namespace keycap::root::network
         auto& service = itr->second;
 
         if (auto conn = service.connection_.lock())
-            conn->send(std::vector<uint8_t>(message.data(), message.data() + message.size()));
+            conn->send(message.to_span());
         else
         {
             // TODO: place in queue!
         }
     }
 
-    service_locator::connection::connection(service_base& service, service_locator* locator)
-      : base{service}
+    service_locator::connection::connection(
+        boost::asio::ip::tcp::socket socket, service_base& service, service_locator* locator)
+      : base{std::move(socket), service}
     {
         router_.configure_inbound(locator);
     }
@@ -166,9 +169,9 @@ namespace keycap::root::network
     {
     }
 
-    service_locator::service::SharedHandler service_locator::service::make_handler()
+    service_locator::service::SharedHandler service_locator::service::make_handler(boost::asio::ip::tcp::socket socket)
     {
-        auto conn = std::make_shared<connection>(*this, locator_);
+        auto conn = std::make_shared<connection>(std::move(socket), *this, locator_);
         connection_ = conn;
         return conn;
     }

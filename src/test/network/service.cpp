@@ -39,9 +39,9 @@ namespace ServiceTest
         {
         }
 
-        virtual SharedHandler make_handler() override
+        virtual SharedHandler make_handler(boost::asio::ip::tcp::socket socket) override
         {
-            return std::make_shared<ClientConnection>(*this);
+            return std::make_shared<ClientConnection>(std::move(socket), *this);
         }
 
         net::link_status status = net::link_status::Down;
@@ -50,8 +50,8 @@ namespace ServiceTest
 
     struct ClientConnection : public net::connection, public net::message_handler
     {
-        ClientConnection(net::service_base& service)
-          : connection{service}
+        ClientConnection(boost::asio::ip::tcp::socket socket, net::service_base& service)
+          : connection{std::move(socket), service}
           , myService{static_cast<ClientService&>(service)}
         {
             router_.configure_inbound(this);
@@ -60,12 +60,11 @@ namespace ServiceTest
         void listen()
         {
             std::string msg{"Ping"};
-
-            send({msg.begin(), msg.end()});
+            send(gsl::make_span(msg));
             connection::listen();
         }
 
-        bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
+        bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -92,9 +91,9 @@ namespace ServiceTest
         {
         }
 
-        virtual SharedHandler make_handler() override
+        virtual SharedHandler make_handler(boost::asio::ip::tcp::socket socket) override
         {
-            return std::make_shared<DummyConnection>(*this);
+            return std::make_shared<DummyConnection>(std::move(socket), *this);
         }
 
         net::link_status status = net::link_status::Down;
@@ -103,14 +102,14 @@ namespace ServiceTest
 
     struct DummyConnection : public net::connection, public net::message_handler
     {
-        DummyConnection(net::service_base& service)
-          : connection{service}
+        DummyConnection(boost::asio::ip::tcp::socket socket, net::service_base& service)
+          : connection{std::move(socket), service}
           , myService{static_cast<ServerService&>(service)}
         {
             router_.configure_inbound(this);
         }
 
-        bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
+        bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -118,7 +117,7 @@ namespace ServiceTest
             if (received == "Ping")
             {
                 std::string msg{"Pong"};
-                send({msg.begin(), msg.end()});
+                send(gsl::make_span(msg));
             }
 
             return true;
@@ -147,7 +146,7 @@ namespace ServiceTest
             ClientService client;
             client.start(host, port);
 
-            std::this_thread::sleep_for(std::chrono::milliseconds{10});
+            std::this_thread::sleep_for(std::chrono::milliseconds{20});
 
             REQUIRE(server.data == "Ping");
             REQUIRE(server.status == net::link_status::Up);

@@ -34,12 +34,9 @@ struct DummyService : public net::service_base
     {
     }
 
-    boost::asio::io_service& io_service() override
+    void handle_new_connection(boost::asio::ip::tcp::socket socket) override
     {
-        return ioService_;
     }
-
-    boost::asio::io_service ioService_;
 };
 
 template <typename Service, typename MessageHandler>
@@ -56,7 +53,7 @@ class TestHandler : public net::message_handler
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, net::service_type service, std::vector<uint8_t> const& data) override
+    bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
     {
         OnMessageCalled = true;
         return true;

@@ -30,7 +30,15 @@ namespace keycap::root::network
     {
       public:
         memory_stream() = default;
-        memory_stream(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end)
+
+        template <typename ITERABLE>
+        explicit memory_stream(ITERABLE const& iterable)
+          : buffer_(std::begin(iterable), std::end(iterable))
+        {
+        }
+
+        template <typename ITER>
+        memory_stream(ITER begin, ITER end)
           : buffer_(begin, end)
         {
         }
@@ -246,6 +254,11 @@ namespace keycap::root::network
         auto& buffer() const
         {
             return buffer_;
+        }
+
+        auto to_span()
+        {
+            return gsl::make_span<uint8_t>(buffer_.data() + read_position_, buffer_.data() + buffer_.size());
         }
 
         // Decompresses the given length of the buffer

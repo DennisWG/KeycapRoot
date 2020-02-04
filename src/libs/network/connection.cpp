@@ -18,10 +18,24 @@
 #include <keycap/root/network/memory_stream.hpp>
 #include <keycap/root/network/service_base.hpp>
 
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/redirect_error.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/write.hpp>
+
+#include <gsl/span>
+
+using boost::asio::awaitable;
+using boost::asio::co_spawn;
+using boost::asio::detached;
+using boost::asio::redirect_error;
+using boost::asio::use_awaitable;
+
 namespace keycap::root::network
 {
-    connection::connection(service_base& service)
-      : connection_base{service.io_service()}
+    connection::connection(boost::asio::ip::tcp::socket socket, service_base& service)
+      : connection_base{std::move(socket), service.io_context()}
       , service_{service}
     {
     }
@@ -33,23 +47,32 @@ namespace keycap::root::network
 
     void connection::listen()
     {
-        read_packet();
+        co_spawn(
+            io_service_,
+            [self = utility::shared_from_that(this)] {
+                //
+                return self->do_read();
+            },
+            detached);
+
+        co_spawn(
+            io_service_,
+            [self = utility::shared_from_that(this)] {
+                //
+                return self->do_write();
+            },
+            detached);
     }
 
-    void connection::send(memory_stream const& stream)
+    void connection::send(gsl::span<uint8_t> data)
     {
-        send(stream.buffer());
+        send_packet_queue_.emplace_back(data.begin(), data.end());
+        send_timer_.cancel_one();
     }
 
-    void connection::send(std::vector<std::uint8_t> const& data)
+    void connection::send(gsl::span<char> data)
     {
-        io_service_.post(write_strand_.wrap([ self = utility::shared_from_that(this), data ]() {
-            bool isWriteInProgress = !self->send_packet_queue_.empty();
-            self->send_packet_queue_.push_back(std::move(data));
-
-            if (!isWriteInProgress)
-                self->send_data();
-        }));
+        send(gsl::make_span(reinterpret_cast<uint8_t*>(data.data()), data.size()));
     }
 
     data_router& connection::get_router()
@@ -57,51 +80,57 @@ namespace keycap::root::network
         return router_;
     }
 
-    void connection::read_packet()
+    awaitable<void> connection::do_read()
     {
-        auto buffer = in_packet_.prepare(512);
-        socket_.async_read_some(
-            buffer, [self = utility::shared_from_that(this)](boost::system::error_code const& error, size_t bytesRead) {
-                self->in_packet_.commit(bytesRead);
-                self->read_packet_done(error, bytesRead);
-            });
-    }
+        try
+        {
+            std::vector<uint8_t> buffer(1024, 0);
 
-    void connection::read_packet_done(boost::system::error_code const& error, size_t numBytesRead)
-    {
-        if (error)
+            while (socket_.is_open())
+            {
+                std::size_t n = co_await socket_.async_read_some(boost::asio::buffer(buffer), use_awaitable);
+                if (!router_.route_inbound(service_, gsl::make_span(buffer.data(), n)))
+                {
+                    router_.route_updated_link_status(service_, link_status::Down);
+                    stop();
+                    break;
+                }
+            }
+        }
+        catch (std::exception&)
         {
             router_.route_updated_link_status(service_, link_status::Down);
-            return;
+            stop();
         }
-
-        std::vector<uint8_t> buffer;
-        buffer.resize(numBytesRead);
-
-        in_packet_.sgetn(reinterpret_cast<char*>(buffer.data()), numBytesRead);
-
-        if (router_.route_inbound(service_, buffer))
-            read_packet();
-        else
-            router_.route_updated_link_status(service_, link_status::Down);
     }
 
-    void connection::send_data()
+    awaitable<void> connection::do_write()
     {
-        boost::asio::async_write(
-            socket_, boost::asio::buffer(send_packet_queue_.front()),
-            [self = utility::shared_from_that(this)](boost::system::error_code const& error, size_t) {
-                self->send_data_done(error);
-            });
+        try
+        {
+            while (socket_.is_open())
+            {
+                if (send_packet_queue_.empty())
+                {
+                    boost::system::error_code ec;
+                    co_await send_timer_.async_wait(redirect_error(use_awaitable, ec));
+                }
+                else
+                {
+                    co_await boost::asio::async_write(
+                        socket_, boost::asio::buffer(send_packet_queue_.front()), use_awaitable);
+                    send_packet_queue_.pop_front();
+                }
+            }
+        }
+        catch (std::exception&)
+        {
+            stop();
+        }
     }
 
-    void connection::send_data_done(boost::system::error_code const& error)
+    void connection::stop()
     {
-        if (error)
-            return;
-
-        send_packet_queue_.pop_front();
-        if (!send_packet_queue_.empty())
-            send_data();
+        socket_.close();
     }
 }

@@ -18,24 +18,39 @@
 
 #include "service_type.hpp"
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 namespace keycap::root::network
 {
     class service_base
     {
       public:
-        service_base(service_type type)
-          : type_{type}
+        service_base(service_type type);
+
+        service_type type();
+
+        boost::asio::io_context& io_context();
+
+        // Returns wether or not the service has been started.
+        bool running() const
         {
+            return running_;
         }
 
-        service_type type()
-        {
-            return type_;
-        }
+        virtual void handle_new_connection(boost::asio::ip::tcp::socket socket) = 0;
 
-        virtual boost::asio::io_service& io_service() = 0;
+      protected:
+        boost::asio::ip::tcp::endpoint resolve(std::string const& host, uint16_t port);
+
+        void listen();
+
+        void connect();
+
+        boost::asio::io_context io_context_;
+        boost::asio::ip::tcp::endpoint endpoint_;
+
+        bool running_ = false;
 
       private:
         service_type type_;
