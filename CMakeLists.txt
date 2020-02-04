@@ -73,6 +73,7 @@ find_package(Sanitizers)
     /experimental:external
     /external:W0
     /external:env:cpp_external_paths
+    /await
      )
    string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
  
