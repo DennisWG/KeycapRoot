@@ -33,6 +33,12 @@ enable_testing()
  set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
  
  ################################
+ # Botan 2
+ ################################
+
+ find_package(Botan2 2.13.0)
+ 
+ ################################
  # Boost
  ################################
  
@@ -41,7 +47,7 @@ enable_testing()
  add_library(boost INTERFACE IMPORTED)
  set_property(TARGET boost
      PROPERTY
-         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${Botan_INCLUDE_DIR}
+         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${BOTAN2_INCLUDE_DIRS}
  )
  
  ################################
@@ -74,6 +80,7 @@ find_package(Sanitizers)
     /external:W0
     /external:env:cpp_external_paths
     /await
+    /DBOOST_ASIO_DISABLE_CONCEPTS
      )
    string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
  

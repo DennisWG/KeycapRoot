@@ -22,7 +22,7 @@ add_executable (test_${PROJECT_NAME}
 
 add_sanitizers(test_${PROJECT_NAME})
 
-target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck ${Boost_LIBRARIES} ${Botan_LIBRARIES})
+target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck ${Boost_LIBRARIES} ${BOTAN2_LIBRARIES})
 
 target_include_directories(test_${PROJECT_NAME}
     PRIVATE
