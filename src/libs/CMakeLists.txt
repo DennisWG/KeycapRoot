@@ -11,6 +11,23 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+cmake_minimum_required(VERSION 3.26)
+
+find_package(Botan 3.1.1 REQUIRED)
+
+botan_generate(botan_lib
+    base32
+    hex
+    numbertheory
+    md5
+    sha1
+    sha2_64
+    hmac
+    hmac_drbg
+    auto_rng
+    bigint
+    system_rng 
+)
 
 add_library(keycaproot
     ${version_file}
@@ -36,12 +53,26 @@ add_library(keycaproot
 )
 
 target_include_directories(keycaproot
-    PUBLIC
-        ${PROJECT_SOURCE_DIR}/contrib/spdlog/include
+    PRIVATE
         ${PROJECT_SOURCE_DIR}/contrib/gsl/include
-        ${PROJECT_SOURCE_DIR}/src/include
+    PUBLIC
         ${PROJECT_SOURCE_DIR}/contrib/json/include
-        ${ZLIB_INCLUDE_DIR}
+        ${PROJECT_SOURCE_DIR}/contrib/spdlog/include
+        ${PROJECT_SOURCE_DIR}/src/include
 )
 
-target_link_libraries(keycaproot boost ${ZLIB_LIBRARIES})
+target_link_libraries(keycaproot
+    PRIVATE
+        keycap::root::project_options
+        keycap::root::project_warnings
+
+        botan_lib
+        Boost::system
+        Boost::lexical_cast
+        zlibstatic
+
+    PUBLIC
+        Boost::asio
+        Boost::crc
+        Boost::uuid
+)

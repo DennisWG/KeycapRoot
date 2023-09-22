@@ -26,7 +26,7 @@ namespace keycap::root::cryptography
         uint8 j = 0;
         uint8 k = 0;
         
-        std::iota(std::begin(block_), std::end(block_), 0);
+        std::iota(std::begin(block_), std::end(block_), uint8{0});
 
         for (int i = 0; i < block_size; ++i)
         {

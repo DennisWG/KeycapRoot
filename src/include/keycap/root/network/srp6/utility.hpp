@@ -19,7 +19,7 @@
 #include "compliance.hpp"
 #include "group_parameters.hpp"
 
-#include <botan/bigint.h>
+#include <botan_all.h>
 
 #include <array>
 #include <string>

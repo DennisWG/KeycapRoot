@@ -18,8 +18,6 @@
 
 #include <rapidcheck/catch.h>
 
-#include <zlib.h>
-
 using namespace keycap::root::compression;
 
 TEST_CASE("Zip")

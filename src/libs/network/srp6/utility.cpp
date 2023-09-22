@@ -20,8 +20,7 @@
 #include <keycap/root/network/srp6/utility.hpp>
 #include <keycap/root/utility/string.hpp>
 
-#include <botan/numthry.h>
-#include <botan/sha160.h>
+#include <botan_all.h>
 
 namespace keycap::root::network::srp6
 {
@@ -108,21 +107,21 @@ namespace keycap::root::network::srp6
         Botan::BigInt const& A, Botan::BigInt const& B, Botan::BigInt const& sessionKey,
         keycap::root::network::srp6::compliance compliance)
     {
-        Botan::SHA_1 sha1;
+        auto sha1 = Botan::HashFunction::create("SHA-1");
 
-        auto nHash{sha1.process(encode_flip(N))};
-        auto gHash{sha1.process(encode_flip(g))};
-        auto iHash{sha1.process(I)};
+        auto nHash{sha1->process(encode_flip(N))};
+        auto gHash{sha1->process(encode_flip(g))};
+        auto iHash{sha1->process(I)};
 
         for (size_t i = 0; i < nHash.size(); ++i)
             nHash[i] ^= gHash[i];
 
-        sha1.update(nHash);
-        sha1.update(iHash);
-        sha1.update(encode_flip(salt));
-        sha1.update(encode_flip(A));
-        sha1.update(encode_flip(B));
-        sha1.update(encode_flip(sessionKey));
-        return decode_flip(sha1.final());
+        sha1->update(nHash);
+        sha1->update(iHash);
+        sha1->update(encode_flip(salt));
+        sha1->update(encode_flip(A));
+        sha1->update(encode_flip(B));
+        sha1->update(encode_flip(sessionKey));
+        return decode_flip(sha1->final());
     }
 }

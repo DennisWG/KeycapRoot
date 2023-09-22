@@ -19,8 +19,7 @@
 #include <keycap/root/network/srp6/server.hpp>
 #include <keycap/root/network/srp6/utility.hpp>
 
-#include <botan/numthry.h>
-#include <botan/sha160.h>
+#include <botan_all.h>
 
 namespace srp6 = keycap::root::network::srp6;
 

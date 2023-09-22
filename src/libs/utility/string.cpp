@@ -55,15 +55,15 @@ namespace keycap::root::utility
 
     std::string to_upper(std::string s)
     {
-        [[maybe_unused]] auto end
-            = std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::toupper(c); });
+        [[maybe_unused]] auto end = std::transform(
+            std::begin(s), std::end(s), std::begin(s), [](auto c) { return static_cast<char>(std::toupper(c)); });
         return s;
     }
 
     std::string to_lower(std::string s)
     {
-        [[maybe_unused]] auto end
-            = std::transform(std::begin(s), std::end(s), std::begin(s), [](auto c) { return std::tolower(c); });
+        [[maybe_unused]] auto end = std::transform(
+            std::begin(s), std::end(s), std::begin(s), [](auto c) { return static_cast<char>(std::tolower(c)); });
         return s;
     }
 }

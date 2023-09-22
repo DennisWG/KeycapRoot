@@ -16,9 +16,6 @@
 
 #include <keycap/root/cryptography/OTP.hpp>
 
-#include <botan/base32.h>
-#include <botan/hex.h>
-
 #include <rapidcheck/catch.h>
 
 namespace crypt = keycap::root::cryptography;

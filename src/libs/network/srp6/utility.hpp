@@ -20,12 +20,10 @@
 #include <keycap/root/network/srp6/compliance.hpp>
 #include <keycap/root/network/srp6/utility.hpp>
 
-#include <botan/numthry.h>
-#include <botan/sha160.h>
+#include <botan_all.h>
 
 namespace srp6 = keycap::root::network::srp6;
 
-#include <botan/bigint.h>
 
 /* Refer to https://www.ietf.org/rfc/rfc2945.txt section "3.1.  Interleaved SHA" */
 inline auto sha_interleave(Botan::BigInt const& S)
@@ -51,9 +49,9 @@ inline auto sha_interleave(Botan::BigInt const& S)
     // clang-format on
 
     // Hash each one with regular SHA1
-    Botan::SHA_1 sha;
-    auto G{sha.process(&*begin, std::distance(begin, bound))};
-    auto H{sha.process(&*bound, std::distance(bound, std::end(s)))};
+    auto sha = Botan::HashFunction::create("SHA-1");
+    auto G{sha->process(&*begin, std::distance(begin, bound))};
+    auto H{sha->process(&*bound, std::distance(bound, std::end(s)))};
 
     // Interleave the two hashes back together to form the output
     std::vector<uint8_t> result;
@@ -68,7 +66,7 @@ inline auto sha_interleave(Botan::BigInt const& S)
 }
 
 template <typename T>
-void hash_one(Botan::SHA_1& sha, T&& t, srp6::compliance compliance)
+void hash_one(Botan::HashFunction& sha, T&& t, srp6::compliance compliance)
 {
     using U = std::remove_cv_t<std::remove_reference_t<T>>;
     if constexpr (std::is_same_v<U, Botan::BigInt>)
@@ -91,14 +89,14 @@ void hash_one(Botan::SHA_1& sha, T&& t, srp6::compliance compliance)
 template <typename... ARGS>
 auto sha1_hash(srp6::compliance compliance, ARGS&&... args)
 {
-    Botan::SHA_1 sha;
+    auto sha = Botan::HashFunction::create("SHA-1");
 
-    (hash_one(sha, args, compliance), ...);
+    (hash_one(*sha, args, compliance), ...);
 
     if (compliance == srp6::compliance::Wow)
-        return srp6::decode_flip(sha.final());
+        return srp6::decode_flip(sha->final());
     else
-        return Botan::BigInt::decode(sha.final());
+        return Botan::BigInt::decode(sha->final());
 }
 
 inline auto generate_x(

@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include <gsl/span>
-
 #include <cstdint>
 #include <optional>
+#include <span>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -51,7 +51,7 @@ namespace keycap::root::network
             {
                 return T::Encode(*this);
             }
-            gsl::span<uint8_t const> data{reinterpret_cast<uint8_t const*>(&value), sizeof(T)};
+            std::span<uint8_t const> data{reinterpret_cast<uint8_t const*>(&value), sizeof(T)};
             buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
 
@@ -65,8 +65,9 @@ namespace keycap::root::network
         template <typename T, size_t NumElements>
         void put(std::array<T, NumElements> value)
         {
-            gsl::span<uint8_t const> data{reinterpret_cast<uint8_t const*>(value.data()),
-                                          reinterpret_cast<uint8_t const*>(value.data() + NumElements)};
+            std::span<uint8_t const> data{
+                reinterpret_cast<uint8_t const*>(value.data()),
+                reinterpret_cast<uint8_t const*>(value.data() + NumElements)};
 
             buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
@@ -79,14 +80,14 @@ namespace keycap::root::network
 
         // Puts an arbitrary span into the stream
         template <typename T>
-        void put(gsl::span<T> data)
+        void put(std::span<T> data)
         {
-            gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(data.data()), data.size_bytes()};
+            std::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(data.data()), data.size_bytes()};
             buffer_.insert(buffer_.end(), d.begin(), d.end());
         }
 
         // Puts a span of bytes into the stream
-        void put(gsl::span<uint8_t> data)
+        void put(std::span<uint8_t> data)
         {
             [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), data.begin(), data.end());
         }
@@ -94,8 +95,9 @@ namespace keycap::root::network
         // Puts a std::string into the stream
         void put(std::string const& string)
         {
-            gsl::span<uint8_t const> d{reinterpret_cast<uint8_t const*>(string.data()),
-                                       reinterpret_cast<uint8_t const*>(string.data() + string.size())};
+            std::span<uint8_t const> d{
+                reinterpret_cast<uint8_t const*>(string.data()),
+                reinterpret_cast<uint8_t const*>(string.data() + string.size())};
             [[maybe_unused]] auto end = buffer_.insert(buffer_.end(), d.begin(), d.end());
         }
 

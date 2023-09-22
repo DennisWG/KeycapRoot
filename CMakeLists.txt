@@ -12,14 +12,51 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-cmake_minimum_required(VERSION 3.7.0)
+cmake_minimum_required(VERSION 3.26)
 project(KeycapRoot)
+include(cmake/PreventInSourceBuilds.cmake)
+
 enable_testing()
  
  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
  
  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
  set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/contrib/sanitizers-cmake/cmake ${CMAKE_MODULE_PATH})
+
+# Link this 'library' to set the c++ standard / compile-time options requested
+add_library(keycaproot_project_options INTERFACE)
+add_library(keycap::root::project_options ALIAS keycaproot_project_options)
+
+set_target_properties(keycaproot_project_options PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(keycaproot_project_options INTERFACE cxx_std_23)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+  option(ENABLE_BUILD_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files on clang" OFF)
+  if(ENABLE_BUILD_WITH_TIME_TRACE)
+    target_compile_options(keycaproot_project_options INTERFACE -ftime-trace)
+  endif()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+  target_compile_definitions(keycaproot_project_options INTERFACE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+  target_compile_options(keycaproot_project_options INTERFACE 
+    /std:c++latest 
+    /permissive- 
+    /experimental:external 
+    /external:W0 
+    #/external:env:cpp_external_paths
+    /external:anglebrackets
+  )
+endif()
+
+# Link this 'library' to use the warnings specified in CompilerWarnings.cmake
+add_library(keycaproot_project_warnings INTERFACE)
+add_library(keycap::root::project_warnings ALIAS keycaproot_project_warnings)
+
+# standard compiler warnings
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(keycaproot_project_warnings)
+
+
+include(FetchContent)
  
  ################################
  # Git
@@ -33,6 +70,7 @@ enable_testing()
  set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
  
  ################################
+<<<<<<< HEAD
  # Botan 2
  ################################
 
@@ -51,10 +89,49 @@ enable_testing()
  )
  
  ################################
+=======
+>>>>>>> fa46a7e (Make the project compile again on modern systems.)
  # Zlib
  ################################
+ 
+ message("keycap::root - Downloading Zlib")
 
- find_package(ZLIB REQUIRED)
+FetchContent_Declare(
+  zlib
+  GIT_REPOSITORY https://github.com/madler/zlib.git
+  GIT_TAG  v1.3
+)
+FetchContent_GetProperties(zlib)
+ if(NOT zlib_POPULATED)
+     FetchContent_Populate(zlib)
+     add_subdirectory(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+     target_include_directories(zlib PUBLIC  
+         $<BUILD_INTERFACE:${zlib_BINARY_DIR}>  
+         $<BUILD_INTERFACE:${zlib_SOURCE_DIR}>  
+         $<INSTALL_INTERFACE:include>
+       )
+     target_include_directories(zlibstatic PUBLIC  
+         $<BUILD_INTERFACE:${zlib_BINARY_DIR}> 
+         $<BUILD_INTERFACE:${zlib_SOURCE_DIR}>   
+         $<INSTALL_INTERFACE:include>
+       )
+ endif()
+ 
+ ################################
+ # Boost
+ ################################
+
+ message("keycap::root - Downloading Boost. This takes forever! Grab a coffee or five.")
+
+set(Boost_USE_STATIC_LIBS ON)
+set(BOOST_IOSTREAMS_ENABLE_ZLIB OFF)
+
+FetchContent_Declare(
+  Boost
+  GIT_REPOSITORY https://github.com/boostorg/boost.git
+  GIT_TAG boost-1.81.0
+)
+FetchContent_MakeAvailable(Boost)
  
 # ################################
 # # external submodules
@@ -68,9 +145,10 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/rapidcheck")
 find_package(Sanitizers)
 # 
  ################################
- # Compile flags
+ # Source Directories
  ################################
  
+<<<<<<< HEAD
  # TODO: Remove once Visual Studio updates to CMake 3.8 or higher
  if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
    set(MY_CXX_FLAGS_LIST
@@ -87,5 +165,7 @@ find_package(Sanitizers)
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
  endif()
 
+=======
+>>>>>>> fa46a7e (Make the project compile again on modern systems.)
 add_subdirectory (src/libs)
 add_subdirectory (src/test)

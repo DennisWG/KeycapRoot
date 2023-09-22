@@ -1,4 +1,17 @@
-cmake_minimum_required(VERSION 3.7.0)
+#   Copyright 2017 KeycapEmu
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+cmake_minimum_required(VERSION 3.26)
 
 add_executable (test_${PROJECT_NAME}
     compression/zip.cpp
@@ -22,7 +35,21 @@ add_executable (test_${PROJECT_NAME}
 
 add_sanitizers(test_${PROJECT_NAME})
 
+<<<<<<< HEAD
 target_link_libraries(test_${PROJECT_NAME} keycaproot rapidcheck ${Boost_LIBRARIES} ${BOTAN2_LIBRARIES})
+=======
+target_link_libraries(test_${PROJECT_NAME}
+    PRIVATE
+        botan_lib
+    PUBLIC
+        keycap::root::project_options
+        keycap::root::project_warnings
+
+        keycaproot
+        rapidcheck
+        #${Boost_LIBRARIES}
+)
+>>>>>>> fa46a7e (Make the project compile again on modern systems.)
 
 target_include_directories(test_${PROJECT_NAME}
     PRIVATE

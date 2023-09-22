@@ -17,8 +17,7 @@
 #include <keycap/root/cryptography/OTP.hpp>
 #include <keycap/root/utility/numbers.hpp>
 
-#include <botan/base32.h>
-#include <botan/hmac.h>
+#include <botan_all.h>
 
 #include <ctime>
 
@@ -28,7 +27,8 @@ namespace keycap::root::cryptography
     {
         std::string generate(std::string const& key, uint64_t counter, size_t num_digits)
         {
-            auto hmac = Botan::HMAC::create("HMAC(SHA1)");
+            // auto hmac = Botan::HMAC::create("HMAC(SHA1)");
+            auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 
             hmac->set_key(Botan::base32_decode(key));
             auto text = utility::to_array(counter);

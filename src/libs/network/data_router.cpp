@@ -38,7 +38,7 @@ namespace keycap::root::network
         inbound_handlers_.erase(
             std::remove_if(
                 inbound_handlers_.begin(), inbound_handlers_.end(),
-                [&](message_handler* messageHandler) { return *messageHandler == *handler; }),
+                [&](message_handler* messageHandler) { return messageHandler->operator==(*handler); }), // explicit call because MSVC thinks this is some WindowsSDK type...
             inbound_handlers_.end());
     }
 

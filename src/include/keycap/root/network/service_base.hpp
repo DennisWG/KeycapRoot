@@ -38,7 +38,16 @@ namespace keycap::root::network
             return running_;
         }
 
+<<<<<<< HEAD
         virtual void handle_new_connection(boost::asio::ip::tcp::socket socket) = 0;
+=======
+        virtual ~service_base() = default;
+
+        service_type type()
+        {
+            return type_;
+        }
+>>>>>>> fa46a7e (Make the project compile again on modern systems.)
 
       protected:
         boost::asio::ip::tcp::endpoint resolve(std::string const& host, uint16_t port);

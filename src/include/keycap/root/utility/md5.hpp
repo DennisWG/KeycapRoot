@@ -18,7 +18,7 @@
 
 #include "../types.hpp"
 
-#include <Botan/md5.h>
+#include <botan_all.h>
 
 #include <array>
 

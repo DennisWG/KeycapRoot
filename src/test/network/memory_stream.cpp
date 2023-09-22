@@ -67,7 +67,7 @@ TEST_CASE("memory_stream")
 
         std::vector<uint32_t> data{first, second};
 
-        stream.put(gsl::make_span(data));
+        stream.put(data);
 
         REQUIRE(stream.size() == expectedSize);
         REQUIRE(stream.get<uint32_t>() == first);
@@ -81,7 +81,7 @@ TEST_CASE("memory_stream")
         uint8_t const second = 2;
 
         std::array<uint8_t, 4> data{8, 4, first, second};
-        stream.put(gsl::make_span(data));
+        stream.put(data);
 
         stream.get<uint8_t>();
         stream.get<uint8_t>();
