@@ -76,7 +76,7 @@ namespace keycap::root::network
         return services_.size();
     }
 
-    bool service_locator::on_data(data_router const& router, service_type service, gsl::span<uint8_t> data)
+    bool service_locator::on_data(data_router const& router, service_type service, std::span<uint8_t> data)
     {
         memory_stream stream(data.begin(), data.end());
 

@@ -70,7 +70,7 @@ namespace keycap::root::network
         size_t service_count() const;
 
       private:
-        bool on_data(data_router const& router, service_type service, gsl::span<uint8_t> data) override;
+        bool on_data(data_router const& router, service_type service, std::span<uint8_t> data) override;
 
         bool on_link(data_router const& router, service_type service, link_status status) override;
 

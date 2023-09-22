@@ -260,7 +260,7 @@ namespace keycap::root::network
 
         auto to_span()
         {
-            return gsl::make_span<uint8_t>(buffer_.data() + read_position_, buffer_.data() + buffer_.size());
+            return std::span<uint8_t>(buffer_.data() + read_position_, buffer_.data() + buffer_.size());
         }
 
         // Decompresses the given length of the buffer

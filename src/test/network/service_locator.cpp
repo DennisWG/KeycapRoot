@@ -54,7 +54,7 @@ struct string_connection : public net::connection, public net::message_handler
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
+    bool on_data(net::data_router const& router, net::service_type service, std::span<uint8_t> data) override
     {
         net::memory_stream stream{data};
         auto msg = net::registered_message::decode(stream);

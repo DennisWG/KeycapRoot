@@ -22,9 +22,9 @@
 #include "message_handler.hpp"
 
 #include <functional>
-#include <gsl/span>
 #include <map>
 #include <memory>
+#include <span>
 #include <vector>
 
 namespace keycap::root::network
@@ -51,10 +51,10 @@ namespace keycap::root::network
         // Routes the given data from the given Service to all registered message_handlers
         // Will call every registered message_handler, even if one of them fails
         // Returns whether or not all message_handler succeeded.
-        bool route_inbound(service_base& service, gsl::span<uint8_t> data) const;
+        bool route_inbound(service_base& service, std::span<uint8_t> data) const;
 
         // Routes the given data to the given receiver
-        void route_outbound(gsl::span<uint8_t> data) const;
+        void route_outbound(std::span<uint8_t> data) const;
 
       private:
         std::vector<message_handler*> inbound_handlers_;

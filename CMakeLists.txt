@@ -70,27 +70,6 @@ include(FetchContent)
  set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
  
  ################################
-<<<<<<< HEAD
- # Botan 2
- ################################
-
- find_package(Botan2 2.13.0)
- 
- ################################
- # Boost
- ################################
- 
- set(Boost_USE_STATIC_LIBS ON)
- find_package(Boost 1.63 COMPONENTS system date_time regex REQUIRED)
- add_library(boost INTERFACE IMPORTED)
- set_property(TARGET boost
-     PROPERTY
-         INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR} ${BOTAN2_INCLUDE_DIRS}
- )
- 
- ################################
-=======
->>>>>>> fa46a7e (Make the project compile again on modern systems.)
  # Zlib
  ################################
  
@@ -148,24 +127,5 @@ find_package(Sanitizers)
  # Source Directories
  ################################
  
-<<<<<<< HEAD
- # TODO: Remove once Visual Studio updates to CMake 3.8 or higher
- if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-   set(MY_CXX_FLAGS_LIST
- 	/std:c++latest
-    /permissive-
-    /experimental:external
-    /external:W0
-    /external:env:cpp_external_paths
-    /await
-    /DBOOST_ASIO_DISABLE_CONCEPTS
-     )
-   string(REPLACE ";" " " MY_CXX_FLAGS "${MY_CXX_FLAGS_LIST}")
- 
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MY_CXX_FLAGS}")
- endif()
-
-=======
->>>>>>> fa46a7e (Make the project compile again on modern systems.)
 add_subdirectory (src/libs)
 add_subdirectory (src/test)

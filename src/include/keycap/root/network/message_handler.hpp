@@ -21,8 +21,8 @@
 
 #include <boost/uuid/uuid.hpp>
 
-#include <gsl/span>
 #include <memory>
+#include <span>
 #include <vector>
 
 namespace keycap::root::network
@@ -42,7 +42,7 @@ namespace keycap::root::network
         bool operator==(message_handler const& rhs) noexcept;
 
         // Will get called whenever we've received data.
-        virtual bool on_data(data_router const& router, service_type service, gsl::span<uint8_t> data) = 0;
+        virtual bool on_data(data_router const& router, service_type service, std::span<uint8_t> data) = 0;
 
         // Will get called whenever a connection has been established or after it got disconnected.
         // Will be called before the server socket starts listening for data.

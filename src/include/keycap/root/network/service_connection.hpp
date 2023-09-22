@@ -43,11 +43,11 @@ namespace keycap::root::network
             msg.payload = payload;
 
             auto stream = msg.encode();
-            send(gsl::make_span(stream.data(), stream.size()));
+            send(std::span(stream.data(), stream.size()));
         }
 
       private:
-        bool on_data(data_router const& router, service_type service, gsl::span<uint8_t> data) final
+        bool on_data(data_router const& router, service_type service, std::span<uint8_t> data) final
         {
             input_stream_.put(data);
 

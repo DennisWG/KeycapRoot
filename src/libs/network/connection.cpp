@@ -69,15 +69,15 @@ namespace keycap::root::network
         send(stream.to_span());
     }
 
-    void connection::send(gsl::span<uint8_t> data)
+    void connection::send(std::span<uint8_t> data)
     {
         send_packet_queue_.emplace_back(data.begin(), data.end());
         send_timer_.cancel_one();
     }
 
-    void connection::send(gsl::span<char> data)
+    void connection::send(std::span<char> data)
     {
-        send(gsl::make_span(reinterpret_cast<uint8_t*>(data.data()), data.size()));
+        send(std::span(reinterpret_cast<uint8_t*>(data.data()), data.size()));
     }
 
     data_router& connection::get_router()
@@ -94,7 +94,7 @@ namespace keycap::root::network
             while (socket_.is_open())
             {
                 std::size_t n = co_await socket_.async_read_some(boost::asio::buffer(buffer), use_awaitable);
-                if (!router_.route_inbound(service_, gsl::make_span(buffer.data(), n)))
+                if (!router_.route_inbound(service_, std::span(buffer.data(), n)))
                 {
                     router_.route_updated_link_status(service_, link_status::Down);
                     stop();

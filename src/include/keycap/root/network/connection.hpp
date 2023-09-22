@@ -22,7 +22,7 @@ limitations under the License.
 
 #include <boost/asio/awaitable.hpp>
 
-#include <gsl/span>
+#include <span>
 
 namespace keycap::root::network
 {
@@ -44,9 +44,9 @@ namespace keycap::root::network
         void send(memory_stream&& stream);
 
         // Sends the given data asynchronously
-        void send(gsl::span<uint8_t> data) override;
+        void send(std::span<uint8_t> data) override;
 
-        void send(gsl::span<char> data);
+        void send(std::span<char> data);
 
         data_router& get_router();
 

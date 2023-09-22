@@ -22,8 +22,8 @@ limitations under the License.
 #include <boost/asio/streambuf.hpp>
 
 #include <deque>
-#include <gsl/span>
 #include <memory>
+#include <span>
 #include <vector>
 
 namespace keycap::root::network
@@ -44,7 +44,7 @@ namespace keycap::root::network
         {
         }
 
-        virtual void send(gsl::span<uint8_t> data) = 0;
+        virtual void send(std::span<uint8_t> data) = 0;
 
       protected:
         boost::asio::io_context& io_service_;

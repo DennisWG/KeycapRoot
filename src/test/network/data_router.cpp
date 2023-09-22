@@ -53,7 +53,7 @@ class TestHandler : public net::message_handler
         router_.configure_inbound(this);
     }
 
-    bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
+    bool on_data(net::data_router const& router, net::service_type service, std::span<uint8_t> data) override
     {
         OnMessageCalled = true;
         return true;

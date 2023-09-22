@@ -60,11 +60,11 @@ namespace ServiceTest
         void listen()
         {
             std::string msg{"Ping"};
-            send(gsl::make_span(msg));
+            send(msg);
             connection::listen();
         }
 
-        bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
+        bool on_data(net::data_router const& router, net::service_type service, std::span<uint8_t> data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -109,7 +109,7 @@ namespace ServiceTest
             router_.configure_inbound(this);
         }
 
-        bool on_data(net::data_router const& router, net::service_type service, gsl::span<uint8_t> data) override
+        bool on_data(net::data_router const& router, net::service_type service, std::span<uint8_t> data) override
         {
             auto received = std::string{std::begin(data), std::end(data)};
             myService.data = received;
@@ -117,7 +117,7 @@ namespace ServiceTest
             if (received == "Ping")
             {
                 std::string msg{"Pong"};
-                send(gsl::make_span(msg));
+                send(msg);
             }
 
             return true;

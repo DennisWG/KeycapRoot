@@ -48,7 +48,7 @@ namespace keycap::root::network
             handler->on_link(*this, service.type(), status);
     }
 
-    bool data_router::route_inbound(service_base& service, gsl::span<uint8_t> data) const
+    bool data_router::route_inbound(service_base& service, std::span<uint8_t> data) const
     {
         bool succeeded = true;
 
@@ -58,7 +58,7 @@ namespace keycap::root::network
         return succeeded;
     }
 
-    void data_router::route_outbound(gsl::span<uint8_t> data) const
+    void data_router::route_outbound(std::span<uint8_t> data) const
     {
         for (auto&& handlerPtr : outbound_handlers)
         {
