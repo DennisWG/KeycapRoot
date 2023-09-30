@@ -42,7 +42,7 @@ target_link_libraries(test_${PROJECT_NAME}
         keycap::root::project_options
         keycap::root::project_warnings
 
-        keycaproot
+        keycap::root
         rapidcheck
         #${Boost_LIBRARIES}
 )

@@ -284,6 +284,7 @@ add_library(keycaproot
     network/srp6/group_parameters.cpp
     network/srp6/utility.cpp
 )
+add_library(keycap::root ALIAS keycaproot)
 
 target_include_directories(keycaproot
     PRIVATE
