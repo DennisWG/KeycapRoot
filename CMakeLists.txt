@@ -87,17 +87,19 @@ FetchContent_GetProperties(zlib)
  if(NOT zlib_POPULATED)
      FetchContent_Populate(zlib)
      add_subdirectory(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-     target_include_directories(zlib PUBLIC  
-         $<BUILD_INTERFACE:${zlib_BINARY_DIR}>  
-         $<BUILD_INTERFACE:${zlib_SOURCE_DIR}>  
-         $<INSTALL_INTERFACE:include>
-       )
-     target_include_directories(zlibstatic PUBLIC  
-         $<BUILD_INTERFACE:${zlib_BINARY_DIR}> 
-         $<BUILD_INTERFACE:${zlib_SOURCE_DIR}>   
-         $<INSTALL_INTERFACE:include>
-       )
  endif()
+target_include_directories(zlib PUBLIC  
+    $<BUILD_INTERFACE:${zlib_BINARY_DIR}>  
+    $<BUILD_INTERFACE:${zlib_SOURCE_DIR}>  
+    $<INSTALL_INTERFACE:include>
+)
+target_include_directories(zlibstatic PUBLIC  
+    $<BUILD_INTERFACE:${zlib_BINARY_DIR}> 
+    $<BUILD_INTERFACE:${zlib_SOURCE_DIR}>   
+    $<INSTALL_INTERFACE:include>
+)
+
+ message("${zlib_POPULATED} - ${zlib_SOURCE_DIR} - ${zlib_BINARY_DIR}")
  
  ################################
  # Boost
