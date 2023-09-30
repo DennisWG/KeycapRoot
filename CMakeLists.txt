@@ -16,6 +16,9 @@ cmake_minimum_required(VERSION 3.26)
 project(KeycapRoot)
 include(cmake/PreventInSourceBuilds.cmake)
 
+
+option(KeycapRoot_ENABLE_TESTING "Enable unit-testing" OFF)
+
 enable_testing()
  
  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -128,4 +131,7 @@ find_package(Sanitizers)
  ################################
  
 add_subdirectory (src/libs)
-add_subdirectory (src/test)
+
+if(KeycapRoot_ENABLE_TESTING)
+    add_subdirectory (src/test)
+endif()
