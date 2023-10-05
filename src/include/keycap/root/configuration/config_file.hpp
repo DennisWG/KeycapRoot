@@ -18,6 +18,8 @@
 
 #include "../utility/string.hpp"
 
+#include <keycap/root/exception.hpp>
+
 #include <filesystem>
 #include <nlohmann/json.hpp>
 
@@ -44,13 +46,15 @@ namespace keycap::root::configuration
             if (itr != json_.end())
             {
                 if (!itr->is_object())
-                    throw std::exception{(category + " does not contain any items!").c_str()};
+                {
+                    throw exception{category + " does not contain any items!"};
+                }
 
                 auto value_itr = itr->find(value);
                 if (value_itr == itr->end())
                 {
-                    auto msg = ("Category " + category + " does not contain item " + value).c_str();
-                    throw std::exception{msg};
+                    auto msg = "Category " + category + " does not contain item " + value;
+                    throw exception{msg};
                 }
 
                 return value_itr->get<ReturnType>();
@@ -62,7 +66,7 @@ namespace keycap::root::configuration
                     return itr->get<ReturnType>();
             }
 
-            throw std::exception{("Could not find standalone key " + category + " " + value).c_str()};
+            throw exception{"Could not find standalone key " + category + " " + value};
         }
 
         // Attempts to retreive the value of the given category with the given name. Returns the given default if it
@@ -112,13 +116,13 @@ namespace keycap::root::configuration
             if (itr != json_.end())
             {
                 if (!itr->is_object())
-                    throw std::exception{(category + " does not contain any items!").c_str()};
+                    throw exception{category + " does not contain any items!"};
 
                 auto value_itr = itr->find(value);
                 if (value_itr == itr->end())
                 {
-                    auto msg = ("Category " + category + " does not contain item " + value).c_str();
-                    throw std::exception{msg};
+                    auto msg = "Category " + category + " does not contain item " + value;
+                    throw exception{msg};
                 }
 
                 return value_itr->get<ReturnType>();
@@ -130,7 +134,7 @@ namespace keycap::root::configuration
                     return itr->get<ReturnType>();
             }
 
-            throw std::exception{("Could not find standalone key " + category + " " + value).c_str()};
+            throw exception{"Could not find standalone key " + category + " " + value};
         }
 
         // Attempts to retreive the value of the given category with the given name. Returns the given default if it

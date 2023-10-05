@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+#include <keycap/root/exception.hpp>
 #include <keycap/root/network/srp6/group_parameters.hpp>
 
 namespace keycap::root::network::srp6
@@ -112,7 +113,7 @@ namespace keycap::root::network::srp6
                         "E4475677E9AA9E3050E2765694DFC81F56E880B96E7160C980DD98EDD3DFFFFFFFFFFFFFFFFF",
                         19};
             default:
-                throw std::exception("Unsupported Group Parameters!");
+                throw exception{"Unsupported Group Parameters!"};
         }
     }
 }

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <exception>
+#include <keycap/root/exception.hpp>
 
 namespace keycap::root::utility
 {
@@ -64,7 +64,7 @@ namespace keycap::root::utility
         T& operator[](size_t index)
         {
             if (index >= size_ || index < 0)
-                throw std::exception("index out of bounds");
+                throw exception{"index out of bounds"};
 
             return ptr_[index];
         }

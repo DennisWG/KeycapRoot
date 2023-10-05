@@ -17,6 +17,7 @@
 #include "utility.hpp"
 
 #include <keycap/root/network/srp6/group_parameters.hpp>
+#include <keycap/root/exception.hpp>
 #include <keycap/root/network/srp6/utility.hpp>
 #include <keycap/root/utility/string.hpp>
 
@@ -78,7 +79,7 @@ namespace keycap::root::network::srp6
             return array;
         }
 
-        throw std::exception("Unknown compliance mode!");
+        throw exception{"Unknown compliance mode!"};
     }
 
     template <>
@@ -99,7 +100,7 @@ namespace keycap::root::network::srp6
             return array;
         }
 
-        throw std::exception("Unknown compliance mode!");
+        throw exception{"Unknown compliance mode!"};
     }
 
     Botan::BigInt generate_client_proof(

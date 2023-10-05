@@ -16,6 +16,7 @@
 
 #include "utility.hpp"
 
+#include <keycap/root/exception.hpp>
 #include <keycap/root/network/srp6/server.hpp>
 #include <keycap/root/network/srp6/utility.hpp>
 
@@ -54,7 +55,7 @@ namespace keycap::root::network::srp6
     Botan::BigInt server::session_key(Botan::BigInt const& A)
     {
         if ((A % N_) == 0 || A <= 0)
-            throw std::exception("Ephemeral value of A must not be 0 (mod N) and not be <= 0!");
+            throw exception{"Ephemeral value of A must not be 0 (mod N) and not be <= 0!"};
 
         A_ = A;
 

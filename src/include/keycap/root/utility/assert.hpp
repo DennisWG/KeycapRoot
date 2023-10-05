@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include <keycap/root/exception.hpp>
+
 #ifdef _DEBUG
-#define kcr_assert(expression, message) if(!(expression)) throw std::exception(message);
+#define kcr_assert(expression, message) if(!(expression)) throw exception{message};
 #else
 #define kcr_assert(expression, message) ((void)0)
 #endif

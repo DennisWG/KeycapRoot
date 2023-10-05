@@ -15,6 +15,7 @@
 */
 
 #include <keycap/root/configuration/config_file.hpp>
+#include <keycap/root/exception.hpp>
 
 namespace keycap::root::configuration
 {
@@ -22,7 +23,7 @@ namespace keycap::root::configuration
     {
         std::ifstream file(filePath.string());
         if (!file)
-            throw std::exception(("Could not open file " + filePath.string()).c_str());
+            throw exception{"Could not open file " + filePath.string()};
 
         file >> json_;
     }

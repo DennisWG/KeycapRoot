@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <keycap/root/exception.hpp>
+
 #include <cstdint>
 #include <optional>
 #include <span>
@@ -110,7 +112,7 @@ namespace keycap::root::network
         uint8_t& operator[](size_t index)
         {
             if (!has_remaining(index))
-                throw std::exception("Tried to override past the stream's end!");
+                throw exception{"Tried to override past the stream's end!"};
 
             return buffer_[index + read_position_];
         }
@@ -120,7 +122,7 @@ namespace keycap::root::network
         void override(T const& value, size_t position)
         {
             if ((position + sizeof(T)) > buffer_.size())
-                throw std::exception("Tried to override past the stream's end!");
+                throw exception{"Tried to override past the stream's end!"};
 
             *reinterpret_cast<T*>(buffer_.data() + position) = value;
         }
@@ -136,7 +138,7 @@ namespace keycap::root::network
             else
             {
                 if (!has_remaining(sizeof(T)))
-                    throw std::exception("Attempted to read past buffer end!");
+                    throw exception{"Attempted to read past buffer end!"};
 
                 T value = *reinterpret_cast<T const*>(buffer_.data() + read_position_);
                 read_position_ += sizeof(T);
@@ -169,7 +171,7 @@ namespace keycap::root::network
                 return "";
 
             if (!has_remaining(size))
-                throw std::exception("Attempted to read past buffer end!");
+                throw exception{"Attempted to read past buffer end!"};
 
             std::string string = {buffer_.begin() + read_position_, buffer_.begin() + read_position_ + size};
             read_position_ += size;
@@ -205,7 +207,7 @@ namespace keycap::root::network
         T peek(size_t where = 0) const
         {
             if (!has_remaining(sizeof(T) + where))
-                throw std::exception("Attempted to read past buffer end!");
+                throw exception{"Attempted to read past buffer end!"};
 
             return *reinterpret_cast<T const*>(buffer_.data() + where + read_position_);
         }
@@ -280,7 +282,7 @@ namespace keycap::root::network
             if (num_bytes)
             {
                 if (!has_remaining(*num_bytes))
-                    throw std::exception("Attempted to read past buffer end!");
+                    throw exception{"Attempted to read past buffer end!"};
                 end = begin + read_position_ + num_bytes.value();
             }
 
