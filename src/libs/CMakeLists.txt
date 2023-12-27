@@ -300,12 +300,12 @@ target_link_libraries(keycaproot
         keycap::root::project_options
         keycap::root::project_warnings
 
-        botan_lib
         Boost::system
         Boost::lexical_cast
         zlibstatic
 
     PUBLIC
+        botan_lib
         Boost::asio
         Boost::crc
         Boost::uuid

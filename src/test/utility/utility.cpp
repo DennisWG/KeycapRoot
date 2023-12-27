@@ -16,6 +16,7 @@
 
 #include <keycap/root/utility/utility.hpp>
 #include <rapidcheck/catch.h>
+#define SPDLOG_USE_STD_FORMAT
 #include <spdlog/spdlog.h>
 
 TEST_CASE("Utility")

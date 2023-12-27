@@ -20,6 +20,7 @@
 
 #include <Keycap/Root/Network/Service.hpp>
 
+#define SPDLOG_USE_STD_FORMAT
 #include <spdlog/spdlog.h>
 
 #include <nlohmann/json.hpp>

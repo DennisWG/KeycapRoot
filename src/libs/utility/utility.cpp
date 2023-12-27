@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#define SPDLOG_USE_STD_FORMAT
+
 #include <keycap/root/utility/utility.hpp>
 #include <spdlog/sinks/null_sink.h>
 #include <spdlog/spdlog.h>
